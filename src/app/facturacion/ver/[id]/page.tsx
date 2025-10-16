@@ -85,7 +85,7 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
   if (loading) {
     return (
       <LayoutWithSidebar>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-gray-500">Cargando factura...</div>
         </div>
       </LayoutWithSidebar>
@@ -95,7 +95,7 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
   if (error || !invoice) {
     return (
       <LayoutWithSidebar>
-        <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="h-screen bg-gray-50 flex items-center justify-center">
           <div className="text-center">
             <div className="text-red-600 mb-4">{error || 'Factura no encontrada'}</div>
             <button
@@ -112,7 +112,7 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
 
   return (
     <LayoutWithSidebar>
-      <div className="min-h-screen bg-gray-50 p-4">
+      <div className="bg-gray-50 p-4">
         <div className="max-w-4xl mx-auto">
         {/* Header Actions */}
         <div className="mb-6 flex justify-between items-center">
