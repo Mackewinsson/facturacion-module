@@ -14,12 +14,10 @@ export default function LayoutWithSidebar({ children }: LayoutWithSidebarProps) 
   }
 
   return (
-    <div className="flex h-screen bg-gray-100">
+    <div className="flex min-h-screen bg-gray-100">
       <Sidebar isCollapsed={isCollapsed} onToggle={toggleSidebar} />
-      <main className="flex-1 overflow-auto">
-        <div className="p-6">
-          {children}
-        </div>
+      <main className="flex-1">
+        {children}
       </main>
     </div>
   )

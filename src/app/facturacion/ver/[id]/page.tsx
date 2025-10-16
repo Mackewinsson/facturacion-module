@@ -159,9 +159,6 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
               </div>
               <div className="text-sm text-gray-600">
                 <p>Fecha de expedición: {formatDate(invoice.fechaExpedicion)}</p>
-                {invoice.fechaOperacion && invoice.fechaOperacion !== invoice.fechaExpedicion && (
-                  <p>Fecha de operación: {formatDate(invoice.fechaOperacion)}</p>
-                )}
                 {invoice.fechaVencimiento && (
                   <p>Fecha de vencimiento: {formatDate(invoice.fechaVencimiento)}</p>
                 )}
@@ -196,7 +193,6 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
                   <p>{invoice.emisor.domicilio.codigoPostal} {invoice.emisor.domicilio.municipio}</p>
                   <p>{invoice.emisor.domicilio.provincia}, {invoice.emisor.domicilio.pais}</p>
                 </div>
-                {invoice.emisor.iban && <p className="mt-2">IBAN: {invoice.emisor.iban}</p>}
               </div>
             </div>
           </div>

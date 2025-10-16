@@ -1,6 +1,6 @@
 // Mock data for the facturación module - Spanish AEAT compliant
 
-export type TipoFactura = 'ordinaria' | 'simplificada' | 'rectificativa'
+export type TipoFactura = 'ordinaria' | 'simplificada' | 'rectificativa' | 'emitida' | 'recibida'
 export type TipoCliente = 'particular' | 'empresario/profesional'
 export type TipoIVA = 0 | 4 | 10 | 21
 export type MotivoExencion = 'art20.1.26' | 'art20.1.27' | 'art20.1.28' | 'art25' | 'exportacion' | 'otro'
@@ -18,7 +18,6 @@ export interface Emisor {
   nombreORazonSocial: string
   NIF: string
   domicilio: Domicilio
-  iban?: string
 }
 
 export interface Cliente {
@@ -72,8 +71,6 @@ export interface Invoice {
   serie?: string
   numero: string
   fechaExpedicion: string
-  fechaOperacion?: string
-  moneda: string
   lugarEmision?: string
   
   // Emisor y Cliente
@@ -111,8 +108,6 @@ export const mockInvoices: Invoice[] = [
     serie: '2024-A',
     numero: '00001',
     fechaExpedicion: '2024-12-15',
-    fechaOperacion: '2024-12-15',
-    moneda: 'EUR',
     lugarEmision: 'Madrid',
     
     emisor: {
@@ -125,7 +120,6 @@ export const mockInvoices: Invoice[] = [
         provincia: 'Madrid',
         pais: 'España'
       },
-      iban: 'ES91 2100 0418 4502 0005 1332'
     },
     
     cliente: {
@@ -206,7 +200,6 @@ export const mockInvoices: Invoice[] = [
     tipoFactura: 'simplificada',
     numero: '00002',
     fechaExpedicion: '2024-12-14',
-    moneda: 'EUR',
     
     emisor: {
       nombreORazonSocial: 'Taller Mecánico García S.L.',
@@ -290,8 +283,6 @@ export const mockInvoices: Invoice[] = [
     serie: '2024-A',
     numero: '00003',
     fechaExpedicion: '2024-12-13',
-    fechaOperacion: '2024-12-13',
-    moneda: 'EUR',
     
     emisor: {
       nombreORazonSocial: 'Taller Mecánico García S.L.',
@@ -384,8 +375,6 @@ export const mockInvoices: Invoice[] = [
     serie: '2024-A',
     numero: 'R00001',
     fechaExpedicion: '2024-12-12',
-    fechaOperacion: '2024-12-12',
-    moneda: 'EUR',
     esRectificativa: true,
     causaRectificacion: 'error',
     referenciasFacturasRectificadas: ['2024-A-00001'],
@@ -470,8 +459,6 @@ export const mockInvoices: Invoice[] = [
     serie: '2024-A',
     numero: '00004',
     fechaExpedicion: '2024-12-11',
-    fechaOperacion: '2024-12-11',
-    moneda: 'EUR',
     
     emisor: {
       nombreORazonSocial: 'Taller Mecánico García S.L.',
@@ -546,21 +533,264 @@ export const mockInvoices: Invoice[] = [
     status: 'CANCELLED',
     createdAt: '2024-12-11T11:00:00Z',
     updatedAt: '2024-12-11T15:30:00Z'
+  },
+  {
+    id: 6,
+    tipoFactura: 'emitida',
+    serie: '2024-E',
+    numero: '00001',
+    fechaExpedicion: '2024-12-10',
+    lugarEmision: 'Madrid',
+    
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+    },
+    
+    cliente: {
+      tipo: 'empresario/profesional',
+      nombreORazonSocial: 'AutoRepuestos López S.L.',
+      NIF: 'A87654321',
+      domicilio: {
+        calle: 'Avenida de la Industria 78',
+        codigoPostal: '28050',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 14,
+        descripcion: 'Servicios de reparación especializada',
+        cantidad: 1,
+        precioUnitario: 1200.00,
+        tipoIVA: 21,
+        baseLinea: 1200.00,
+        cuotaIVA: 252.00,
+        cuotaRE: 0,
+        totalLinea: 1452.00
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 1200.00,
+          cuotaIVA: 252.00,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 1200.00,
+      cuotaIVATotal: 252.00,
+      cuotaRETotal: 0,
+      totalFactura: 1452.00
+    },
+    
+    formaPago: 'Transferencia bancaria',
+    medioPago: 'IBAN: ES12 1234 5678 9012 3456 7890',
+    fechaVencimiento: '2025-01-09',
+    notas: 'Factura emitida por servicios de reparación',
+    status: 'SENT',
+    createdAt: '2024-12-10T09:30:00Z',
+    updatedAt: '2024-12-10T09:30:00Z'
+  },
+  {
+    id: 7,
+    tipoFactura: 'recibida',
+    serie: '2024-R',
+    numero: '00001',
+    fechaExpedicion: '2024-12-09',
+    lugarEmision: 'Barcelona',
+    
+    emisor: {
+      nombreORazonSocial: 'Proveedor de Repuestos S.A.',
+      NIF: 'A11223344',
+      domicilio: {
+        calle: 'Carrer de la Indústria 123',
+        codigoPostal: '08025',
+        municipio: 'Barcelona',
+        provincia: 'Barcelona',
+        pais: 'España'
+      },
+    },
+    
+    cliente: {
+      tipo: 'empresario/profesional',
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 15,
+        descripcion: 'Repuestos y piezas de recambio',
+        cantidad: 10,
+        precioUnitario: 85.00,
+        tipoIVA: 21,
+        baseLinea: 850.00,
+        cuotaIVA: 178.50,
+        cuotaRE: 0,
+        totalLinea: 1028.50
+      },
+      {
+        id: 16,
+        descripcion: 'Filtros de aceite y aire',
+        cantidad: 5,
+        precioUnitario: 25.00,
+        tipoIVA: 21,
+        baseLinea: 125.00,
+        cuotaIVA: 26.25,
+        cuotaRE: 0,
+        totalLinea: 151.25
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 975.00,
+          cuotaIVA: 204.75,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 975.00,
+      cuotaIVATotal: 204.75,
+      cuotaRETotal: 0,
+      totalFactura: 1179.75
+    },
+    
+    formaPago: 'Transferencia bancaria',
+    medioPago: 'IBAN: ES91 2100 0418 4502 0005 1332',
+    fechaVencimiento: '2025-01-08',
+    notas: 'Factura recibida por compra de repuestos',
+    status: 'PAID',
+    createdAt: '2024-12-09T14:15:00Z',
+    updatedAt: '2024-12-09T16:20:00Z'
+  },
+  {
+    id: 8,
+    tipoFactura: 'ordinaria',
+    serie: '2024-TEST',
+    numero: '00001',
+    fechaExpedicion: '2024-12-08',
+    lugarEmision: 'Sevilla',
+    
+    emisor: {
+      nombreORazonSocial: 'Nibisoft S.L.',
+      NIF: 'B98765432',
+      domicilio: {
+        calle: 'Calle Tecnología 123',
+        codigoPostal: '41001',
+        municipio: 'Sevilla',
+        provincia: 'Sevilla',
+        pais: 'España'
+      },
+    },
+    
+    cliente: {
+      tipo: 'empresario/profesional',
+      nombreORazonSocial: 'Empresa de Pruebas S.A.',
+      NIF: 'A12345678',
+      domicilio: {
+        calle: 'Avenida de las Pruebas 456',
+        codigoPostal: '28080',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 17,
+        descripcion: 'Desarrollo de software personalizado',
+        cantidad: 1,
+        precioUnitario: 2500.00,
+        tipoIVA: 21,
+        baseLinea: 2500.00,
+        cuotaIVA: 525.00,
+        cuotaRE: 0,
+        totalLinea: 3025.00
+      },
+      {
+        id: 18,
+        descripcion: 'Consultoría técnica especializada',
+        cantidad: 10,
+        precioUnitario: 100.00,
+        tipoIVA: 21,
+        baseLinea: 1000.00,
+        cuotaIVA: 210.00,
+        cuotaRE: 0,
+        totalLinea: 1210.00
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 3500.00,
+          cuotaIVA: 735.00,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 3500.00,
+      cuotaIVATotal: 735.00,
+      cuotaRETotal: 0,
+      totalFactura: 4235.00
+    },
+    
+    formaPago: 'Tarjeta de crédito',
+    medioPago: 'Visa **** 5678',
+    fechaVencimiento: '2025-01-07',
+    notas: 'Factura de prueba para testing de búsqueda avanzada',
+    status: 'DRAFT',
+    createdAt: '2024-12-08T10:00:00Z',
+    updatedAt: '2024-12-08T10:00:00Z'
   }
 ]
 
 // Mock service functions
 export class MockInvoiceService {
   private static invoices: Invoice[] = [...mockInvoices]
-  private static nextId = 6
+  private static nextId = 9
 
   static async getInvoices(params: {
     page?: number
     limit?: number
     status?: string
     search?: string
+    filters?: {
+      fechaDesde?: string
+      fechaHasta?: string
+      importeMinimo?: string
+      importeMaximo?: string
+      formaPago?: string
+      lugarEmision?: string
+    }
   } = {}): Promise<{ invoices: Invoice[], pagination: any }> {
-    const { page = 1, limit = 10, status, search } = params
+    const { page = 1, limit = 10, status, search, filters } = params
     
     let filteredInvoices = [...this.invoices]
     
@@ -569,14 +799,128 @@ export class MockInvoiceService {
       filteredInvoices = filteredInvoices.filter(invoice => invoice.status === status)
     }
     
-    // Filter by search
+    // Filter by search - search across all visible table fields
     if (search) {
       const searchLower = search.toLowerCase()
       filteredInvoices = filteredInvoices.filter(invoice => {
+        // Número de factura (serie + número)
         const invoiceNumber = `${invoice.serie || ''}-${invoice.numero}`.toLowerCase()
+        
+        // Fecha de expedición
+        const fechaExpedicion = new Date(invoice.fechaExpedicion).toLocaleDateString('es-ES').toLowerCase()
+        
+        // Cliente - NIF y nombre
+        const clienteNIF = invoice.cliente.NIF?.toLowerCase() || ''
+        const clienteNombre = invoice.cliente.nombreORazonSocial.toLowerCase()
+        
+        // Totales - base imponible, IVA, total
+        const baseImponible = invoice.totales.baseImponibleTotal.toString()
+        const cuotaIVA = invoice.totales.cuotaIVATotal.toString()
+        const totalFactura = invoice.totales.totalFactura.toString()
+        
+        // Dirección del cliente
+        const direccion = invoice.cliente.domicilio?.calle?.toLowerCase() || ''
+        const poblacion = invoice.cliente.domicilio?.municipio?.toLowerCase() || ''
+        const provincia = invoice.cliente.domicilio?.provincia?.toLowerCase() || ''
+        const codigoPostal = invoice.cliente.domicilio?.codigoPostal?.toLowerCase() || ''
+        
+        // Forma de pago y medio de pago
+        const formaPago = invoice.formaPago?.toLowerCase() || ''
+        const medioPago = invoice.medioPago?.toLowerCase() || ''
+        
+        // Estado
+        const estado = invoice.status.toLowerCase()
+        
+        // Tipo de factura
+        const tipoFactura = invoice.tipoFactura.toLowerCase()
+        
+        // Emisor - NIF y nombre
+        const emisorNIF = invoice.emisor.NIF?.toLowerCase() || ''
+        const emisorNombre = invoice.emisor.nombreORazonSocial.toLowerCase()
+        
+        // Lugar de emisión
+        const lugarEmision = invoice.lugarEmision?.toLowerCase() || ''
+        
+        // Notas
+        const notas = invoice.notas?.toLowerCase() || ''
+        
+        // Líneas de factura - descripciones de productos/servicios
+        const lineasDescripciones = invoice.lineas?.map(linea => linea.descripcion.toLowerCase()).join(' ') || ''
+        
         return invoiceNumber.includes(searchLower) ||
-               invoice.cliente.nombreORazonSocial.toLowerCase().includes(searchLower) ||
-               (invoice.cliente.NIF && invoice.cliente.NIF.toLowerCase().includes(searchLower))
+               fechaExpedicion.includes(searchLower) ||
+               clienteNIF.includes(searchLower) ||
+               clienteNombre.includes(searchLower) ||
+               baseImponible.includes(searchLower) ||
+               cuotaIVA.includes(searchLower) ||
+               totalFactura.includes(searchLower) ||
+               direccion.includes(searchLower) ||
+               poblacion.includes(searchLower) ||
+               provincia.includes(searchLower) ||
+               codigoPostal.includes(searchLower) ||
+               formaPago.includes(searchLower) ||
+               medioPago.includes(searchLower) ||
+               estado.includes(searchLower) ||
+               tipoFactura.includes(searchLower) ||
+               emisorNIF.includes(searchLower) ||
+               emisorNombre.includes(searchLower) ||
+               lugarEmision.includes(searchLower) ||
+               notas.includes(searchLower) ||
+               lineasDescripciones.includes(searchLower)
+      })
+    }
+    
+    // Apply advanced filters
+    if (filters) {
+      filteredInvoices = filteredInvoices.filter(invoice => {
+        // Filter by fecha desde
+        if (filters.fechaDesde) {
+          const invoiceDate = new Date(invoice.fechaExpedicion)
+          const desdeDate = new Date(filters.fechaDesde)
+          if (invoiceDate < desdeDate) {
+            return false
+          }
+        }
+        
+        // Filter by fecha hasta
+        if (filters.fechaHasta) {
+          const invoiceDate = new Date(invoice.fechaExpedicion)
+          const hastaDate = new Date(filters.fechaHasta)
+          if (invoiceDate > hastaDate) {
+            return false
+          }
+        }
+        
+        // Filter by importe mínimo
+        if (filters.importeMinimo) {
+          const minImporte = parseFloat(filters.importeMinimo)
+          if (invoice.totales.totalFactura < minImporte) {
+            return false
+          }
+        }
+        
+        // Filter by importe máximo
+        if (filters.importeMaximo) {
+          const maxImporte = parseFloat(filters.importeMaximo)
+          if (invoice.totales.totalFactura > maxImporte) {
+            return false
+          }
+        }
+        
+        // Filter by forma de pago
+        if (filters.formaPago && invoice.formaPago !== filters.formaPago) {
+          return false
+        }
+        
+        // Filter by lugar de emisión
+        if (filters.lugarEmision) {
+          const lugarEmision = invoice.lugarEmision?.toLowerCase() || ''
+          if (!lugarEmision.includes(filters.lugarEmision.toLowerCase())) {
+            return false
+          }
+        }
+        
+        return true
       })
     }
     
@@ -612,8 +956,15 @@ export class MockInvoiceService {
     const seriesInvoices = this.invoices.filter(inv => inv.serie === serie)
     const nextNumber = String(seriesInvoices.length + 1).padStart(5, '0')
     
-    // For rectificativa, use R prefix
-    const numero = tipoFactura === 'rectificativa' ? `R${nextNumber}` : nextNumber
+    // For different types, use appropriate prefixes
+    let numero = nextNumber
+    if (tipoFactura === 'rectificativa') {
+      numero = `R${nextNumber}`
+    } else if (tipoFactura === 'emitida') {
+      numero = `E${nextNumber}`
+    } else if (tipoFactura === 'recibida') {
+      numero = `R${nextNumber}`
+    }
     
     const newInvoice: Invoice = {
       id: this.nextId++,

@@ -34,8 +34,6 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
     serie: '2024-A',
     numero: '',
     fechaExpedicion: new Date().toISOString().split('T')[0],
-    fechaOperacion: '',
-    moneda: 'EUR',
     lugarEmision: '',
     
     emisor: {
@@ -47,8 +45,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
         municipio: 'Madrid',
         provincia: 'Madrid',
         pais: 'España'
-      },
-      iban: ''
+      }
     },
     
     cliente: {
@@ -296,6 +293,8 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   <option value="ordinaria">Ordinaria (Completa)</option>
                   <option value="simplificada">Simplificada</option>
                   <option value="rectificativa">Rectificativa</option>
+                  <option value="emitida">Factura Emitida</option>
+                  <option value="recibida">Factura Recibida</option>
                 </select>
               </div>
 
@@ -338,31 +337,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                 />
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fecha de Operación
-                </label>
-                <input
-                  type="date"
-                  value={formData.fechaOperacion || ''}
-                  onChange={(e) => handleInputChange('fechaOperacion', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Moneda
-                </label>
-                <select
-                  value={formData.moneda || 'EUR'}
-                  onChange={(e) => handleInputChange('moneda', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="EUR">EUR - Euro</option>
-                  <option value="USD">USD - Dólar</option>
-                </select>
-              </div>
             </div>
           </div>
 
@@ -444,18 +419,6 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  IBAN
-                </label>
-                <input
-                  type="text"
-                  value={formData.emisor?.iban || ''}
-                  onChange={(e) => handleInputChange('emisor.iban', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="ES91 2100 0418 4502 0005 1332"
-                />
-              </div>
             </div>
           </div>
 

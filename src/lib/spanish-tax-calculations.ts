@@ -174,6 +174,14 @@ export function generateMencionesObligatorias(invoice: any): string[] {
     }
   }
   
+  if (invoice.tipoFactura === 'emitida') {
+    menciones.push('FACTURA EMITIDA')
+  }
+  
+  if (invoice.tipoFactura === 'recibida') {
+    menciones.push('FACTURA RECIBIDA')
+  }
+  
   // Menciones por líneas exentas
   const lineasExentas = invoice.lineas?.filter((linea: any) => linea.exenta)
   if (lineasExentas?.length) {
@@ -244,6 +252,26 @@ export function validateInvoiceByType(invoice: any): string[] {
     
     if (!invoice.referenciasFacturasRectificadas?.length) {
       errors.push('Debe especificar las facturas rectificadas')
+    }
+  }
+  
+  if (invoice.tipoFactura === 'emitida') {
+    if (!invoice.cliente.domicilio) {
+      errors.push('El domicilio del cliente es obligatorio en facturas emitidas')
+    }
+    
+    if (invoice.cliente.tipo === 'empresario/profesional' && !invoice.cliente.NIF) {
+      errors.push('El NIF del cliente es obligatorio para empresarios/profesionales')
+    }
+  }
+  
+  if (invoice.tipoFactura === 'recibida') {
+    if (!invoice.cliente.domicilio) {
+      errors.push('El domicilio del cliente es obligatorio en facturas recibidas')
+    }
+    
+    if (invoice.cliente.tipo === 'empresario/profesional' && !invoice.cliente.NIF) {
+      errors.push('El NIF del cliente es obligatorio para empresarios/profesionales')
     }
   }
   

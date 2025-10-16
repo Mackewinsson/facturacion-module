@@ -18,18 +18,6 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
       href: '/facturacion',
       icon: '📄',
       active: pathname.startsWith('/facturacion')
-    },
-    {
-      name: 'Pedidos',
-      href: '/orders',
-      icon: '📦',
-      active: pathname.startsWith('/orders')
-    },
-    {
-      name: 'Dashboard',
-      href: '/dashboard',
-      icon: '📊',
-      active: pathname.startsWith('/dashboard')
     }
   ]
 
@@ -43,7 +31,7 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
       <div className="p-4 border-b border-gray-700">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
-            <h1 className="text-xl font-bold">Recepción Activa</h1>
+            <h1 className="text-xl font-bold">Nibisoft</h1>
           )}
           <button
             onClick={onToggle}

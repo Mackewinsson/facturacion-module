@@ -15,6 +15,16 @@ export default function FacturacionPage() {
   const [statusFilter, setStatusFilter] = useState('ALL')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
+  const [totalResults, setTotalResults] = useState(0)
+  const [showFilters, setShowFilters] = useState(false)
+  const [filters, setFilters] = useState({
+    fechaDesde: '',
+    fechaHasta: '',
+    importeMinimo: '',
+    importeMaximo: '',
+    formaPago: '',
+    lugarEmision: ''
+  })
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -22,7 +32,19 @@ export default function FacturacionPage() {
       return
     }
     loadInvoices()
-  }, [isAuthenticated, router, currentPage, statusFilter, searchTerm])
+  }, [isAuthenticated, router, currentPage, statusFilter, searchTerm, filters])
+
+  // Debounced search effect
+  useEffect(() => {
+    if (!isAuthenticated) return
+    
+    const timeoutId = setTimeout(() => {
+      setCurrentPage(1)
+      loadInvoices()
+    }, 300) // 300ms delay for debouncing
+
+    return () => clearTimeout(timeoutId)
+  }, [searchTerm])
 
   const loadInvoices = async () => {
     try {
@@ -31,11 +53,13 @@ export default function FacturacionPage() {
         page: currentPage,
         limit: 10,
         status: statusFilter !== 'ALL' ? statusFilter : undefined,
-        search: searchTerm || undefined
+        search: searchTerm || undefined,
+        filters: filters
       })
       
       setInvoices(data.invoices)
       setTotalPages(data.pagination.pages)
+      setTotalResults(data.pagination.total)
     } catch (err) {
       setError('Error al cargar las facturas')
     } finally {
@@ -88,6 +112,31 @@ export default function FacturacionPage() {
     router.push(`/facturacion/ver/${id}`)
   }
 
+  const handleFilterChange = (filterName: string, value: string) => {
+    setFilters(prev => ({
+      ...prev,
+      [filterName]: value
+    }))
+    setCurrentPage(1)
+  }
+
+  const clearFilters = () => {
+    setFilters({
+      fechaDesde: '',
+      fechaHasta: '',
+      importeMinimo: '',
+      importeMaximo: '',
+      formaPago: '',
+      lugarEmision: ''
+    })
+    setCurrentPage(1)
+  }
+
+  const applyFilters = () => {
+    setCurrentPage(1)
+    loadInvoices()
+  }
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES')
   }
@@ -105,8 +154,8 @@ export default function FacturacionPage() {
 
   return (
     <LayoutWithSidebar>
-      <div className="min-h-screen bg-gray-50 p-2 sm:p-4">
-      <div className="max-w-7xl mx-auto">
+      <div className="bg-gray-50">
+        <div className="max-w-7xl mx-auto p-4">
         {/* Header */}
         <div className="mb-4 sm:mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -133,7 +182,7 @@ export default function FacturacionPage() {
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar por número, cliente o email..."
+                  placeholder="Buscar por número, cliente, fecha, importes, dirección, estado, tipo..."
                   className="flex-1 px-3 py-2 border-2 border-gray-400 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 placeholder-gray-600"
                 />
                 <button
@@ -141,6 +190,28 @@ export default function FacturacionPage() {
                   className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-base font-medium"
                 >
                   Buscar
+                </button>
+                {searchTerm && (
+                  <button
+                    type="button"
+                    onClick={() => setSearchTerm('')}
+                    className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 text-base font-medium"
+                    title="Limpiar búsqueda"
+                  >
+                    ✕
+                  </button>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`px-4 py-2 rounded-md text-base font-medium ${
+                    showFilters 
+                      ? 'bg-blue-600 text-white' 
+                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                  }`}
+                  title="Filtros avanzados"
+                >
+                  🔍 Filtros
                 </button>
               </div>
             </form>
@@ -163,6 +234,143 @@ export default function FacturacionPage() {
             </div>
           </div>
         </div>
+
+        {/* Advanced Filters Panel */}
+        {showFilters && (
+          <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-6">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-semibold text-gray-900">Filtros Avanzados</h3>
+              <button
+                onClick={clearFilters}
+                className="text-sm text-gray-500 hover:text-gray-700"
+              >
+                Limpiar todos
+              </button>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Fecha Desde */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Fecha Desde
+                </label>
+                <input
+                  type="date"
+                  value={filters.fechaDesde}
+                  onChange={(e) => handleFilterChange('fechaDesde', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Fecha Hasta */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Fecha Hasta
+                </label>
+                <input
+                  type="date"
+                  value={filters.fechaHasta}
+                  onChange={(e) => handleFilterChange('fechaHasta', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Importe Mínimo */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Importe Mínimo (€)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={filters.importeMinimo}
+                  onChange={(e) => handleFilterChange('importeMinimo', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="0.00"
+                />
+              </div>
+
+              {/* Importe Máximo */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Importe Máximo (€)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={filters.importeMaximo}
+                  onChange={(e) => handleFilterChange('importeMaximo', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="999999.99"
+                />
+              </div>
+
+              {/* Forma de Pago */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Forma de Pago
+                </label>
+                <select
+                  value={filters.formaPago}
+                  onChange={(e) => handleFilterChange('formaPago', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Todas las formas</option>
+                  <option value="Transferencia bancaria">Transferencia bancaria</option>
+                  <option value="Efectivo">Efectivo</option>
+                  <option value="Tarjeta de crédito">Tarjeta de crédito</option>
+                  <option value="Cheque">Cheque</option>
+                </select>
+              </div>
+
+
+              {/* Lugar de Emisión */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Lugar de Emisión
+                </label>
+                <input
+                  type="text"
+                  value={filters.lugarEmision}
+                  onChange={(e) => handleFilterChange('lugarEmision', e.target.value)}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Madrid, Barcelona..."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 mt-4">
+              <button
+                onClick={clearFilters}
+                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 text-sm font-medium"
+              >
+                Limpiar
+              </button>
+              <button
+                onClick={applyFilters}
+                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+              >
+                Aplicar Filtros
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Search Results Info */}
+        {(searchTerm || Object.values(filters).some(filter => filter !== '')) && (
+          <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded mb-4">
+            <div className="flex items-center">
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span className="font-medium">
+                {totalResults} resultado{totalResults !== 1 ? 's' : ''} encontrado{totalResults !== 1 ? 's' : ''}
+                {searchTerm && ` para "${searchTerm}"`}
+                {Object.values(filters).some(filter => filter !== '') && ' con filtros aplicados'}
+              </span>
+            </div>
+          </div>
+        )}
 
         {/* Error Message */}
         {error && (
@@ -360,15 +568,6 @@ export default function FacturacionPage() {
           )}
         </div>
 
-        {/* Back Button */}
-        <div className="mt-6">
-          <button
-            onClick={() => router.push('/dashboard')}
-            className="w-full sm:w-auto px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm font-medium"
-          >
-            ← Volver al Dashboard
-          </button>
-        </div>
       </div>
       </div>
     </LayoutWithSidebar>

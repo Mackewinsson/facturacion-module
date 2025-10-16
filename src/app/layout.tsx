@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Recepción Activa - Sistema de Gestión de Órdenes",
-  description: "Sistema web para la gestión de órdenes de trabajo con funcionalidad de carga de imágenes",
+  title: "Nibisoft - Sistema de Facturación",
+  description: "Sistema web para la gestión de facturas con funcionalidad completa de facturación",
 };
 
 export default function RootLayout({
