@@ -1,15 +1,22 @@
 'use client'
-import { useState, useEffect } from 'react'
+
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { MockInvoiceService, Invoice, TipoFactura, TipoCliente, TipoIVA, MotivoExencion, CausaRectificacion, LineaFactura, Domicilio, Cliente } from '@/lib/mock-data'
-import { 
-  VAT_RATES, 
-  RECARGO_EQUIVALENCIA_RATES, 
-  MOTIVOS_EXENCION, 
-  CAUSAS_RECTIFICACION, 
+import {
+  MockInvoiceService,
+  Invoice,
+  TipoFactura,
+  TipoIVA,
+  MotivoExencion,
+  CausaRectificacion,
+  LineaFactura,
+  Cliente
+} from '@/lib/mock-data'
+import {
+  VAT_RATES,
+  MOTIVOS_EXENCION,
+  CAUSAS_RECTIFICACION,
   FORMAS_PAGO,
-  validateNIF,
-  validateNIFIVA,
   calculateLineBase,
   calculateLineVAT,
   calculateLineRE,
@@ -27,9 +34,7 @@ interface SpanishInvoiceFormProps {
   isEdit?: boolean
 }
 
-// Helper function to get emisor data from database
 const getEmisorData = () => {
-  // In a real application, this would be an API call to get company data
   return {
     nombreORazonSocial: 'Taller Mecánico García S.L.',
     NIF: 'B12345678',
@@ -43,17 +48,26 @@ const getEmisorData = () => {
   }
 }
 
+type DocumentOptionKey = 'customFields' | 'documentText' | 'finalMessage' | 'portalQR'
+
+const DOCUMENT_OPTION_ITEMS: Array<{ key: DocumentOptionKey; label: string; badge?: 'Mejorar plan' | 'Nuevo' }> = [
+  { key: 'customFields', label: 'Campos personalizados', badge: 'Mejorar plan' },
+  { key: 'documentText', label: 'Añadir texto en el documento' },
+  { key: 'finalMessage', label: 'Añadir mensaje al final' },
+  { key: 'portalQR', label: 'Mostrar QR de acceso al Portal', badge: 'Nuevo' }
+]
+
+const PAYMENT_PROVIDERS = ['Stripe', 'PayPal', 'Square', 'GoCardless']
+
 export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = false }: SpanishInvoiceFormProps) {
   const router = useRouter()
-  
-  // Form state
+
   const [formData, setFormData] = useState<Partial<Invoice>>({
     tipoFactura: 'ordinaria',
     serie: '2024-A',
     numero: '',
     fechaExpedicion: new Date().toISOString().split('T')[0],
     lugarEmision: '',
-    
     cliente: {
       tipo: 'particular',
       nombreORazonSocial: '',
@@ -67,20 +81,21 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
       },
       pais: 'España'
     },
-    
-    lineas: [{
-      id: 1,
-      descripcion: '',
-      cantidad: 1,
-      precioUnitario: 0,
-      descuentoPct: 0,
-      tipoIVA: 21,
-      baseLinea: 0,
-      cuotaIVA: 0,
-      cuotaRE: 0,
-      totalLinea: 0
-    }],
-    
+    lineas: [
+      {
+        id: 1,
+        descripcion: '',
+        descripcionDetallada: '',
+        cantidad: 1,
+        precioUnitario: 0,
+        descuentoPct: 0,
+        tipoIVA: 21,
+        baseLinea: 0,
+        cuotaIVA: 0,
+        cuotaRE: 0,
+        totalLinea: 0
+      }
+    ],
     totales: {
       basesPorTipo: [],
       baseImponibleTotal: 0,
@@ -88,45 +103,62 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
       cuotaRETotal: 0,
       totalFactura: 0
     },
-    
     formaPago: 'Transferencia bancaria',
     fechaVencimiento: '',
     notas: '',
-    
     esRectificativa: false,
     causaRectificacion: 'error',
     referenciasFacturasRectificadas: [],
-    
     status: 'DRAFT'
   })
-  
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [validationErrors, setValidationErrors] = useState<string[]>([])
   const [selectedClient, setSelectedClient] = useState<Cliente | null>(null)
   const [showAddClientModal, setShowAddClientModal] = useState(false)
   const [suggestedClientName, setSuggestedClientName] = useState('')
+  const [documentOptions, setDocumentOptions] = useState<Record<DocumentOptionKey, boolean>>({
+    customFields: false,
+    documentText: false,
+    finalMessage: false,
+    portalQR: false
+  })
+  const [categorization, setCategorization] = useState({
+    account: '70000000 Ventas de mercaderías',
+    accountByConcept: false,
+    tags: '',
+    conceptTags: false,
+    internalNote: '',
+    assignedUsers: '',
+    project: ''
+  })
 
   useEffect(() => {
     if (initialData) {
-      setFormData(prev => ({ ...prev, ...initialData }))
+      setFormData(prev => ({
+        ...prev,
+        ...initialData,
+        lineas: initialData.lineas
+          ? initialData.lineas.map(linea => ({
+              descripcionDetallada: '',
+              ...linea
+            }))
+          : prev.lineas,
+        totales: initialData.totales || prev.totales
+      }))
     }
   }, [initialData])
 
   useEffect(() => {
-    calculateTotals()
-  }, [formData.lineas])
-
-  const calculateTotals = () => {
     if (!formData.lineas) return
-    
-    // Recalculate line totals
+
     const updatedLineas = formData.lineas.map(linea => {
       const base = calculateLineBase(linea)
       const cuotaIVA = calculateLineVAT(linea)
       const cuotaRE = calculateLineRE(linea)
       const total = calculateLineTotal(linea)
-      
+
       return {
         ...linea,
         baseLinea: base,
@@ -135,40 +167,68 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
         totalLinea: total
       }
     })
-    
-    // Calculate invoice totals
-    const totales = calculateInvoiceTotals(updatedLineas)
-    
-    setFormData(prev => ({
-      ...prev,
-      lineas: updatedLineas,
-      totales
-    }))
-  }
 
-  const handleInputChange = (field: string, value: any) => {
+    const totales = calculateInvoiceTotals(updatedLineas)
+
     setFormData(prev => {
-      const newData = { ...prev }
-      const keys = field.split('.')
-      
-      if (keys.length === 1) {
-        newData[keys[0] as keyof Invoice] = value
-      } else if (keys.length === 2) {
-        if (!newData[keys[0] as keyof Invoice]) {
-          newData[keys[0] as keyof Invoice] = {} as any
-        }
-        (newData[keys[0] as keyof Invoice] as any)[keys[1]] = value
-      } else if (keys.length === 3) {
-        if (!newData[keys[0] as keyof Invoice]) {
-          newData[keys[0] as keyof Invoice] = {} as any
-        }
-        if (!(newData[keys[0] as keyof Invoice] as any)[keys[1]]) {
-          (newData[keys[0] as keyof Invoice] as any)[keys[1]] = {}
-        }
-        (newData[keys[0] as keyof Invoice] as any)[keys[1]][keys[2]] = value
+      const currentLineas = prev.lineas || []
+      const hasCalculatedValuesChanged =
+        updatedLineas.length !== currentLineas.length ||
+        updatedLineas.some((linea, index) => {
+          const current = currentLineas[index]
+          if (!current) return true
+          return (
+            linea.baseLinea !== current.baseLinea ||
+            linea.cuotaIVA !== current.cuotaIVA ||
+            linea.cuotaRE !== current.cuotaRE ||
+            linea.totalLinea !== current.totalLinea
+          )
+        })
+
+      const hasTotalsChanged =
+        !prev.totales ||
+        prev.totales.baseImponibleTotal !== totales.baseImponibleTotal ||
+        prev.totales.cuotaIVATotal !== totales.cuotaIVATotal ||
+        (prev.totales.cuotaRETotal || 0) !== (totales.cuotaRETotal || 0) ||
+        prev.totales.totalFactura !== totales.totalFactura
+
+      if (!hasCalculatedValuesChanged && !hasTotalsChanged) {
+        return prev
       }
-      
-      return newData
+
+      return {
+        ...prev,
+        lineas: updatedLineas,
+        totales
+      }
+    })
+  }, [formData.lineas])
+
+  const handleInputChange = (field: string, value: unknown) => {
+    setFormData(prev => {
+      const clone: Record<string, unknown> = { ...prev }
+      const keys = field.split('.')
+      let current: Record<string, unknown> = clone
+
+      keys.forEach((key, index) => {
+        if (index === keys.length - 1) {
+          current[key] = value
+          return
+        }
+
+        const existing = current[key]
+        if (typeof existing === 'object' && existing !== null && !Array.isArray(existing)) {
+          const cloned = { ...(existing as Record<string, unknown>) }
+          current[key] = cloned
+          current = cloned
+        } else {
+          const placeholder: Record<string, unknown> = {}
+          current[key] = placeholder
+          current = placeholder
+        }
+      })
+
+      return clone as Partial<Invoice>
     })
   }
 
@@ -180,7 +240,6 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
         cliente: client
       }))
     } else {
-      // Reset cliente fields when no client is selected
       setFormData(prev => ({
         ...prev,
         cliente: {
@@ -215,13 +274,20 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
     setSuggestedClientName('')
   }
 
-  const handleLineChange = (index: number, field: keyof LineaFactura, value: any) => {
-    const newLineas = [...(formData.lineas || [])]
-    newLineas[index] = { ...newLineas[index], [field]: value }
-    
+  const handleLineChange = <K extends keyof LineaFactura>(
+    index: number,
+    field: K,
+    value: LineaFactura[K]
+  ) => {
+    const currentLineas = [...(formData.lineas || [])]
+    const targetLine = currentLineas[index]
+    if (!targetLine) return
+
+    currentLineas[index] = { ...targetLine, [field]: value }
+
     setFormData(prev => ({
       ...prev,
-      lineas: newLineas
+      lineas: currentLineas
     }))
   }
 
@@ -229,6 +295,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
     const newLine: LineaFactura = {
       id: Date.now(),
       descripcion: '',
+      descripcionDetallada: '',
       cantidad: 1,
       precioUnitario: 0,
       descuentoPct: 0,
@@ -238,7 +305,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
       cuotaRE: 0,
       totalLinea: 0
     }
-    
+
     setFormData(prev => ({
       ...prev,
       lineas: [...(prev.lineas || []), newLine]
@@ -255,51 +322,82 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
     }
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const submitInvoice = async (nextStatus: 'DRAFT' | 'APPROVED') => {
     setLoading(true)
     setError('')
     setValidationErrors([])
 
     try {
-      // Get emisor data from database
       const emisorData = getEmisorData()
+      const lineas = (formData.lineas || []).map(linea => {
+        const base = calculateLineBase(linea)
+        const cuotaIVA = calculateLineVAT(linea)
+        const cuotaRE = calculateLineRE(linea)
+        const total = calculateLineTotal(linea)
 
-      // Combine form data with emisor data
-      const completeInvoiceData = {
+        return {
+          ...linea,
+          baseLinea: base,
+          cuotaIVA,
+          cuotaRE,
+          totalLinea: total
+        }
+      })
+      const totales = calculateInvoiceTotals(lineas)
+
+      const payload: Partial<Invoice> = {
         ...formData,
-        emisor: emisorData
+        status: nextStatus,
+        emisor: emisorData,
+        lineas,
+        totales
       }
 
-      // Validate form
-      const errors = validateInvoiceByType(completeInvoiceData)
+      const errors = validateInvoiceByType(payload as Invoice)
       if (errors.length > 0) {
         setValidationErrors(errors)
+        setLoading(false)
         return
       }
 
+      setFormData(prev => ({
+        ...prev,
+        status: nextStatus,
+        lineas,
+        totales
+      }))
+
       if (isEdit && invoiceId) {
-        // Update existing invoice
-        const updatedInvoice = await MockInvoiceService.updateInvoice(invoiceId, completeInvoiceData)
+        const updatedInvoice = await MockInvoiceService.updateInvoice(invoiceId, payload as Invoice)
         if (updatedInvoice) {
           router.push('/facturacion')
         } else {
           setError('Error al actualizar la factura')
         }
       } else {
-        // Create new invoice
-        const newInvoice = await MockInvoiceService.createInvoice(completeInvoiceData as any)
+        const newInvoice = await MockInvoiceService.createInvoice(
+          payload as unknown as Omit<Invoice, 'id' | 'numero' | 'createdAt' | 'updatedAt'>
+        )
         if (newInvoice) {
           router.push('/facturacion')
         } else {
           setError('Error al crear la factura')
         }
       }
-    } catch (err) {
+    } catch {
       setError('Error de conexión')
     } finally {
       setLoading(false)
     }
+  }
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    await submitInvoice('APPROVED')
+  }
+
+  const handleSaveDraft = async () => {
+    await submitInvoice('DRAFT')
   }
 
   const formatCurrency = (amount: number) => {
@@ -313,592 +411,711 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
     return generateMencionesObligatorias(formData)
   }
 
+  const handleDocumentOptionToggle = (key: DocumentOptionKey) => {
+    setDocumentOptions(prev => ({
+      ...prev,
+      [key]: !prev[key]
+    }))
+  }
+
+  const approveLabel = isEdit ? 'Guardar cambios' : 'Aprobar'
+  const baseInputClasses =
+    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500'
+
   return (
-    <div className="max-w-6xl mx-auto p-4">
-      <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h1 className="text-2xl font-bold text-black mb-6">
-          {isEdit ? 'Editar Factura' : 'Nueva Factura'} - {formData.tipoFactura?.toUpperCase()}
-        </h1>
-
-        {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-            {error}
-          </div>
-        )}
-
-        {validationErrors.length > 0 && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
-            <h3 className="font-bold mb-2">Errores de validación:</h3>
-            <ul className="list-disc list-inside">
-              {validationErrors.map((error, index) => (
-                <li key={index}>{error}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-8">
-          {/* Info Notice */}
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div className="flex items-start">
-              <div className="flex-shrink-0">
-                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <h3 className="text-sm font-medium text-blue-800">
-                  Datos del Emisor Predefinidos
-                </h3>
-                <div className="mt-2 text-sm text-blue-700">
-                  <p>Los datos del emisor están configurados en el sistema y se aplicarán automáticamente a todas las facturas.</p>
-                </div>
-              </div>
+    <div className="bg-gray-50 px-4 py-6 lg:px-8">
+      <div className="mx-auto max-w-[1200px]">
+        <form
+          onSubmit={handleSubmit}
+          className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 px-6 py-5">
+            <div>
+              <h1 className="text-2xl font-semibold text-gray-900">
+                {isEdit ? 'Editar factura' : 'Nueva factura'}
+              </h1>
+              <p className="text-sm text-gray-500">
+                Organiza la información de tu factura antes de compartirla con el cliente.
+              </p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+              >
+                Vista previa
+              </button>
+              <button
+                type="button"
+                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+              >
+                Opciones
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveDraft}
+                disabled={loading}
+                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Guardar como borrador
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {loading ? 'Guardando...' : approveLabel}
+              </button>
             </div>
           </div>
 
-          {/* Encabezado */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h2 className="text-lg font-semibold mb-4">Encabezado</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipo de Factura *
-                </label>
-                <select
-                  value={formData.tipoFactura || 'ordinaria'}
-                  onChange={(e) => handleInputChange('tipoFactura', e.target.value as TipoFactura)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                >
-                  <option value="ordinaria">Ordinaria (Completa)</option>
-                  <option value="simplificada">Simplificada</option>
-                  <option value="rectificativa">Rectificativa</option>
-                  <option value="emitida">Factura Emitida</option>
-                  <option value="recibida">Factura Recibida</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Serie
-                </label>
-                <input
-                  type="text"
-                  value={formData.serie || ''}
-                  onChange={(e) => handleInputChange('serie', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                  placeholder="2024-A"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Número
-                </label>
-                <input
-                  type="text"
-                  value={formData.numero || ''}
-                  onChange={(e) => handleInputChange('numero', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                  placeholder="00001"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fecha de Expedición *
-                </label>
-                <input
-                  type="date"
-                  value={formData.fechaExpedicion || ''}
-                  onChange={(e) => handleInputChange('fechaExpedicion', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                  required
-                />
-              </div>
-
-
-            </div>
-          </div>
-
-
-          {/* Cliente/Proveedor */}
-          <div className="bg-green-50 p-4 rounded-lg">
-            <h2 className="text-lg font-semibold mb-4">Datos del Cliente/Proveedor</h2>
-            
-            {/* Client Search */}
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Buscar Cliente Existente
-              </label>
-              <ClientSearch
-                onClientSelect={handleClientSelect}
-                selectedClient={selectedClient}
-                placeholder="Escribe el nombre, NIF o ciudad del cliente..."
-                onAddNewClient={handleAddNewClient}
-              />
-              {selectedClient && (
-                <div className="mt-2 p-3 bg-green-100 border border-green-200 rounded-md">
-                  <div className="text-sm text-green-800">
-                    <strong>Cliente seleccionado:</strong> {selectedClient.nombreORazonSocial}
-                    {selectedClient.NIF && ` (${selectedClient.NIF})`}
-                  </div>
-                </div>
-              )}
+          <div className="space-y-8 px-6 py-6">
+            <div className="rounded-xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm text-blue-800">
+              <p className="font-medium text-blue-900">Datos del emisor predefinidos</p>
+              <p className="mt-1">
+                Los datos fiscales y de contacto de la empresa se aplican automáticamente a cada factura emitida.
+              </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipo de Cliente *
-                </label>
-                <select
-                  value={formData.cliente?.tipo || 'particular'}
-                  onChange={(e) => handleInputChange('cliente.tipo', e.target.value as TipoCliente)}
-                  disabled={!!selectedClient}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                >
-                  <option value="particular">Particular</option>
-                  <option value="empresario/profesional">Empresario/Profesional</option>
-                </select>
+            {error && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                {error}
               </div>
+            )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre o Razón Social *
-                </label>
-                <input
-                  type="text"
-                  value={formData.cliente?.nombreORazonSocial || ''}
-                  onChange={(e) => handleInputChange('cliente.nombreORazonSocial', e.target.value)}
-                  disabled={!!selectedClient}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  required
-                />
+            {validationErrors.length > 0 && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3">
+                <p className="font-semibold text-red-800">Revisa estos datos antes de continuar:</p>
+                <ul className="mt-2 list-inside list-disc text-sm text-red-700">
+                  {validationErrors.map((validationError, index) => (
+                    <li key={index}>{validationError}</li>
+                  ))}
+                </ul>
               </div>
+            )}
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  NIF {formData.cliente?.tipo === 'empresario/profesional' && '*'}
-                </label>
-                <input
-                  type="text"
-                  value={formData.cliente?.NIF || ''}
-                  onChange={(e) => handleInputChange('cliente.NIF', e.target.value)}
-                  disabled={!!selectedClient}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  required={formData.cliente?.tipo === 'empresario/profesional'}
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  País *
-                </label>
-                <input
-                  type="text"
-                  value={formData.cliente?.pais || ''}
-                  onChange={(e) => handleInputChange('cliente.pais', e.target.value)}
-                  disabled={!!selectedClient}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                  required
-                />
-              </div>
-
-              {formData.tipoFactura === 'ordinaria' && (
+            <section className="space-y-6">
+              <div className="grid gap-4 md:grid-cols-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Domicilio {formData.cliente?.tipo === 'empresario/profesional' && '*'}
-                  </label>
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                    <input
-                      type="text"
-                      value={formData.cliente?.domicilio?.calle || ''}
-                      onChange={(e) => handleInputChange('cliente.domicilio.calle', e.target.value)}
-                      placeholder="Calle"
-                      disabled={!!selectedClient}
-                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                      required={formData.cliente?.tipo === 'empresario/profesional'}
+                  <label className="block text-sm font-medium text-gray-700">Contacto</label>
+                  <div className="mt-2">
+                    <ClientSearch
+                      onClientSelect={handleClientSelect}
+                      selectedClient={selectedClient}
+                      placeholder="Selecciona un cliente o busca por nombre, NIF o ciudad..."
+                      onAddNewClient={handleAddNewClient}
                     />
-                    <input
-                      type="text"
-                      value={formData.cliente?.domicilio?.codigoPostal || ''}
-                      onChange={(e) => handleInputChange('cliente.domicilio.codigoPostal', e.target.value)}
-                      placeholder="Código Postal"
-                      disabled={!!selectedClient}
-                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    />
-                    <input
-                      type="text"
-                      value={formData.cliente?.domicilio?.municipio || ''}
-                      onChange={(e) => handleInputChange('cliente.domicilio.municipio', e.target.value)}
-                      placeholder="Municipio"
-                      disabled={!!selectedClient}
-                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    />
-                    <input
-                      type="text"
-                      value={formData.cliente?.domicilio?.provincia || ''}
-                      onChange={(e) => handleInputChange('cliente.domicilio.provincia', e.target.value)}
-                      placeholder="Provincia"
-                      disabled={!!selectedClient}
-                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    />
-                    <input
-                      type="text"
-                      value={formData.cliente?.domicilio?.pais || ''}
-                      onChange={(e) => handleInputChange('cliente.domicilio.pais', e.target.value)}
-                      placeholder="País"
-                      disabled={!!selectedClient}
-                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                    />
+                    {selectedClient && (
+                      <div className="mt-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800">
+                        <p className="font-medium text-green-900">{selectedClient.nombreORazonSocial}</p>
+                        {selectedClient.NIF && <p>NIF: {selectedClient.NIF}</p>}
+                        {selectedClient.domicilio && (
+                          <p>
+                            {selectedClient.domicilio.calle}, {selectedClient.domicilio.municipio}
+                          </p>
+                        )}
+                      </div>
+                    )}
                   </div>
                 </div>
-              )}
-            </div>
-          </div>
-
-          {/* Campos específicos para rectificativa */}
-          {formData.tipoFactura === 'rectificativa' && (
-            <div className="bg-yellow-50 p-4 rounded-lg">
-              <h2 className="text-lg font-semibold mb-4">Datos de Rectificación</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Causa de Rectificación *
-                  </label>
-                  <select
-                    value={formData.causaRectificacion || 'error'}
-                    onChange={(e) => handleInputChange('causaRectificacion', e.target.value as CausaRectificacion)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                  >
-                    {Object.entries(CAUSAS_RECTIFICACION).map(([key, value]) => (
-                      <option key={key} value={key}>{value}</option>
-                    ))}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Facturas Rectificadas *
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700">Número de documento</label>
                   <input
                     type="text"
-                    value={formData.referenciasFacturasRectificadas?.join(', ') || ''}
-                    onChange={(e) => handleInputChange('referenciasFacturasRectificadas', e.target.value.split(',').map(s => s.trim()).filter(s => s))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                    placeholder="2024-A-00001, 2024-A-00002"
-                    required
+                    value={formData.numero || ''}
+                    onChange={e => handleInputChange('numero', e.target.value)}
+                    placeholder="F250001"
+                    className={`${baseInputClasses} mt-2`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Fecha de expedición</label>
+                  <input
+                    type="date"
+                    value={formData.fechaExpedicion || ''}
+                    onChange={e => handleInputChange('fechaExpedicion', e.target.value)}
+                    className={`${baseInputClasses} mt-2`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Fecha de vencimiento</label>
+                  <input
+                    type="date"
+                    value={formData.fechaVencimiento || ''}
+                    onChange={e => handleInputChange('fechaVencimiento', e.target.value)}
+                    className={`${baseInputClasses} mt-2`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Serie</label>
+                  <input
+                    type="text"
+                    value={formData.serie || ''}
+                    onChange={e => handleInputChange('serie', e.target.value)}
+                    placeholder="2024-A"
+                    className={`${baseInputClasses} mt-2`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Tipo de factura</label>
+                  <select
+                    value={formData.tipoFactura || 'ordinaria'}
+                    onChange={e => handleInputChange('tipoFactura', e.target.value as TipoFactura)}
+                    className={`${baseInputClasses} mt-2`}
+                  >
+                    <option value="ordinaria">Ordinaria (Completa)</option>
+                    <option value="simplificada">Simplificada</option>
+                    <option value="rectificativa">Rectificativa</option>
+                    <option value="emitida">Factura Emitida</option>
+                    <option value="recibida">Factura Recibida</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Lugar de emisión</label>
+                  <input
+                    type="text"
+                    value={formData.lugarEmision || ''}
+                    onChange={e => handleInputChange('lugarEmision', e.target.value)}
+                    placeholder="Madrid"
+                    className={`${baseInputClasses} mt-2`}
                   />
                 </div>
               </div>
-            </div>
-          )}
 
-          {/* Líneas de factura */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-lg font-semibold">Líneas de Factura</h2>
-              <button
-                type="button"
-                onClick={addLine}
-                className="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded-md text-sm font-medium"
-              >
-                + Añadir Línea
-              </button>
-            </div>
+            </section>
 
-            <div className="space-y-4">
-              {formData.lineas?.map((linea, index) => (
-                <div key={linea.id} className="bg-white p-4 border border-gray-200 rounded-md">
-                  <div className="grid grid-cols-1 md:grid-cols-6 gap-4">
-                    <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Descripción *
-                      </label>
+            {formData.tipoFactura === 'rectificativa' && (
+              <section className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-5">
+                <h2 className="text-lg font-semibold text-amber-900">Datos de rectificación</h2>
+                <div className="mt-4 grid gap-4 md:grid-cols-2">
+                  <div>
+                    <label className="block text-sm font-medium text-amber-900">Causa de rectificación</label>
+                    <select
+                      value={formData.causaRectificacion || 'error'}
+                      onChange={e =>
+                        handleInputChange('causaRectificacion', e.target.value as CausaRectificacion)
+                      }
+                      className={`${baseInputClasses} mt-2`}
+                    >
+                      {Object.entries(CAUSAS_RECTIFICACION).map(([key, value]) => (
+                        <option key={key} value={key}>
+                          {value}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-amber-900">
+                      Facturas rectificadas (separadas por coma)
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.referenciasFacturasRectificadas?.join(', ') || ''}
+                      onChange={e =>
+                        handleInputChange(
+                          'referenciasFacturasRectificadas',
+                          e.target.value
+                            .split(',')
+                            .map(value => value.trim())
+                            .filter(Boolean)
+                        )
+                      }
+                      placeholder="2024-A-00001, 2024-A-00002"
+                      className={`${baseInputClasses} mt-2`}
+                    />
+                  </div>
+                </div>
+              </section>
+            )}
+
+            <section>
+              <div className="flex flex-col gap-6 lg:flex-row">
+                <div className="flex-1 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+                  <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+                    <div>
+                      <h2 className="text-lg font-semibold text-gray-900">Conceptos</h2>
+                      <p className="text-sm text-gray-500">Detalla los servicios o productos incluidos.</p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={addLine}
+                      className="rounded-lg border border-blue-200 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
+                    >
+                      + Añadir línea
+                    </button>
+                  </div>
+
+                  <div className="overflow-x-auto">
+                    <table className="min-w-full divide-y divide-gray-200">
+                      <thead className="bg-gray-50">
+                        <tr className="text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                          <th className="px-5 py-3">Concepto</th>
+                          <th className="px-5 py-3">Descripción</th>
+                          <th className="px-5 py-3">Cantidad</th>
+                          <th className="px-5 py-3">Precio</th>
+                          <th className="px-5 py-3">Impuestos</th>
+                          <th className="px-5 py-3 text-right">Total</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-gray-100 bg-white">
+                        {(formData.lineas || []).map((linea, index) => (
+                          <tr key={linea.id} className="align-top">
+                            <td className="px-5 py-4">
+                              <input
+                                type="text"
+                                value={linea.descripcion}
+                                onChange={e => handleLineChange(index, 'descripcion', e.target.value)}
+                                placeholder="Escribe el concepto o usa @ para buscar"
+                                className={`${baseInputClasses} bg-white`}
+                              />
+                            </td>
+                            <td className="px-5 py-4">
+                              <textarea
+                                value={linea.descripcionDetallada || ''}
+                                onChange={e =>
+                                  handleLineChange(index, 'descripcionDetallada', e.target.value)
+                                }
+                                placeholder="Añade una descripción que aparecerá en la factura"
+                                rows={3}
+                                className={`${baseInputClasses} h-[96px] resize-none bg-white`}
+                              />
+                            </td>
+                            <td className="px-5 py-4">
+                              <input
+                                type="number"
+                                value={linea.cantidad}
+                                min={0}
+                                step={0.01}
+                                onChange={e =>
+                                  handleLineChange(index, 'cantidad', Number(e.target.value) || 0)
+                                }
+                                className={`${baseInputClasses} bg-white`}
+                              />
+                              <div className="mt-3 text-xs text-gray-500">
+                                Descuento (%)
+                                <input
+                                  type="number"
+                                  value={linea.descuentoPct || 0}
+                                  min={0}
+                                  max={100}
+                                  step={0.01}
+                                  onChange={e =>
+                                    handleLineChange(
+                                      index,
+                                      'descuentoPct',
+                                      Number(e.target.value) || 0
+                                    )
+                                  }
+                                  className={`${baseInputClasses} mt-1 bg-white`}
+                                />
+                              </div>
+                            </td>
+                            <td className="px-5 py-4">
+                              <input
+                                type="number"
+                                value={linea.precioUnitario}
+                                min={0}
+                                step={0.01}
+                                onChange={e =>
+                                  handleLineChange(index, 'precioUnitario', Number(e.target.value) || 0)
+                                }
+                                className={`${baseInputClasses} bg-white`}
+                              />
+                            </td>
+                            <td className="px-5 py-4">
+                              <div className="space-y-3">
+                                <select
+                                  value={linea.tipoIVA || 21}
+                                  onChange={e =>
+                                    handleLineChange(index, 'tipoIVA', Number(e.target.value) as TipoIVA)
+                                  }
+                                  disabled={linea.exenta || linea.inversionSujetoPasivo}
+                                  className={`${baseInputClasses} bg-white ${
+                                    linea.exenta || linea.inversionSujetoPasivo
+                                      ? 'cursor-not-allowed text-gray-500'
+                                      : ''
+                                  }`}
+                                >
+                                  {Object.entries(VAT_RATES).map(([rate, value]) => (
+                                    <option key={rate} value={rate}>
+                                      IVA {value}%
+                                    </option>
+                                  ))}
+                                </select>
+                                <div className="flex flex-wrap gap-3 text-xs text-gray-600">
+                                  <label className="flex items-center gap-2">
+                                    <input
+                                      type="checkbox"
+                                      checked={linea.exenta || false}
+                                      onChange={e => {
+                                        handleLineChange(index, 'exenta', e.target.checked)
+                                        if (e.target.checked) {
+                                          handleLineChange(index, 'inversionSujetoPasivo', false)
+                                        }
+                                      }}
+                                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    />
+                                    Exenta
+                                  </label>
+                                  <label className="flex items-center gap-2">
+                                    <input
+                                      type="checkbox"
+                                      checked={linea.inversionSujetoPasivo || false}
+                                      onChange={e => {
+                                        handleLineChange(index, 'inversionSujetoPasivo', e.target.checked)
+                                        if (e.target.checked) {
+                                          handleLineChange(index, 'exenta', false)
+                                        }
+                                      }}
+                                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                    />
+                                    ISP
+                                  </label>
+                                </div>
+                                {linea.exenta && (
+                                  <select
+                                    value={linea.motivoExencion || ''}
+                                    onChange={e =>
+                                      handleLineChange(
+                                        index,
+                                        'motivoExencion',
+                                        e.target.value as MotivoExencion
+                                      )
+                                    }
+                                    className={`${baseInputClasses} bg-white`}
+                                  >
+                                    <option value="">Selecciona motivo de exención</option>
+                                    {Object.entries(MOTIVOS_EXENCION).map(([key, value]) => (
+                                      <option key={key} value={key}>
+                                        {value}
+                                      </option>
+                                    ))}
+                                  </select>
+                                )}
+                                {!linea.exenta && !linea.inversionSujetoPasivo && (
+                                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                                    <span>Recargo equivalencia (%)</span>
+                                    <input
+                                      type="number"
+                                      value={linea.recargoEquivalenciaPct || 0}
+                                      min={0}
+                                      max={10}
+                                      step={0.1}
+                                      onChange={e =>
+                                        handleLineChange(
+                                          index,
+                                          'recargoEquivalenciaPct',
+                                          Number(e.target.value) || 0
+                                        )
+                                      }
+                                      className={`${baseInputClasses} w-20 bg-white`}
+                                    />
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-5 py-4">
+                              <div className="flex items-start justify-end gap-3">
+                                <div className="text-right">
+                                  <p className="text-sm font-semibold text-gray-900">
+                                    {formatCurrency(linea.totalLinea || 0)}
+                                  </p>
+                                  <p className="text-xs text-gray-500">
+                                    Base: {formatCurrency(linea.baseLinea || 0)}
+                                  </p>
+                                </div>
+                                {formData.lineas && formData.lineas.length > 1 && (
+                                  <button
+                                    type="button"
+                                    onClick={() => removeLine(index)}
+                                    className="rounded-full border border-transparent p-1 text-gray-400 hover:border-red-200 hover:text-red-600"
+                                  >
+                                    ✕
+                                  </button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="border-t border-gray-200 bg-gray-50 px-5 py-4">
+                    <div className="grid gap-3 text-sm text-gray-600 md:grid-cols-2">
+                      {DOCUMENT_OPTION_ITEMS.map(option => (
+                        <label key={option.key} className="flex items-center gap-2">
+                          <input
+                            type="checkbox"
+                            checked={documentOptions[option.key]}
+                            onChange={() => handleDocumentOptionToggle(option.key)}
+                            className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                          />
+                          <span className="flex items-center gap-2">
+                            {option.label}
+                            {option.badge && (
+                              <span
+                                className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                                  option.badge === 'Mejorar plan'
+                                    ? 'bg-purple-100 text-purple-700'
+                                    : 'bg-blue-100 text-blue-700'
+                                }`}
+                              >
+                                {option.badge}
+                              </span>
+                            )}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <div className="lg:w-80">
+                  <div className="rounded-2xl border border-gray-200 bg-white px-5 py-5">
+                    <div className="flex items-center justify-between text-sm text-gray-600">
+                      <span>Subtotal</span>
+                      <span>{formatCurrency(formData.totales?.baseImponibleTotal || 0)}</span>
+                    </div>
+                    <div className="mt-2 space-y-1 text-xs text-gray-500">
+                      {formData.totales?.basesPorTipo?.map((base, index) => (
+                        <div key={`${base.tipoIVA}-${index}`} className="flex justify-between">
+                          <span>Base {base.tipoIVA}%</span>
+                          <span>{formatCurrency(base.base)}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+                      <span>IVA</span>
+                      <span>{formatCurrency(formData.totales?.cuotaIVATotal || 0)}</span>
+                    </div>
+                    {formData.totales?.cuotaRETotal && formData.totales.cuotaRETotal > 0 && (
+                      <div className="mt-1 flex items-center justify-between text-sm text-gray-600">
+                        <span>Recargo equivalencia</span>
+                        <span>{formatCurrency(formData.totales.cuotaRETotal)}</span>
+                      </div>
+                    )}
+                    <button
+                      type="button"
+                      className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-700"
+                    >
+                      + Añadir descuento
+                    </button>
+                    <div className="mt-4 border-t border-gray-200 pt-4">
+                      <div className="flex items-center justify-between text-lg font-semibold text-gray-900">
+                        <span>Total</span>
+                        <span>{formatCurrency(formData.totales?.totalFactura || 0)}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {getMencionesObligatorias().length > 0 && (
+              <section className="rounded-2xl border border-yellow-200 bg-yellow-50 px-5 py-5">
+                <h3 className="text-lg font-semibold text-yellow-900">Menciones obligatorias</h3>
+                <div className="mt-3 space-y-2">
+                  {getMencionesObligatorias().map((mencion, index) => (
+                    <div
+                      key={index}
+                      className="rounded-lg border border-yellow-200 bg-white/80 px-3 py-2 text-sm text-yellow-900"
+                    >
+                      {mencion}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            <section className="grid gap-6 lg:grid-cols-2">
+              <div className="rounded-2xl border border-gray-200 bg-white">
+                <div className="border-b border-gray-200 px-5 py-4">
+                  <h2 className="text-lg font-semibold text-gray-900">Método de pago</h2>
+                  <p className="text-sm text-gray-500">
+                    Define cómo recibirá tu cliente el cobro de esta factura.
+                  </p>
+                </div>
+                <div className="space-y-4 px-5 py-5">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Selecciona una forma de pago
+                    </label>
+                    <select
+                      value={formData.formaPago || 'Transferencia bancaria'}
+                      onChange={e => handleInputChange('formaPago', e.target.value)}
+                      className={`${baseInputClasses} mt-2`}
+                    >
+                      {FORMAS_PAGO.map(forma => (
+                        <option key={forma} value={forma}>
+                          {forma}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">
+                      Mensaje para el cliente
+                    </label>
+                    <textarea
+                      value={formData.notas || ''}
+                      onChange={e => handleInputChange('notas', e.target.value)}
+                      rows={3}
+                      placeholder="Añade instrucciones adicionales visibles para el cliente..."
+                      className={`${baseInputClasses} mt-2 h-[96px] resize-none`}
+                    />
+                  </div>
+                  <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50 px-4 py-4">
+                    <p className="text-sm font-medium text-blue-900">
+                      Conecta tu pasarela de pago para cobrar online de forma rápida.
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-center gap-2 text-sm font-semibold text-blue-900">
+                      {PAYMENT_PROVIDERS.map(provider => (
+                        <span
+                          key={provider}
+                          className="rounded-full bg-white px-3 py-1 shadow-sm shadow-blue-100"
+                        >
+                          {provider}
+                        </span>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      className="mt-4 rounded-lg border border-blue-300 bg-white px-4 py-2 text-sm font-medium text-blue-700 hover:bg-blue-50"
+                    >
+                      Conectar
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="rounded-2xl border border-gray-200 bg-white">
+                <div className="border-b border-gray-200 px-5 py-4">
+                  <h2 className="text-lg font-semibold text-gray-900">Categorización</h2>
+                  <p className="text-sm text-gray-500">
+                    Clasifica la factura para tus informes contables internos.
+                  </p>
+                </div>
+                <div className="space-y-4 px-5 py-5">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Cuenta contable</label>
+                    <input
+                      type="text"
+                      value={categorization.account}
+                      onChange={e =>
+                        setCategorization(prev => ({
+                          ...prev,
+                          account: e.target.value
+                        }))
+                      }
+                      className={`${baseInputClasses} mt-2`}
+                    />
+                  </div>
+                  <label className="flex items-center gap-2 text-sm text-gray-600">
+                    <input
+                      type="checkbox"
+                      checked={categorization.accountByConcept}
+                      onChange={e =>
+                        setCategorization(prev => ({
+                          ...prev,
+                          accountByConcept: e.target.checked
+                        }))
+                      }
+                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                    />
+                    Cuenta por concepto
+                  </label>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700">Etiquetas</label>
                       <input
                         type="text"
-                        value={linea.descripcion}
-                        onChange={(e) => handleLineChange(index, 'descripcion', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                        required
+                        value={categorization.tags}
+                        onChange={e =>
+                          setCategorization(prev => ({
+                            ...prev,
+                            tags: e.target.value
+                          }))
+                        }
+                        placeholder="Añade etiquetas separadas por coma"
+                        className={`${baseInputClasses} mt-2`}
                       />
                     </div>
-
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Cantidad *
-                      </label>
+                      <label className="block text-sm font-medium text-gray-700">Etiquetas por concepto</label>
                       <input
-                        type="number"
-                        value={linea.cantidad}
-                        onChange={(e) => handleLineChange(index, 'cantidad', Number(e.target.value))}
-                        min="0"
-                        step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Precio Unitario *
-                      </label>
-                      <input
-                        type="number"
-                        value={linea.precioUnitario}
-                        onChange={(e) => handleLineChange(index, 'precioUnitario', Number(e.target.value))}
-                        min="0"
-                        step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                        required
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Descuento (%)
-                      </label>
-                      <input
-                        type="number"
-                        value={linea.descuentoPct || 0}
-                        onChange={(e) => handleLineChange(index, 'descuentoPct', Number(e.target.value))}
-                        min="0"
-                        max="100"
-                        step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                      />
-                    </div>
-
-                    <div className="flex items-end">
-                      <div className="flex-1">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                          Total
-                        </label>
-                        <div className="px-3 py-2 bg-gray-50 border border-gray-300 rounded-md text-sm font-medium">
-                          {formatCurrency(linea.totalLinea)}
-                        </div>
-                      </div>
-                      {formData.lineas && formData.lineas.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeLine(index)}
-                          className="ml-2 text-red-600 hover:text-red-800"
-                        >
-                          ✕
-                        </button>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Régimen de IVA por línea */}
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Tipo IVA
-                      </label>
-                      <select
-                        value={linea.tipoIVA || 21}
-                        onChange={(e) => handleLineChange(index, 'tipoIVA', Number(e.target.value) as TipoIVA)}
-                        disabled={linea.exenta || linea.inversionSujetoPasivo}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                      >
-                        {Object.entries(VAT_RATES).map(([rate, value]) => (
-                          <option key={rate} value={rate}>{value}%</option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={`exenta-${index}`}
-                        checked={linea.exenta || false}
-                        onChange={(e) => {
-                          handleLineChange(index, 'exenta', e.target.checked)
-                          if (e.target.checked) {
-                            handleLineChange(index, 'inversionSujetoPasivo', false)
-                          }
-                        }}
-                        className="mr-2"
-                      />
-                      <label htmlFor={`exenta-${index}`} className="text-sm font-medium text-gray-700">
-                        Exenta
-                      </label>
-                    </div>
-
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        id={`isp-${index}`}
-                        checked={linea.inversionSujetoPasivo || false}
-                        onChange={(e) => {
-                          handleLineChange(index, 'inversionSujetoPasivo', e.target.checked)
-                          if (e.target.checked) {
-                            handleLineChange(index, 'exenta', false)
-                          }
-                        }}
-                        className="mr-2"
-                      />
-                      <label htmlFor={`isp-${index}`} className="text-sm font-medium text-gray-700">
-                        ISP
-                      </label>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Recargo Eq. (%)
-                      </label>
-                      <input
-                        type="number"
-                        value={linea.recargoEquivalenciaPct || 0}
-                        onChange={(e) => handleLineChange(index, 'recargoEquivalenciaPct', Number(e.target.value))}
-                        min="0"
-                        max="10"
-                        step="0.1"
-                        disabled={linea.exenta || linea.inversionSujetoPasivo}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                        type="text"
+                        value={categorization.conceptTags}
+                        onChange={e =>
+                          setCategorization(prev => ({
+                            ...prev,
+                            conceptTags: e.target.value
+                          }))
+                        }
+                        placeholder="Marca conceptos específicos"
+                        className={`${baseInputClasses} mt-2`}
                       />
                     </div>
                   </div>
-
-                  {linea.exenta && (
-                    <div className="mt-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Motivo de Exención *
-                      </label>
-                      <select
-                        value={linea.motivoExencion || ''}
-                        onChange={(e) => handleLineChange(index, 'motivoExencion', e.target.value as MotivoExencion)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                        required
-                      >
-                        <option value="">Seleccionar motivo</option>
-                        {Object.entries(MOTIVOS_EXENCION).map(([key, value]) => (
-                          <option key={key} value={key}>{value}</option>
-                        ))}
-                      </select>
-                    </div>
-                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Nota interna</label>
+                    <textarea
+                      value={categorization.internalNote}
+                      onChange={e =>
+                        setCategorization(prev => ({
+                          ...prev,
+                          internalNote: e.target.value
+                        }))
+                      }
+                      rows={3}
+                      className={`${baseInputClasses} mt-2 h-[96px] resize-none`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700">Asignar usuarios</label>
+                    <input
+                      type="text"
+                      value={categorization.assignedUsers}
+                      onChange={e =>
+                        setCategorization(prev => ({
+                          ...prev,
+                          assignedUsers: e.target.value
+                        }))
+                      }
+                      placeholder="Busca usuarios internos"
+                      className={`${baseInputClasses} mt-2`}
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    className="text-sm font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    + Asignar a proyecto
+                  </button>
                 </div>
-              ))}
-            </div>
+              </div>
+            </section>
           </div>
 
-          {/* Totales */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h2 className="text-lg font-semibold mb-4">Totales</h2>
-            <div className="flex justify-end">
-              <div className="w-80 space-y-2">
-                {formData.totales?.basesPorTipo?.map((base, index) => (
-                  <div key={index} className="flex justify-between text-sm">
-                    <span className="text-gray-600">Base {base.tipoIVA}%:</span>
-                    <span className="text-black">{formatCurrency(base.base)}</span>
-                  </div>
-                ))}
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Base Imponible Total:</span>
-                  <span className="text-black">{formatCurrency(formData.totales?.baseImponibleTotal || 0)}</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600">Cuota IVA Total:</span>
-                  <span className="text-black">{formatCurrency(formData.totales?.cuotaIVATotal || 0)}</span>
-                </div>
-                {formData.totales?.cuotaRETotal && formData.totales.cuotaRETotal > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-600">Cuota RE Total:</span>
-                    <span className="text-black">{formatCurrency(formData.totales.cuotaRETotal)}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-lg font-bold border-t border-gray-300 pt-2">
-                  <span className="text-black">Total Factura:</span>
-                  <span className="text-black">{formatCurrency(formData.totales?.totalFactura || 0)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Menciones obligatorias */}
-          {getMencionesObligatorias().length > 0 && (
-            <div className="bg-yellow-50 p-4 rounded-lg">
-              <h2 className="text-lg font-semibold mb-4">Menciones Obligatorias</h2>
-              <div className="space-y-2">
-                {getMencionesObligatorias().map((mencion, index) => (
-                  <div key={index} className="text-sm text-gray-700 bg-yellow-100 p-2 rounded">
-                    {mencion}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Pago y notas */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h2 className="text-lg font-semibold mb-4">Pago y Notas</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Forma de Pago
-                </label>
-                <select
-                  value={formData.formaPago || 'Transferencia bancaria'}
-                  onChange={(e) => handleInputChange('formaPago', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                >
-                  {FORMAS_PAGO.map((forma) => (
-                    <option key={forma} value={forma}>{forma}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fecha de Vencimiento
-                </label>
-                <input
-                  type="date"
-                  value={formData.fechaVencimiento || ''}
-                  onChange={(e) => handleInputChange('fechaVencimiento', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Notas
-                </label>
-                <textarea
-                  value={formData.notas || ''}
-                  onChange={(e) => handleInputChange('notas', e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
-                  placeholder="Notas adicionales para la factura..."
-                />
-              </div>
-            </div>
-          </div>
-
-          {/* Form Actions */}
-          <div className="flex justify-end space-x-4">
+          <div className="flex flex-wrap justify-end gap-3 border-t border-gray-200 px-6 py-5">
             <button
               type="button"
               onClick={() => router.push('/facturacion')}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+              className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? 'Guardando...' : (isEdit ? 'Actualizar Factura' : 'Crear Factura')}
+              {loading ? 'Guardando...' : approveLabel}
             </button>
           </div>
         </form>
       </div>
 
-      {/* Add Client Modal */}
       <AddClientModal
         isOpen={showAddClientModal}
         onClose={() => setShowAddClientModal(false)}

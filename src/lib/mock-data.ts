@@ -31,6 +31,7 @@ export interface Cliente {
 export interface LineaFactura {
   id: number
   descripcion: string
+  descripcionDetallada?: string
   cantidad: number
   precioUnitario: number
   descuentoPct?: number
