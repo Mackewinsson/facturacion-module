@@ -316,7 +316,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
   return (
     <div className="max-w-6xl mx-auto p-4">
       <div className="bg-white rounded-lg shadow-sm border p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">
+        <h1 className="text-2xl font-bold text-black mb-6">
           {isEdit ? 'Editar Factura' : 'Nueva Factura'} - {formData.tipoFactura?.toUpperCase()}
         </h1>
 
@@ -368,7 +368,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                 <select
                   value={formData.tipoFactura || 'ordinaria'}
                   onChange={(e) => handleInputChange('tipoFactura', e.target.value as TipoFactura)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                 >
                   <option value="ordinaria">Ordinaria (Completa)</option>
                   <option value="simplificada">Simplificada</option>
@@ -386,7 +386,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   type="text"
                   value={formData.serie || ''}
                   onChange={(e) => handleInputChange('serie', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                   placeholder="2024-A"
                 />
               </div>
@@ -399,7 +399,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   type="text"
                   value={formData.numero || ''}
                   onChange={(e) => handleInputChange('numero', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                   placeholder="00001"
                 />
               </div>
@@ -412,7 +412,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   type="date"
                   value={formData.fechaExpedicion || ''}
                   onChange={(e) => handleInputChange('fechaExpedicion', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                   required
                 />
               </div>
@@ -456,7 +456,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   value={formData.cliente?.tipo || 'particular'}
                   onChange={(e) => handleInputChange('cliente.tipo', e.target.value as TipoCliente)}
                   disabled={!!selectedClient}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 >
                   <option value="particular">Particular</option>
                   <option value="empresario/profesional">Empresario/Profesional</option>
@@ -472,7 +472,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   value={formData.cliente?.nombreORazonSocial || ''}
                   onChange={(e) => handleInputChange('cliente.nombreORazonSocial', e.target.value)}
                   disabled={!!selectedClient}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   required
                 />
               </div>
@@ -486,7 +486,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   value={formData.cliente?.NIF || ''}
                   onChange={(e) => handleInputChange('cliente.NIF', e.target.value)}
                   disabled={!!selectedClient}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   required={formData.cliente?.tipo === 'empresario/profesional'}
                 />
               </div>
@@ -500,7 +500,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   value={formData.cliente?.pais || ''}
                   onChange={(e) => handleInputChange('cliente.pais', e.target.value)}
                   disabled={!!selectedClient}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   required
                 />
               </div>
@@ -517,7 +517,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                       onChange={(e) => handleInputChange('cliente.domicilio.calle', e.target.value)}
                       placeholder="Calle"
                       disabled={!!selectedClient}
-                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                       required={formData.cliente?.tipo === 'empresario/profesional'}
                     />
                     <input
@@ -526,7 +526,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                       onChange={(e) => handleInputChange('cliente.domicilio.codigoPostal', e.target.value)}
                       placeholder="Código Postal"
                       disabled={!!selectedClient}
-                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     />
                     <input
                       type="text"
@@ -534,7 +534,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                       onChange={(e) => handleInputChange('cliente.domicilio.municipio', e.target.value)}
                       placeholder="Municipio"
                       disabled={!!selectedClient}
-                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     />
                     <input
                       type="text"
@@ -542,7 +542,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                       onChange={(e) => handleInputChange('cliente.domicilio.provincia', e.target.value)}
                       placeholder="Provincia"
                       disabled={!!selectedClient}
-                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     />
                     <input
                       type="text"
@@ -550,7 +550,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                       onChange={(e) => handleInputChange('cliente.domicilio.pais', e.target.value)}
                       placeholder="País"
                       disabled={!!selectedClient}
-                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     />
                   </div>
                 </div>
@@ -570,7 +570,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   <select
                     value={formData.causaRectificacion || 'error'}
                     onChange={(e) => handleInputChange('causaRectificacion', e.target.value as CausaRectificacion)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                   >
                     {Object.entries(CAUSAS_RECTIFICACION).map(([key, value]) => (
                       <option key={key} value={key}>{value}</option>
@@ -586,7 +586,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                     type="text"
                     value={formData.referenciasFacturasRectificadas?.join(', ') || ''}
                     onChange={(e) => handleInputChange('referenciasFacturasRectificadas', e.target.value.split(',').map(s => s.trim()).filter(s => s))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                     placeholder="2024-A-00001, 2024-A-00002"
                     required
                   />
@@ -620,7 +620,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                         type="text"
                         value={linea.descripcion}
                         onChange={(e) => handleLineChange(index, 'descripcion', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                         required
                       />
                     </div>
@@ -635,7 +635,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                         onChange={(e) => handleLineChange(index, 'cantidad', Number(e.target.value))}
                         min="0"
                         step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                         required
                       />
                     </div>
@@ -650,7 +650,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                         onChange={(e) => handleLineChange(index, 'precioUnitario', Number(e.target.value))}
                         min="0"
                         step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                         required
                       />
                     </div>
@@ -666,7 +666,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                         min="0"
                         max="100"
                         step="0.01"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                       />
                     </div>
 
@@ -701,7 +701,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                         value={linea.tipoIVA || 21}
                         onChange={(e) => handleLineChange(index, 'tipoIVA', Number(e.target.value) as TipoIVA)}
                         disabled={linea.exenta || linea.inversionSujetoPasivo}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                       >
                         {Object.entries(VAT_RATES).map(([rate, value]) => (
                           <option key={rate} value={rate}>{value}%</option>
@@ -757,7 +757,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                         max="10"
                         step="0.1"
                         disabled={linea.exenta || linea.inversionSujetoPasivo}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                       />
                     </div>
                   </div>
@@ -770,7 +770,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                       <select
                         value={linea.motivoExencion || ''}
                         onChange={(e) => handleLineChange(index, 'motivoExencion', e.target.value as MotivoExencion)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                         required
                       >
                         <option value="">Seleccionar motivo</option>
@@ -793,26 +793,26 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                 {formData.totales?.basesPorTipo?.map((base, index) => (
                   <div key={index} className="flex justify-between text-sm">
                     <span className="text-gray-600">Base {base.tipoIVA}%:</span>
-                    <span className="text-gray-900">{formatCurrency(base.base)}</span>
+                    <span className="text-black">{formatCurrency(base.base)}</span>
                   </div>
                 ))}
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Base Imponible Total:</span>
-                  <span className="text-gray-900">{formatCurrency(formData.totales?.baseImponibleTotal || 0)}</span>
+                  <span className="text-black">{formatCurrency(formData.totales?.baseImponibleTotal || 0)}</span>
                 </div>
                 <div className="flex justify-between text-sm">
                   <span className="text-gray-600">Cuota IVA Total:</span>
-                  <span className="text-gray-900">{formatCurrency(formData.totales?.cuotaIVATotal || 0)}</span>
+                  <span className="text-black">{formatCurrency(formData.totales?.cuotaIVATotal || 0)}</span>
                 </div>
                 {formData.totales?.cuotaRETotal && formData.totales.cuotaRETotal > 0 && (
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Cuota RE Total:</span>
-                    <span className="text-gray-900">{formatCurrency(formData.totales.cuotaRETotal)}</span>
+                    <span className="text-black">{formatCurrency(formData.totales.cuotaRETotal)}</span>
                   </div>
                 )}
                 <div className="flex justify-between text-lg font-bold border-t border-gray-300 pt-2">
-                  <span className="text-gray-900">Total Factura:</span>
-                  <span className="text-gray-900">{formatCurrency(formData.totales?.totalFactura || 0)}</span>
+                  <span className="text-black">Total Factura:</span>
+                  <span className="text-black">{formatCurrency(formData.totales?.totalFactura || 0)}</span>
                 </div>
               </div>
             </div>
@@ -843,7 +843,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                 <select
                   value={formData.formaPago || 'Transferencia bancaria'}
                   onChange={(e) => handleInputChange('formaPago', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                 >
                   {FORMAS_PAGO.map((forma) => (
                     <option key={forma} value={forma}>{forma}</option>
@@ -859,7 +859,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   type="date"
                   value={formData.fechaVencimiento || ''}
                   onChange={(e) => handleInputChange('fechaVencimiento', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                 />
               </div>
 
@@ -871,7 +871,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   value={formData.notas || ''}
                   onChange={(e) => handleInputChange('notas', e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
                   placeholder="Notas adicionales para la factura..."
                 />
               </div>

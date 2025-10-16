@@ -162,7 +162,7 @@ export default function ClientSearch({ onClientSelect, selectedClient, placehold
           onChange={handleInputChange}
           onFocus={() => setIsOpen(searchTerm.trim() !== '')}
           placeholder={placeholder}
-          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10 text-gray-900 bg-white"
+          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10 text-black bg-white"
         />
         {selectedClient && (
           <button
@@ -182,7 +182,7 @@ export default function ClientSearch({ onClientSelect, selectedClient, placehold
         <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
           {filteredClients.length === 0 ? (
             <div className="px-4 py-3">
-              <div className="text-gray-900 text-sm mb-3">
+              <div className="text-black text-sm mb-3">
                 {searchTerm.trim() === '' ? 'Escribe para buscar clientes...' : 'No se encontraron clientes'}
               </div>
               {searchTerm.trim() !== '' && onAddNewClient && (
@@ -210,7 +210,7 @@ export default function ClientSearch({ onClientSelect, selectedClient, placehold
                 >
                   <div className="flex justify-between items-start">
                     <div className="flex-1">
-                      <div className="font-medium text-gray-900">
+                      <div className="font-medium text-black">
                         {client.nombreORazonSocial}
                       </div>
                       <div className="text-sm text-gray-700">
