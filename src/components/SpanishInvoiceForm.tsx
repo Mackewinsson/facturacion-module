@@ -51,13 +51,14 @@ const getEmisorData = () => {
 type DocumentOptionKey = 'customFields' | 'documentText' | 'finalMessage' | 'portalQR'
 
 const DOCUMENT_OPTION_ITEMS: Array<{ key: DocumentOptionKey; label: string; badge?: 'Mejorar plan' | 'Nuevo' }> = [
-  { key: 'customFields', label: 'Campos personalizados', badge: 'Mejorar plan' },
-  { key: 'documentText', label: 'Añadir texto en el documento' },
-  { key: 'finalMessage', label: 'Añadir mensaje al final' },
-  { key: 'portalQR', label: 'Mostrar QR de acceso al Portal', badge: 'Nuevo' }
+  // { key: 'customFields', label: 'Campos personalizados', badge: 'Mejorar plan' },
+  // { key: 'documentText', label: 'Añadir texto en el documento' },
+  // { key: 'finalMessage', label: 'Añadir mensaje al final' },
+  // { key: 'portalQR', label: 'Mostrar QR de acceso al Portal', badge: 'Nuevo' }
 ]
 
-const PAYMENT_PROVIDERS = ['Stripe', 'PayPal', 'Square', 'GoCardless']
+// Payment providers constant commented out
+// const PAYMENT_PROVIDERS = ['Stripe', 'PayPal', 'Square', 'GoCardless']
 
 export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = false }: SpanishInvoiceFormProps) {
   const router = useRouter()
@@ -124,15 +125,16 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
     finalMessage: false,
     portalQR: false
   })
-  const [categorization, setCategorization] = useState({
-    account: '70000000 Ventas de mercaderías',
-    accountByConcept: false,
-    tags: '',
-    conceptTags: false,
-    internalNote: '',
-    assignedUsers: '',
-    project: ''
-  })
+  // Categorization state commented out
+  // const [categorization, setCategorization] = useState({
+  //   account: '70000000 Ventas de mercaderías',
+  //   accountByConcept: false,
+  //   tags: '',
+  //   conceptTags: false,
+  //   internalNote: '',
+  //   assignedUsers: '',
+  //   project: ''
+  // })
 
   useEffect(() => {
     if (initialData) {
@@ -411,12 +413,13 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
     return generateMencionesObligatorias(formData)
   }
 
-  const handleDocumentOptionToggle = (key: DocumentOptionKey) => {
-    setDocumentOptions(prev => ({
-      ...prev,
-      [key]: !prev[key]
-    }))
-  }
+  // Document option toggle function commented out
+  // const handleDocumentOptionToggle = (key: DocumentOptionKey) => {
+  //   setDocumentOptions(prev => ({
+  //     ...prev,
+  //     [key]: !prev[key]
+  //   }))
+  // }
 
   const approveLabel = isEdit ? 'Guardar cambios' : 'Aprobar'
   const baseInputClasses =
@@ -629,21 +632,20 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
             )}
 
             <section>
-              <div className="flex flex-col gap-6 lg:flex-row">
-                <div className="flex-1 overflow-hidden rounded-2xl border border-gray-200 bg-white">
-                  <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
-                    <div>
-                      <h2 className="text-lg font-semibold text-gray-900">Conceptos</h2>
-                      <p className="text-sm text-gray-500">Detalla los servicios o productos incluidos.</p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={addLine}
-                      className="rounded-lg border border-blue-200 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
-                    >
-                      + Añadir línea
-                    </button>
+              <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
+                <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+                  <div>
+                    <h2 className="text-lg font-semibold text-gray-900">Conceptos</h2>
+                    <p className="text-sm text-gray-500">Detalla los servicios o productos incluidos.</p>
                   </div>
+                  <button
+                    type="button"
+                    onClick={addLine}
+                    className="rounded-lg border border-blue-200 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
+                  >
+                    + Añadir línea
+                  </button>
+                </div>
 
                   <div className="overflow-x-auto">
                     <table className="min-w-full divide-y divide-gray-200">
@@ -841,6 +843,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                     </table>
                   </div>
 
+                  {/* Document options section commented out
                   <div className="border-t border-gray-200 bg-gray-50 px-5 py-4">
                     <div className="grid gap-3 text-sm text-gray-600 md:grid-cols-2">
                       {DOCUMENT_OPTION_ITEMS.map(option => (
@@ -869,44 +872,46 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                       ))}
                     </div>
                   </div>
-                </div>
+                  */}
+              </div>
+            </section>
 
-                <div className="lg:w-80">
-                  <div className="rounded-2xl border border-gray-200 bg-white px-5 py-5">
-                    <div className="flex items-center justify-between text-sm text-gray-600">
-                      <span>Subtotal</span>
-                      <span>{formatCurrency(formData.totales?.baseImponibleTotal || 0)}</span>
+            <section>
+              <div className="rounded-2xl border border-gray-200 bg-white px-5 py-5">
+                <div className="flex items-center justify-between text-sm text-gray-600">
+                  <span>Subtotal</span>
+                  <span>{formatCurrency(formData.totales?.baseImponibleTotal || 0)}</span>
+                </div>
+                <div className="mt-2 space-y-1 text-xs text-gray-500">
+                  {formData.totales?.basesPorTipo?.map((base, index) => (
+                    <div key={`${base.tipoIVA}-${index}`} className="flex justify-between">
+                      <span>Base {base.tipoIVA}%</span>
+                      <span>{formatCurrency(base.base)}</span>
                     </div>
-                    <div className="mt-2 space-y-1 text-xs text-gray-500">
-                      {formData.totales?.basesPorTipo?.map((base, index) => (
-                        <div key={`${base.tipoIVA}-${index}`} className="flex justify-between">
-                          <span>Base {base.tipoIVA}%</span>
-                          <span>{formatCurrency(base.base)}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
-                      <span>IVA</span>
-                      <span>{formatCurrency(formData.totales?.cuotaIVATotal || 0)}</span>
-                    </div>
-                    {formData.totales?.cuotaRETotal && formData.totales.cuotaRETotal > 0 && (
-                      <div className="mt-1 flex items-center justify-between text-sm text-gray-600">
-                        <span>Recargo equivalencia</span>
-                        <span>{formatCurrency(formData.totales.cuotaRETotal)}</span>
-                      </div>
-                    )}
-                    <button
-                      type="button"
-                      className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-700"
-                    >
-                      + Añadir descuento
-                    </button>
-                    <div className="mt-4 border-t border-gray-200 pt-4">
-                      <div className="flex items-center justify-between text-lg font-semibold text-gray-900">
-                        <span>Total</span>
-                        <span>{formatCurrency(formData.totales?.totalFactura || 0)}</span>
-                      </div>
-                    </div>
+                  ))}
+                </div>
+                <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+                  <span>IVA</span>
+                  <span>{formatCurrency(formData.totales?.cuotaIVATotal || 0)}</span>
+                </div>
+                {formData.totales?.cuotaRETotal && formData.totales.cuotaRETotal > 0 && (
+                  <div className="mt-1 flex items-center justify-between text-sm text-gray-600">
+                    <span>Recargo equivalencia</span>
+                    <span>{formatCurrency(formData.totales.cuotaRETotal)}</span>
+                  </div>
+                )}
+                {/* Add discount button commented out
+                <button
+                  type="button"
+                  className="mt-4 text-sm font-medium text-blue-600 hover:text-blue-700"
+                >
+                  + Añadir descuento
+                </button>
+                */}
+                <div className="mt-4 border-t border-gray-200 pt-4">
+                  <div className="flex items-center justify-between text-lg font-semibold text-gray-900">
+                    <span>Total</span>
+                    <span>{formatCurrency(formData.totales?.totalFactura || 0)}</span>
                   </div>
                 </div>
               </div>
@@ -965,6 +970,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                       className={`${baseInputClasses} mt-2 h-[96px] resize-none`}
                     />
                   </div>
+                  {/* Payment gateway connection section commented out
                   <div className="rounded-xl border border-dashed border-blue-200 bg-blue-50 px-4 py-4">
                     <p className="text-sm font-medium text-blue-900">
                       Conecta tu pasarela de pago para cobrar online de forma rápida.
@@ -986,9 +992,11 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                       Conectar
                     </button>
                   </div>
+                  */}
                 </div>
               </div>
 
+              {/* Categorización section commented out
               <div className="rounded-2xl border border-gray-200 bg-white">
                 <div className="border-b border-gray-200 px-5 py-4">
                   <h2 className="text-lg font-semibold text-gray-900">Categorización</h2>
@@ -1094,6 +1102,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   </button>
                 </div>
               </div>
+              */}
             </section>
           </div>
 
