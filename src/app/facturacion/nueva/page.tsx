@@ -9,15 +9,16 @@ export default function NuevaFacturaPage() {
   const router = useRouter()
   const { isAuthenticated } = useAuthStore()
 
-  useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login')
-    }
-  }, [isAuthenticated, router])
+  // Authentication disabled for development
+  // useEffect(() => {
+  //   if (!isAuthenticated) {
+  //     router.push('/login')
+  //   }
+  // }, [isAuthenticated, router])
 
-  if (!isAuthenticated) {
-    return null
-  }
+  // if (!isAuthenticated) {
+  //   return null
+  // }
 
   return (
     <LayoutWithSidebar>

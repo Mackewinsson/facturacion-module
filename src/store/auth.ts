@@ -25,9 +25,9 @@ export const useAuthStore = create<AuthStore>()(
   persist(
     (set) => ({
       user: null,
-      isAuthenticated: false,
+      isAuthenticated: true, // Always authenticated for development
       login: (user) => set({ user, isAuthenticated: true }),
-      logout: () => set({ user: null, isAuthenticated: false }),
+      logout: () => set({ user: null, isAuthenticated: true }), // Keep authenticated even after logout
     }),
     {
       name: 'auth-storage',

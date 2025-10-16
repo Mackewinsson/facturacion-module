@@ -14,10 +14,11 @@ export default function EditarFacturaPage({ params }: { params: { id: string } }
   const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!isAuthenticated) {
-      router.push('/login')
-      return
-    }
+    // Authentication disabled for development
+    // if (!isAuthenticated) {
+    //   router.push('/login')
+    //   return
+    // }
     loadInvoice()
   }, [isAuthenticated, router, params.id])
 
@@ -36,9 +37,10 @@ export default function EditarFacturaPage({ params }: { params: { id: string } }
     }
   }
 
-  if (!isAuthenticated) {
-    return null
-  }
+  // Authentication disabled for development
+  // if (!isAuthenticated) {
+  //   return null
+  // }
 
   if (loading) {
     return (
