@@ -45,7 +45,7 @@ export default function EditarFacturaPage({ params }: { params: { id: string } }
   if (loading) {
     return (
       <LayoutWithSidebar>
-        <div className="h-screen bg-gray-50 flex items-center justify-center">
+        <div className="h-screen bg-background flex items-center justify-center">
           <div className="text-gray-500">Cargando factura...</div>
         </div>
       </LayoutWithSidebar>
@@ -55,7 +55,7 @@ export default function EditarFacturaPage({ params }: { params: { id: string } }
   if (error) {
     return (
       <LayoutWithSidebar>
-        <div className="h-screen bg-gray-50 flex items-center justify-center">
+        <div className="h-screen bg-background flex items-center justify-center">
           <div className="text-center">
             <div className="text-red-600 mb-4">{error}</div>
             <button
@@ -73,7 +73,7 @@ export default function EditarFacturaPage({ params }: { params: { id: string } }
   if (!invoiceData) {
     return (
       <LayoutWithSidebar>
-        <div className="h-screen bg-gray-50 flex items-center justify-center">
+        <div className="h-screen bg-background flex items-center justify-center">
           <div className="text-center">
             <div className="text-gray-500 mb-4">Factura no encontrada</div>
             <button
@@ -90,7 +90,7 @@ export default function EditarFacturaPage({ params }: { params: { id: string } }
 
   return (
     <LayoutWithSidebar>
-      <div className="bg-gray-50">
+      <div className="bg-background">
         <SpanishInvoiceForm 
           initialData={invoiceData}
           invoiceId={parseInt(params.id)}

@@ -22,7 +22,7 @@ export default function NuevaFacturaPage() {
 
   return (
     <LayoutWithSidebar>
-      <div className="bg-gray-50">
+      <div className="bg-background">
         <SpanishInvoiceForm />
       </div>
     </LayoutWithSidebar>

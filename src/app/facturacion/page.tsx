@@ -69,12 +69,12 @@ export default function FacturacionPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'DRAFT': return 'bg-gray-100 text-gray-800'
-      case 'SENT': return 'bg-blue-100 text-blue-800'
-      case 'PAID': return 'bg-green-100 text-green-800'
-      case 'OVERDUE': return 'bg-red-100 text-red-800'
-      case 'CANCELLED': return 'bg-yellow-100 text-yellow-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'DRAFT': return 'bg-secondary text-secondary-foreground'
+      case 'SENT': return 'bg-info/20 text-info'
+      case 'PAID': return 'bg-success/20 text-success'
+      case 'OVERDUE': return 'bg-error/20 text-error'
+      case 'CANCELLED': return 'bg-warning/20 text-warning'
+      default: return 'bg-secondary text-secondary-foreground'
     }
   }
 
@@ -155,18 +155,18 @@ export default function FacturacionPage() {
 
   return (
     <LayoutWithSidebar>
-      <div className="bg-gray-50">
+      <div className="bg-background">
         <div className="max-w-7xl mx-auto p-4">
         {/* Header */}
         <div className="mb-4 sm:mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
             <div>
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Facturación</h1>
-              <p className="text-sm sm:text-base text-gray-600">Gestiona tus facturas y clientes</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Facturación</h1>
+              <p className="text-sm sm:text-base text-muted-foreground">Gestiona tus facturas y clientes</p>
             </div>
             <button
               onClick={handleCreateInvoice}
-              className="mt-4 sm:mt-0 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              className="mt-4 sm:mt-0 bg-accent hover:bg-accent/90 text-accent-foreground px-4 py-2 rounded-md text-sm font-medium"
             >
               + Nueva Factura
             </button>
@@ -174,7 +174,7 @@ export default function FacturacionPage() {
         </div>
 
         {/* Filters and Search */}
-        <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-6">
+        <div className="bg-card rounded-lg shadow-sm border border-border p-4 sm:p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-4">
             {/* Search */}
             <form onSubmit={handleSearch} className="flex-1">
@@ -184,11 +184,11 @@ export default function FacturacionPage() {
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar por número, cliente, fecha, importes, dirección, estado, tipo..."
-                  className="flex-1 px-3 py-2 border-2 border-gray-400 bg-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-base text-gray-900 placeholder-gray-600"
+                  className="flex-1 px-3 py-2 border-2 border-input-border bg-input rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-base text-foreground placeholder-muted-foreground"
                 />
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-base font-medium"
+                  className="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 text-base font-medium"
                 >
                   Buscar
                 </button>
@@ -207,8 +207,8 @@ export default function FacturacionPage() {
                   onClick={() => setShowFilters(!showFilters)}
                   className={`px-4 py-2 rounded-md text-base font-medium ${
                     showFilters 
-                      ? 'bg-blue-600 text-white' 
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      ? 'bg-accent text-accent-foreground' 
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   }`}
                   title="Filtros avanzados"
                 >
@@ -225,8 +225,8 @@ export default function FacturacionPage() {
                   onClick={() => handleStatusFilter(status)}
                   className={`px-3 py-2 rounded-md text-sm font-medium ${
                     statusFilter === status
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                      ? 'bg-accent text-accent-foreground'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   }`}
                 >
                   {status === 'ALL' ? 'Todas' : getStatusText(status)}
@@ -238,12 +238,12 @@ export default function FacturacionPage() {
 
         {/* Advanced Filters Panel */}
         {showFilters && (
-          <div className="bg-white rounded-lg shadow-sm border p-4 sm:p-6 mb-6">
+          <div className="bg-card rounded-lg shadow-sm border border-border p-4 sm:p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-gray-900">Filtros Avanzados</h3>
+              <h3 className="text-lg font-semibold text-card-foreground">Filtros Avanzados</h3>
               <button
                 onClick={clearFilters}
-                className="text-sm text-gray-500 hover:text-gray-700"
+                className="text-sm text-muted-foreground hover:text-foreground"
               >
                 Limpiar todos
               </button>
@@ -349,7 +349,7 @@ export default function FacturacionPage() {
               </button>
               <button
                 onClick={applyFilters}
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium"
+                className="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 text-sm font-medium"
               >
                 Aplicar Filtros
               </button>
@@ -391,7 +391,7 @@ export default function FacturacionPage() {
               <div className="text-gray-500 mb-4">No se encontraron facturas</div>
               <button
                 onClick={handleCreateInvoice}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+                className="bg-accent hover:bg-accent/90 text-accent-foreground px-4 py-2 rounded-md text-sm font-medium"
               >
                 Crear primera factura
               </button>

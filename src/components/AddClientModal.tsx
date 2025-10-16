@@ -143,13 +143,13 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
       className="fixed inset-0 flex items-center justify-center z-50"
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
     >
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-card rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div className="p-6">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-gray-900">Nuevo contacto</h2>
+            <h2 className="text-xl font-semibold text-card-foreground">Nuevo contacto</h2>
             <button
               onClick={handleClose}
-              className="text-gray-400 hover:text-gray-600"
+              className="text-muted-foreground hover:text-foreground"
             >
               <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -159,15 +159,15 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
 
           {/* Contact Type Toggle */}
           <div className="mb-6">
-            <label className="block text-sm font-medium text-gray-700 mb-3">Este contacto es...</label>
+            <label className="block text-sm font-medium text-card-foreground mb-3">Este contacto es...</label>
             <div className="flex space-x-2">
               <button
                 type="button"
                 onClick={() => handleContactTypeChange('empresa')}
                 className={`px-4 py-2 rounded-md font-medium ${
                   contactType === 'empresa'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    ? 'bg-accent text-accent-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                 }`}
               >
                 Empresa
@@ -177,8 +177,8 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                 onClick={() => handleContactTypeChange('persona')}
                 className={`px-4 py-2 rounded-md font-medium ${
                   contactType === 'persona'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                    ? 'bg-accent text-accent-foreground'
+                    : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                 }`}
               >
                 Persona
@@ -188,7 +188,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
 
           {/* Navigation Tabs */}
           {/* <div className="mb-6">
-            <div className="border-b border-gray-200">
+            <div className="border-b border-border">
               <nav className="-mb-px flex space-x-8">
                 {tabs.map((tab) => (
                   <button
@@ -196,8 +196,8 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                     onClick={() => setActiveTab(tab.id as TabType)}
                     className={`py-2 px-1 border-b-2 font-medium text-sm ${
                       activeTab === tab.id
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                        ? 'border-accent text-accent'
+                        : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
                     }`}
                   >
                     {tab.label}
@@ -223,67 +223,67 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                 {/* Left Column */}
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Nombre</label>
                     <input
                       type="text"
                       value={formData.nombreORazonSocial}
                       onChange={(e) => handleInputChange('nombreORazonSocial', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Nombre"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Dirección</label>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Dirección</label>
                     <input
                       type="text"
                       value={formData.domicilio.calle}
                       onChange={(e) => handleInputChange('domicilio.calle', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Dirección"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Población</label>
+                      <label className="block text-sm font-medium text-card-foreground mb-2">Población</label>
                       <input
                         type="text"
                         value={formData.domicilio.municipio}
                         onChange={(e) => handleInputChange('domicilio.municipio', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                        className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                         placeholder="Población"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Código postal</label>
+                      <label className="block text-sm font-medium text-card-foreground mb-2">Código postal</label>
                       <input
                         type="text"
                         value={formData.domicilio.codigoPostal}
                         onChange={(e) => handleInputChange('domicilio.codigoPostal', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                        className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                         placeholder="Código postal"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Provincia</label>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Provincia</label>
                     <input
                       type="text"
                       value={formData.domicilio.provincia}
                       onChange={(e) => handleInputChange('domicilio.provincia', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Provincia"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">País</label>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">País</label>
                     <select
                       value={formData.domicilio.pais}
                       onChange={(e) => handleInputChange('domicilio.pais', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                     >
                       <option value="España">España</option>
                       <option value="Francia">Francia</option>
@@ -293,32 +293,32 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Nombre comercial</label>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Nombre comercial</label>
                     <input
                       type="text"
                       value={formData.nombreComercial}
                       onChange={(e) => handleInputChange('nombreComercial', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Nombre comercial"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Identificación VAT</label>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Identificación VAT</label>
                     <input
                       type="text"
                       value={formData.identificacionVAT}
                       onChange={(e) => handleInputChange('identificacionVAT', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Identificación VAT"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Asignar usuarios</label>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Asignar usuarios</label>
                     <input
                       type="text"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Usuarios"
                     />
                   </div>
@@ -327,78 +327,78 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                 {/* Right Column */}
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">NIF del contacto</label>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">NIF del contacto</label>
                     <input
                       type="text"
                       value={formData.NIF}
                       onChange={(e) => handleInputChange('NIF', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="NIF del contacto"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email</label>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Email</label>
                     <input
                       type="email"
                       value={formData.email}
                       onChange={(e) => handleInputChange('email', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Email"
                     />
                   </div>
 
                   <div className="grid grid-cols-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Teléfono</label>
+                      <label className="block text-sm font-medium text-card-foreground mb-2">Teléfono</label>
                       <input
                         type="tel"
                         value={formData.telefono}
                         onChange={(e) => handleInputChange('telefono', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                        className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                         placeholder="Teléfono"
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Móvil</label>
+                      <label className="block text-sm font-medium text-card-foreground mb-2">Móvil</label>
                       <input
                         type="tel"
                         value={formData.movil}
                         onChange={(e) => handleInputChange('movil', e.target.value)}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                        className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                         placeholder="Móvil"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Website</label>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Website</label>
                     <input
                       type="url"
                       value={formData.website}
                       onChange={(e) => handleInputChange('website', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Website"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tags</label>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Tags</label>
                     <input
                       type="text"
                       value={formData.tags}
                       onChange={(e) => handleInputChange('tags', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Tags"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Tipo de contacto</label>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Tipo de contacto</label>
                     <select
                       value={formData.tipoContacto}
                       onChange={(e) => handleInputChange('tipoContacto', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-black"
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                     >
                       <option value="Sin especificar">Sin especificar</option>
                       <option value="Cliente">Cliente</option>
@@ -411,34 +411,34 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
             )}
 
             {/* {activeTab === 'cuentas' && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-muted-foreground">
                 <p>Contenido de la pestaña Cuentas</p>
               </div>
             )}
 
             {activeTab === 'preferencias' && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-muted-foreground">
                 <p>Contenido de la pestaña Preferencias</p>
               </div>
             )}
 
             {activeTab === 'contabilidad' && (
-              <div className="text-center py-8 text-gray-500">
+              <div className="text-center py-8 text-muted-foreground">
                 <p>Contenido de la pestaña Contabilidad</p>
               </div>
             )} */}
 
-            <div className="flex justify-end gap-3 pt-6 mt-6 border-t border-gray-200">
+            <div className="flex justify-end gap-3 pt-6 mt-6 border-t border-border">
               <button
                 type="button"
                 onClick={handleClose}
-                className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 font-medium"
+                className="px-4 py-2 text-secondary-foreground bg-secondary rounded-md hover:bg-secondary/80 font-medium"
               >
                 Cancelar
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 font-medium"
+                className="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 font-medium"
               >
                 Crear
               </button>

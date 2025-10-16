@@ -11,7 +11,7 @@ interface ClientSearchProps {
 }
 
 const dropdownBaseClasses =
-  'absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-gray-200 bg-white shadow-xl'
+  'absolute z-50 mt-1 w-full overflow-hidden rounded-xl border border-border bg-card shadow-xl'
 
 const MOCK_CLIENTS: Cliente[] = [
   {
@@ -165,24 +165,24 @@ export default function ClientSearch({
       <button
         type="button"
         onClick={toggleDropdown}
-        className="flex w-full items-center justify-between rounded-lg border border-gray-300 bg-white px-3 py-2 text-left text-sm text-gray-900 shadow-sm transition hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="flex w-full items-center justify-between rounded-lg border border-input-border bg-input px-3 py-2 text-left text-sm text-foreground shadow-sm transition hover:border-border focus:outline-none focus:ring-2 focus:ring-accent"
       >
-        <span className={selectedClient ? 'text-gray-900' : 'text-gray-500'}>
+        <span className={selectedClient ? 'text-foreground' : 'text-muted-foreground'}>
           {selectedClient ? selectedClient.nombreORazonSocial : placeholder}
         </span>
-        <span className="ml-2 text-gray-400">▾</span>
+        <span className="ml-2 text-muted-foreground">▾</span>
       </button>
 
       {isOpen && (
         <div className={dropdownBaseClasses}>
-          <div className="border-b border-gray-200 bg-gray-50 px-3 py-2">
+          <div className="border-b border-border bg-muted px-3 py-2">
             <input
               ref={inputRef}
               type="text"
               value={searchTerm}
               onChange={event => setSearchTerm(event.target.value)}
               placeholder="Buscar por nombre, NIF o ciudad..."
-              className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-lg border border-input-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
             />
           </div>
           <div className="max-h-64 overflow-y-auto">
@@ -190,10 +190,10 @@ export default function ClientSearch({
               <button
                 type="button"
                 onClick={() => handleClientSelect(null)}
-                className="flex w-full items-center justify-between px-4 py-3 text-sm text-gray-600 transition hover:bg-gray-50"
+                className="flex w-full items-center justify-between px-4 py-3 text-sm text-muted-foreground transition hover:bg-secondary"
               >
                 <span>Limpiar selección</span>
-                <span className="text-gray-400">⌫</span>
+                <span className="text-muted-foreground">⌫</span>
               </button>
             )}
 
@@ -211,7 +211,7 @@ export default function ClientSearch({
             )}
 
             {filteredClients.length === 0 ? (
-              <p className="px-4 py-3 text-sm text-gray-500">
+              <p className="px-4 py-3 text-sm text-muted-foreground">
                 {searchTerm.trim()
                   ? 'No se encontraron coincidencias'
                   : 'Empieza a escribir para buscar un contacto'}
@@ -222,15 +222,15 @@ export default function ClientSearch({
                   key={`${client.nombreORazonSocial}-${client.NIF ?? 'sin-nif'}`}
                   type="button"
                   onClick={() => handleClientSelect(client)}
-                  className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left text-sm text-gray-700 transition hover:bg-gray-50"
+                  className="flex w-full items-start justify-between gap-3 px-4 py-3 text-left text-sm text-card-foreground transition hover:bg-secondary"
                 >
                   <div>
-                    <p className="font-medium text-gray-900">{client.nombreORazonSocial}</p>
-                    <p className="text-xs text-gray-500">
+                    <p className="font-medium text-card-foreground">{client.nombreORazonSocial}</p>
+                    <p className="text-xs text-muted-foreground">
                       {client.NIF ? `NIF: ${client.NIF}` : 'Sin NIF'}
                     </p>
                     {client.domicilio && (
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-muted-foreground">
                         {client.domicilio.municipio}, {client.domicilio.provincia}
                       </p>
                     )}

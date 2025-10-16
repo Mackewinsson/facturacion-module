@@ -2,6 +2,7 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
+import ThemeToggle from './ThemeToggle'
 
 interface SidebarProps {
   isCollapsed: boolean
@@ -76,27 +77,30 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   }
 
   return (
-    <div className={`bg-gray-900 text-white transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} flex flex-col h-screen sticky top-0`}>
+    <div className={`bg-sidebar text-sidebar-foreground transition-all duration-300 ${isCollapsed ? 'w-16' : 'w-64'} flex flex-col h-screen sticky top-0`}>
       {/* Header */}
-      <div className="p-4 border-b border-gray-700">
+      <div className="p-4 border-b border-sidebar-muted">
         <div className="flex items-center justify-between">
           {!isCollapsed && (
             <h1 className="text-xl font-bold">Nibisoft</h1>
           )}
-          <button
-            onClick={onToggle}
-            className="p-2 rounded-md hover:bg-gray-700 transition-colors"
-            title={isCollapsed ? 'Expandir sidebar' : 'Contraer sidebar'}
-          >
-            <svg
-              className={`w-5 h-5 transition-transform ${isCollapsed ? 'rotate-180' : ''}`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <button
+              onClick={onToggle}
+              className="p-2 rounded-md hover:bg-sidebar-accent transition-colors"
+              title={isCollapsed ? 'Expandir sidebar' : 'Contraer sidebar'}
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
-            </svg>
-          </button>
+              <svg
+                className={`w-5 h-5 transition-transform ${isCollapsed ? 'rotate-180' : ''}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 19l-7-7 7-7m8 14l-7-7 7-7" />
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -111,8 +115,8 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                   href={item.href}
                   className={`flex items-center p-3 rounded-md ${
                     item.active
-                      ? 'bg-indigo-600 text-white'
-                      : 'text-gray-300 hover:bg-gray-700 hover:text-white'
+                      ? 'bg-sidebar-accent text-sidebar-accent-foreground'
+                      : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
                   } ${isCollapsed ? 'justify-center' : ''}`}
                   title={isCollapsed ? item.name : ''}
                 >
@@ -128,10 +132,10 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
       </nav>
 
       {/* Footer */}
-      <div className="p-4 border-t border-gray-700">
+      <div className="p-4 border-t border-sidebar-muted">
         <button
           onClick={handleLogout}
-          className={`flex items-center w-full p-3 rounded-md text-gray-300 hover:bg-gray-700 hover:text-white ${
+          className={`flex items-center w-full p-3 rounded-md text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${
             isCollapsed ? 'justify-center' : ''
           }`}
           title={isCollapsed ? 'Cerrar sesión' : ''}

@@ -38,12 +38,12 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'DRAFT': return 'bg-gray-100 text-gray-800'
-      case 'SENT': return 'bg-blue-100 text-blue-800'
-      case 'PAID': return 'bg-green-100 text-green-800'
-      case 'OVERDUE': return 'bg-red-100 text-red-800'
-      case 'CANCELLED': return 'bg-yellow-100 text-yellow-800'
-      default: return 'bg-gray-100 text-gray-800'
+      case 'DRAFT': return 'bg-secondary text-secondary-foreground'
+      case 'SENT': return 'bg-info/20 text-info'
+      case 'PAID': return 'bg-success/20 text-success'
+      case 'OVERDUE': return 'bg-error/20 text-error'
+      case 'CANCELLED': return 'bg-warning/20 text-warning'
+      default: return 'bg-secondary text-secondary-foreground'
     }
   }
 
@@ -85,8 +85,8 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
   if (loading) {
     return (
       <LayoutWithSidebar>
-        <div className="h-screen bg-gray-50 flex items-center justify-center">
-          <div className="text-gray-500">Cargando factura...</div>
+        <div className="h-screen bg-background flex items-center justify-center">
+          <div className="text-muted-foreground">Cargando factura...</div>
         </div>
       </LayoutWithSidebar>
     )
@@ -95,12 +95,12 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
   if (error || !invoice) {
     return (
       <LayoutWithSidebar>
-        <div className="h-screen bg-gray-50 flex items-center justify-center">
+        <div className="h-screen bg-background flex items-center justify-center">
           <div className="text-center">
             <div className="text-red-600 mb-4">{error || 'Factura no encontrada'}</div>
             <button
               onClick={() => router.push('/facturacion')}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md"
+              className="bg-accent hover:bg-accent/90 text-accent-foreground px-4 py-2 rounded-md"
             >
               Volver a Facturación
             </button>
@@ -112,7 +112,7 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
 
   return (
     <LayoutWithSidebar>
-      <div className="bg-gray-50 p-4">
+      <div className="bg-background p-4">
         <div className="max-w-4xl mx-auto">
         {/* Header Actions */}
         <div className="mb-6 flex justify-between items-center">
@@ -125,13 +125,13 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
           <div className="flex gap-2">
             <button
               onClick={handleEdit}
-              className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              className="bg-success hover:bg-success/90 text-white px-4 py-2 rounded-md text-sm font-medium"
             >
               Editar
             </button>
             <button
               onClick={handlePrint}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-medium"
+              className="bg-accent hover:bg-accent/90 text-accent-foreground px-4 py-2 rounded-md text-sm font-medium"
             >
               Imprimir
             </button>
@@ -139,7 +139,7 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
         </div>
 
         {/* Invoice */}
-        <div className="bg-white rounded-lg shadow-sm border p-8 print:shadow-none print:border-0">
+        <div className="bg-card rounded-lg shadow-sm border border-border p-8 print:shadow-none print:border-0">
           {/* Invoice Header */}
           <div className="flex justify-between items-start mb-8">
             <div>
@@ -203,7 +203,7 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
           <div className="mb-8">
             <table className="w-full border-collapse border border-gray-300">
               <thead>
-                <tr className="bg-gray-50">
+                <tr className="bg-muted">
                   <th className="border border-gray-300 px-4 py-3 text-left text-sm font-semibold text-gray-900">
                     Descripción
                   </th>
@@ -289,7 +289,7 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
           {invoice.notas && (
             <div className="mb-8">
               <h3 className="text-lg font-semibold text-gray-900 mb-3">Notas:</h3>
-              <div className="text-gray-700 bg-gray-50 p-4 rounded-md">
+              <div className="text-card-foreground bg-muted p-4 rounded-md">
                 {invoice.notas.split('\n').map((line, index) => (
                   <p key={index}>{line}</p>
                 ))}

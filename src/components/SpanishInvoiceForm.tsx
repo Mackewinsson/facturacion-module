@@ -423,34 +423,34 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
 
   const approveLabel = isEdit ? 'Guardar cambios' : 'Aprobar'
   const baseInputClasses =
-    'w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500'
+    'w-full rounded-lg border border-input-border px-3 py-2 text-sm text-foreground bg-input focus:outline-none focus:ring-2 focus:ring-accent'
 
   return (
-    <div className="bg-gray-50 px-4 py-6 lg:px-8">
+    <div className="bg-background px-4 py-6 lg:px-8">
       <div className="mx-auto max-w-[1200px]">
         <form
           onSubmit={handleSubmit}
-          className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
+          className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
         >
-          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-200 px-6 py-5">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-6 py-5">
             <div>
-              <h1 className="text-2xl font-semibold text-gray-900">
+              <h1 className="text-2xl font-semibold text-card-foreground">
                 {isEdit ? 'Editar factura' : 'Nueva factura'}
               </h1>
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 Organiza la información de tu factura antes de compartirla con el cliente.
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary"
               >
                 Vista previa
               </button>
               <button
                 type="button"
-                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary"
               >
                 Opciones
               </button>
@@ -458,14 +458,14 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                 type="button"
                 onClick={handleSaveDraft}
                 disabled={loading}
-                className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
               >
                 Guardar como borrador
               </button>
               <button
                 type="submit"
                 disabled={loading}
-                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+                className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? 'Guardando...' : approveLabel}
               </button>
@@ -500,7 +500,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
             <section className="space-y-6">
               <div className="grid gap-4 md:grid-cols-4">
                 <div className="md:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700">Contacto</label>
+                  <label className="block text-sm font-medium text-card-foreground">Contacto</label>
                   <div className="mt-2">
                     <ClientSearch
                       onClientSelect={handleClientSelect}
@@ -522,7 +522,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Número de documento</label>
+                  <label className="block text-sm font-medium text-card-foreground">Número de documento</label>
                   <input
                     type="text"
                     value={formData.numero || ''}
@@ -532,7 +532,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Fecha de expedición</label>
+                  <label className="block text-sm font-medium text-card-foreground">Fecha de expedición</label>
                   <input
                     type="date"
                     value={formData.fechaExpedicion || ''}
@@ -541,7 +541,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Fecha de vencimiento</label>
+                  <label className="block text-sm font-medium text-card-foreground">Fecha de vencimiento</label>
                   <input
                     type="date"
                     value={formData.fechaVencimiento || ''}
@@ -550,7 +550,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Serie</label>
+                  <label className="block text-sm font-medium text-card-foreground">Serie</label>
                   <input
                     type="text"
                     value={formData.serie || ''}
@@ -560,7 +560,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Tipo de factura</label>
+                  <label className="block text-sm font-medium text-card-foreground">Tipo de factura</label>
                   <select
                     value={formData.tipoFactura || 'ordinaria'}
                     onChange={e => handleInputChange('tipoFactura', e.target.value as TipoFactura)}
@@ -574,7 +574,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Lugar de emisión</label>
+                  <label className="block text-sm font-medium text-card-foreground">Lugar de emisión</label>
                   <input
                     type="text"
                     value={formData.lugarEmision || ''}
@@ -632,25 +632,25 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
             )}
 
             <section>
-              <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white">
-                <div className="flex items-center justify-between border-b border-gray-200 px-5 py-4">
+              <div className="overflow-hidden rounded-2xl border border-border bg-card">
+                <div className="flex items-center justify-between border-b border-border px-5 py-4">
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Conceptos</h2>
-                    <p className="text-sm text-gray-500">Detalla los servicios o productos incluidos.</p>
+                    <h2 className="text-lg font-semibold text-card-foreground">Conceptos</h2>
+                    <p className="text-sm text-muted-foreground">Detalla los servicios o productos incluidos.</p>
                   </div>
                   <button
                     type="button"
                     onClick={addLine}
-                    className="rounded-lg border border-blue-200 px-3 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50"
+                    className="rounded-lg border border-accent px-3 py-2 text-sm font-medium text-accent hover:bg-accent/10"
                   >
                     + Añadir línea
                   </button>
                 </div>
 
                   <div className="overflow-x-auto">
-                    <table className="min-w-full divide-y divide-gray-200">
-                      <thead className="bg-gray-50">
-                        <tr className="text-left text-xs font-semibold uppercase tracking-wide text-gray-500">
+                    <table className="min-w-full divide-y divide-border">
+                      <thead className="bg-muted">
+                        <tr className="text-left text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                           <th className="px-5 py-3">Concepto</th>
                           <th className="px-5 py-3">Descripción</th>
                           <th className="px-5 py-3">Cantidad</th>
@@ -659,7 +659,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                           <th className="px-5 py-3 text-right">Total</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-100 bg-white">
+                      <tbody className="divide-y divide-border bg-card">
                         {(formData.lineas || []).map((linea, index) => (
                           <tr key={linea.id} className="align-top">
                             <td className="px-5 py-4">
@@ -693,7 +693,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                                 }
                                 className={`${baseInputClasses} bg-white`}
                               />
-                              <div className="mt-3 text-xs text-gray-500">
+                              <div className="mt-3 text-xs text-muted-foreground">
                                 Descuento (%)
                                 <input
                                   type="number"
@@ -734,7 +734,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                                   disabled={linea.exenta || linea.inversionSujetoPasivo}
                                   className={`${baseInputClasses} bg-white ${
                                     linea.exenta || linea.inversionSujetoPasivo
-                                      ? 'cursor-not-allowed text-gray-500'
+                                      ? 'cursor-not-allowed text-muted-foreground'
                                       : ''
                                   }`}
                                 >
@@ -744,7 +744,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                                     </option>
                                   ))}
                                 </select>
-                                <div className="flex flex-wrap gap-3 text-xs text-gray-600">
+                                <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                                   <label className="flex items-center gap-2">
                                     <input
                                       type="checkbox"
@@ -755,7 +755,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                                           handleLineChange(index, 'inversionSujetoPasivo', false)
                                         }
                                       }}
-                                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                      className="rounded border-input-border text-accent focus:ring-accent"
                                     />
                                     Exenta
                                   </label>
@@ -769,7 +769,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                                           handleLineChange(index, 'exenta', false)
                                         }
                                       }}
-                                      className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                      className="rounded border-input-border text-accent focus:ring-accent"
                                     />
                                     ISP
                                   </label>
@@ -795,7 +795,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                                   </select>
                                 )}
                                 {!linea.exenta && !linea.inversionSujetoPasivo && (
-                                  <div className="flex items-center gap-2 text-xs text-gray-500">
+                                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                     <span>Recargo equivalencia (%)</span>
                                     <input
                                       type="number"
@@ -819,10 +819,10 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                             <td className="px-5 py-4">
                               <div className="flex items-start justify-end gap-3">
                                 <div className="text-right">
-                                  <p className="text-sm font-semibold text-gray-900">
+                                  <p className="text-sm font-semibold text-card-foreground">
                                     {formatCurrency(linea.totalLinea || 0)}
                                   </p>
-                                  <p className="text-xs text-gray-500">
+                                  <p className="text-xs text-muted-foreground">
                                     Base: {formatCurrency(linea.baseLinea || 0)}
                                   </p>
                                 </div>
@@ -830,7 +830,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                                   <button
                                     type="button"
                                     onClick={() => removeLine(index)}
-                                    className="rounded-full border border-transparent p-1 text-gray-400 hover:border-red-200 hover:text-red-600"
+                                    className="rounded-full border border-transparent p-1 text-muted-foreground hover:border-red-200 hover:text-red-600"
                                   >
                                     ✕
                                   </button>
@@ -877,12 +877,12 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
             </section>
 
             <section>
-              <div className="rounded-2xl border border-gray-200 bg-white px-5 py-5">
-                <div className="flex items-center justify-between text-sm text-gray-600">
+              <div className="rounded-2xl border border-border bg-card px-5 py-5">
+                <div className="flex items-center justify-between text-sm text-card-foreground">
                   <span>Subtotal</span>
                   <span>{formatCurrency(formData.totales?.baseImponibleTotal || 0)}</span>
                 </div>
-                <div className="mt-2 space-y-1 text-xs text-gray-500">
+                <div className="mt-2 space-y-1 text-xs text-muted-foreground">
                   {formData.totales?.basesPorTipo?.map((base, index) => (
                     <div key={`${base.tipoIVA}-${index}`} className="flex justify-between">
                       <span>Base {base.tipoIVA}%</span>
@@ -890,12 +890,12 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                     </div>
                   ))}
                 </div>
-                <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+                <div className="mt-4 flex items-center justify-between text-sm text-card-foreground">
                   <span>IVA</span>
                   <span>{formatCurrency(formData.totales?.cuotaIVATotal || 0)}</span>
                 </div>
                 {formData.totales?.cuotaRETotal && formData.totales.cuotaRETotal > 0 && (
-                  <div className="mt-1 flex items-center justify-between text-sm text-gray-600">
+                  <div className="mt-1 flex items-center justify-between text-sm text-card-foreground">
                     <span>Recargo equivalencia</span>
                     <span>{formatCurrency(formData.totales.cuotaRETotal)}</span>
                   </div>
@@ -908,8 +908,8 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   + Añadir descuento
                 </button>
                 */}
-                <div className="mt-4 border-t border-gray-200 pt-4">
-                  <div className="flex items-center justify-between text-lg font-semibold text-gray-900">
+                <div className="mt-4 border-t border-border pt-4">
+                  <div className="flex items-center justify-between text-lg font-semibold text-card-foreground">
                     <span>Total</span>
                     <span>{formatCurrency(formData.totales?.totalFactura || 0)}</span>
                   </div>
@@ -934,16 +934,16 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
             )}
 
             <section className="grid gap-6 lg:grid-cols-2">
-              <div className="rounded-2xl border border-gray-200 bg-white">
-                <div className="border-b border-gray-200 px-5 py-4">
-                  <h2 className="text-lg font-semibold text-gray-900">Método de pago</h2>
-                  <p className="text-sm text-gray-500">
+              <div className="rounded-2xl border border-border bg-card">
+                <div className="border-b border-border px-5 py-4">
+                  <h2 className="text-lg font-semibold text-card-foreground">Método de pago</h2>
+                  <p className="text-sm text-muted-foreground">
                     Define cómo recibirá tu cliente el cobro de esta factura.
                   </p>
                 </div>
                 <div className="space-y-4 px-5 py-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-card-foreground">
                       Selecciona una forma de pago
                     </label>
                     <select
@@ -959,7 +959,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">
+                    <label className="block text-sm font-medium text-card-foreground">
                       Mensaje para el cliente
                     </label>
                     <textarea
@@ -1006,7 +1006,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                 </div>
                 <div className="space-y-4 px-5 py-5">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Cuenta contable</label>
+                    <label className="block text-sm font-medium text-card-foreground">Cuenta contable</label>
                     <input
                       type="text"
                       value={categorization.account}
@@ -1035,7 +1035,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   </label>
                   <div className="grid gap-4 md:grid-cols-2">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Etiquetas</label>
+                      <label className="block text-sm font-medium text-card-foreground">Etiquetas</label>
                       <input
                         type="text"
                         value={categorization.tags}
@@ -1050,7 +1050,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                       />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700">Etiquetas por concepto</label>
+                      <label className="block text-sm font-medium text-card-foreground">Etiquetas por concepto</label>
                       <input
                         type="text"
                         value={categorization.conceptTags}
@@ -1066,7 +1066,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Nota interna</label>
+                    <label className="block text-sm font-medium text-card-foreground">Nota interna</label>
                     <textarea
                       value={categorization.internalNote}
                       onChange={e =>
@@ -1080,7 +1080,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700">Asignar usuarios</label>
+                    <label className="block text-sm font-medium text-card-foreground">Asignar usuarios</label>
                     <input
                       type="text"
                       value={categorization.assignedUsers}
@@ -1106,18 +1106,18 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
             </section>
           </div>
 
-          <div className="flex flex-wrap justify-end gap-3 border-t border-gray-200 px-6 py-5">
+          <div className="flex flex-wrap justify-end gap-3 border-t border-border px-6 py-5">
             <button
               type="button"
               onClick={() => router.push('/facturacion')}
-              className="rounded-lg border border-gray-200 px-4 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50"
+              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
+              className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? 'Guardando...' : approveLabel}
             </button>
