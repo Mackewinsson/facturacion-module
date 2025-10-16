@@ -1,7 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { MockInvoiceService, Invoice, TipoFactura, TipoCliente, TipoIVA, MotivoExencion, CausaRectificacion, LineaFactura, Domicilio } from '@/lib/mock-data'
+import { MockInvoiceService, Invoice, TipoFactura, TipoCliente, TipoIVA, MotivoExencion, CausaRectificacion, LineaFactura, Domicilio, Cliente } from '@/lib/mock-data'
 import { 
   VAT_RATES, 
   RECARGO_EQUIVALENCIA_RATES, 
@@ -18,11 +18,29 @@ import {
   generateMencionesObligatorias,
   validateInvoiceByType
 } from '@/lib/spanish-tax-calculations'
+import ClientSearch from './ClientSearch'
+import AddClientModal from './AddClientModal'
 
 interface SpanishInvoiceFormProps {
   initialData?: Partial<Invoice>
   invoiceId?: number
   isEdit?: boolean
+}
+
+// Helper function to get emisor data from database
+const getEmisorData = () => {
+  // In a real application, this would be an API call to get company data
+  return {
+    nombreORazonSocial: 'Taller Mecánico García S.L.',
+    NIF: 'B12345678',
+    domicilio: {
+      calle: 'Calle de la Industria 45',
+      codigoPostal: '28045',
+      municipio: 'Madrid',
+      provincia: 'Madrid',
+      pais: 'España'
+    }
+  }
 }
 
 export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = false }: SpanishInvoiceFormProps) {
@@ -35,18 +53,6 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
     numero: '',
     fechaExpedicion: new Date().toISOString().split('T')[0],
     lugarEmision: '',
-    
-    emisor: {
-      nombreORazonSocial: 'Taller Mecánico García S.L.',
-      NIF: 'B12345678',
-      domicilio: {
-        calle: 'Calle de la Industria 45',
-        codigoPostal: '28045',
-        municipio: 'Madrid',
-        provincia: 'Madrid',
-        pais: 'España'
-      }
-    },
     
     cliente: {
       tipo: 'particular',
@@ -97,6 +103,9 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [validationErrors, setValidationErrors] = useState<string[]>([])
+  const [selectedClient, setSelectedClient] = useState<Cliente | null>(null)
+  const [showAddClientModal, setShowAddClientModal] = useState(false)
+  const [suggestedClientName, setSuggestedClientName] = useState('')
 
   useEffect(() => {
     if (initialData) {
@@ -163,6 +172,49 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
     })
   }
 
+  const handleClientSelect = (client: Cliente | null) => {
+    setSelectedClient(client)
+    if (client) {
+      setFormData(prev => ({
+        ...prev,
+        cliente: client
+      }))
+    } else {
+      // Reset cliente fields when no client is selected
+      setFormData(prev => ({
+        ...prev,
+        cliente: {
+          tipo: 'particular',
+          nombreORazonSocial: '',
+          NIF: '',
+          domicilio: {
+            calle: '',
+            codigoPostal: '',
+            municipio: '',
+            provincia: '',
+            pais: 'España'
+          },
+          pais: 'España'
+        }
+      }))
+    }
+  }
+
+  const handleAddNewClient = (suggestedName?: string) => {
+    setSuggestedClientName(suggestedName || '')
+    setShowAddClientModal(true)
+  }
+
+  const handleClientAdded = (newClient: Cliente) => {
+    setSelectedClient(newClient)
+    setFormData(prev => ({
+      ...prev,
+      cliente: newClient
+    }))
+    setShowAddClientModal(false)
+    setSuggestedClientName('')
+  }
+
   const handleLineChange = (index: number, field: keyof LineaFactura, value: any) => {
     const newLineas = [...(formData.lineas || [])]
     newLineas[index] = { ...newLineas[index], [field]: value }
@@ -210,8 +262,17 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
     setValidationErrors([])
 
     try {
+      // Get emisor data from database
+      const emisorData = getEmisorData()
+
+      // Combine form data with emisor data
+      const completeInvoiceData = {
+        ...formData,
+        emisor: emisorData
+      }
+
       // Validate form
-      const errors = validateInvoiceByType(formData)
+      const errors = validateInvoiceByType(completeInvoiceData)
       if (errors.length > 0) {
         setValidationErrors(errors)
         return
@@ -219,7 +280,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
 
       if (isEdit && invoiceId) {
         // Update existing invoice
-        const updatedInvoice = await MockInvoiceService.updateInvoice(invoiceId, formData)
+        const updatedInvoice = await MockInvoiceService.updateInvoice(invoiceId, completeInvoiceData)
         if (updatedInvoice) {
           router.push('/facturacion')
         } else {
@@ -227,7 +288,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
         }
       } else {
         // Create new invoice
-        const newInvoice = await MockInvoiceService.createInvoice(formData as any)
+        const newInvoice = await MockInvoiceService.createInvoice(completeInvoiceData as any)
         if (newInvoice) {
           router.push('/facturacion')
         } else {
@@ -277,6 +338,25 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
         )}
 
         <form onSubmit={handleSubmit} className="space-y-8">
+          {/* Info Notice */}
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <h3 className="text-sm font-medium text-blue-800">
+                  Datos del Emisor Predefinidos
+                </h3>
+                <div className="mt-2 text-sm text-blue-700">
+                  <p>Los datos del emisor están configurados en el sistema y se aplicarán automáticamente a todas las facturas.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Encabezado */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <h2 className="text-lg font-semibold mb-4">Encabezado</h2>
@@ -341,90 +421,32 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
             </div>
           </div>
 
-          {/* Emisor */}
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <h2 className="text-lg font-semibold mb-4">Datos del Emisor</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre o Razón Social *
-                </label>
-                <input
-                  type="text"
-                  value={formData.emisor?.nombreORazonSocial || ''}
-                  onChange={(e) => handleInputChange('emisor.nombreORazonSocial', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  NIF *
-                </label>
-                <input
-                  type="text"
-                  value={formData.emisor?.NIF || ''}
-                  onChange={(e) => handleInputChange('emisor.NIF', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-
-              <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Domicilio *
-                </label>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
-                  <input
-                    type="text"
-                    value={formData.emisor?.domicilio?.calle || ''}
-                    onChange={(e) => handleInputChange('emisor.domicilio.calle', e.target.value)}
-                    placeholder="Calle"
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                  <input
-                    type="text"
-                    value={formData.emisor?.domicilio?.codigoPostal || ''}
-                    onChange={(e) => handleInputChange('emisor.domicilio.codigoPostal', e.target.value)}
-                    placeholder="Código Postal"
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                  <input
-                    type="text"
-                    value={formData.emisor?.domicilio?.municipio || ''}
-                    onChange={(e) => handleInputChange('emisor.domicilio.municipio', e.target.value)}
-                    placeholder="Municipio"
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                  <input
-                    type="text"
-                    value={formData.emisor?.domicilio?.provincia || ''}
-                    onChange={(e) => handleInputChange('emisor.domicilio.provincia', e.target.value)}
-                    placeholder="Provincia"
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                  <input
-                    type="text"
-                    value={formData.emisor?.domicilio?.pais || ''}
-                    onChange={(e) => handleInputChange('emisor.domicilio.pais', e.target.value)}
-                    placeholder="País"
-                    className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    required
-                  />
-                </div>
-              </div>
-
-            </div>
-          </div>
-
-          {/* Cliente */}
+          {/* Cliente/Proveedor */}
           <div className="bg-green-50 p-4 rounded-lg">
-            <h2 className="text-lg font-semibold mb-4">Datos del Cliente</h2>
+            <h2 className="text-lg font-semibold mb-4">Datos del Cliente/Proveedor</h2>
+            
+            {/* Client Search */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Buscar Cliente Existente
+              </label>
+              <ClientSearch
+                onClientSelect={handleClientSelect}
+                selectedClient={selectedClient}
+                placeholder="Escribe el nombre, NIF o ciudad del cliente..."
+                onAddNewClient={handleAddNewClient}
+              />
+              {selectedClient && (
+                <div className="mt-2 p-3 bg-green-100 border border-green-200 rounded-md">
+                  <div className="text-sm text-green-800">
+                    <strong>Cliente seleccionado:</strong> {selectedClient.nombreORazonSocial}
+                    {selectedClient.NIF && ` (${selectedClient.NIF})`}
+                  </div>
+                </div>
+              )}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -433,7 +455,8 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                 <select
                   value={formData.cliente?.tipo || 'particular'}
                   onChange={(e) => handleInputChange('cliente.tipo', e.target.value as TipoCliente)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={!!selectedClient}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 >
                   <option value="particular">Particular</option>
                   <option value="empresario/profesional">Empresario/Profesional</option>
@@ -448,7 +471,8 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   type="text"
                   value={formData.cliente?.nombreORazonSocial || ''}
                   onChange={(e) => handleInputChange('cliente.nombreORazonSocial', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={!!selectedClient}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   required
                 />
               </div>
@@ -461,7 +485,8 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   type="text"
                   value={formData.cliente?.NIF || ''}
                   onChange={(e) => handleInputChange('cliente.NIF', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={!!selectedClient}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   required={formData.cliente?.tipo === 'empresario/profesional'}
                 />
               </div>
@@ -474,7 +499,8 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                   type="text"
                   value={formData.cliente?.pais || ''}
                   onChange={(e) => handleInputChange('cliente.pais', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={!!selectedClient}
+                  className={`w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   required
                 />
               </div>
@@ -490,7 +516,8 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                       value={formData.cliente?.domicilio?.calle || ''}
                       onChange={(e) => handleInputChange('cliente.domicilio.calle', e.target.value)}
                       placeholder="Calle"
-                      className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={!!selectedClient}
+                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                       required={formData.cliente?.tipo === 'empresario/profesional'}
                     />
                     <input
@@ -498,28 +525,32 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                       value={formData.cliente?.domicilio?.codigoPostal || ''}
                       onChange={(e) => handleInputChange('cliente.domicilio.codigoPostal', e.target.value)}
                       placeholder="Código Postal"
-                      className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={!!selectedClient}
+                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     />
                     <input
                       type="text"
                       value={formData.cliente?.domicilio?.municipio || ''}
                       onChange={(e) => handleInputChange('cliente.domicilio.municipio', e.target.value)}
                       placeholder="Municipio"
-                      className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={!!selectedClient}
+                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     />
                     <input
                       type="text"
                       value={formData.cliente?.domicilio?.provincia || ''}
                       onChange={(e) => handleInputChange('cliente.domicilio.provincia', e.target.value)}
                       placeholder="Provincia"
-                      className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={!!selectedClient}
+                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     />
                     <input
                       type="text"
                       value={formData.cliente?.domicilio?.pais || ''}
                       onChange={(e) => handleInputChange('cliente.domicilio.pais', e.target.value)}
                       placeholder="País"
-                      className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      disabled={!!selectedClient}
+                      className={`px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${selectedClient ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     />
                   </div>
                 </div>
@@ -866,6 +897,14 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
           </div>
         </form>
       </div>
+
+      {/* Add Client Modal */}
+      <AddClientModal
+        isOpen={showAddClientModal}
+        onClose={() => setShowAddClientModal(false)}
+        onClientAdded={handleClientAdded}
+        suggestedName={suggestedClientName}
+      />
     </div>
   )
 }
