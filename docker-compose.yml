@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # SQL Server Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: recepcionactiva-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=sa2006Strong!
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./MotosMunozDatos 15-09-2025:/var/opt/mssql/backup/MotosMunozDatos 15-09-2025:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P sa2006Strong! -C -Q 'SELECT 1' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - recepcionactiva-network
+
+  # FTP Server for file uploads
+  ftp-server:
+    image: delfer/alpine-ftp-server:latest
+    container_name: recepcionactiva-ftp
+    ports:
+      - "21:21"
+      - "21000-21010:21000-21010"
+    environment:
+      - USERS=usermw|usermw|/home/usermw|1000
+      - ADDRESS=localhost
+    volumes:
+      - ./ftp-data:/home/usermw
+    restart: unless-stopped
+    networks:
+      - recepcionactiva-network
+
+  # HTTP Server for FTP file access
+  ftp-http-server:
+    image: nginx:alpine
+    container_name: recepcionactiva-ftp-http
+    ports:
+      - "8080:80"
+    volumes:
+      - ./ftp-data:/usr/share/nginx/html:ro
+      - ./nginx-ftp.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - ftp-server
+    restart: unless-stopped
+    networks:
+      - recepcionactiva-network
+
+volumes:
+  sqlserver_data:
+
+networks:
+  recepcionactiva-network:
+    driver: bridge

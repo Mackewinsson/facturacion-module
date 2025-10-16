@@ -1,0 +1,3662 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlserver"
+  url      = env("DATABASE_URL")
+}
+
+model ACT {
+  IDEACT Int     @id(map: "IDEACT_PK") @default(autoincrement())
+  NOMACT String  @db.NVarChar(50)
+  ICOACT String? @db.NVarChar(255)
+  NOTACT String? @db.NVarChar(255)
+  TENACT Int?
+  FCL    FCL[]
+
+  @@index([NOMACT], map: "NOMACT_NX")
+}
+
+model AGE {
+  FECAGE DateTime @db.DateTime
+  USUAGE Int
+  MEMAGE String   @db.NVarChar(255)
+  FINAGE Boolean  @default(false, map: "DF__AGE__FINAGE__681373AD")
+  USU    USU      @relation(fields: [USUAGE], references: [ENTUSU], onDelete: Cascade, map: "USUAGE_FK")
+
+  @@id([FECAGE, USUAGE], map: "FECUSUAGE_PK", clustered: false)
+  @@index([FINAGE], map: "FINAGE_NX")
+}
+
+model ALM {
+  IDEALM                    Int       @id(map: "IDEALM_PK") @default(autoincrement())
+  NOMALM                    String    @db.NVarChar(100)
+  ENTALM                    Int
+  DIRALM                    Int       @unique(map: "DIRALM_UK")
+  NALALM                    String?   @db.NVarChar(1)
+  AVEALM                    Int?
+  AVSALM                    Int?
+  AREALM                    Int?
+  ARSALM                    Int?
+  AOTALM                    Int?
+  VEHALM                    Int
+  RECALM                    Int
+  TALALM                    Boolean   @default(false, map: "DF__ALM__TALALM__13F1F5EB")
+  ALRALM                    Int?
+  FEBALM                    DateTime? @db.SmallDateTime
+  CIZALM                    String?   @db.NVarChar(255)
+  CDEALM                    String?   @db.NVarChar(255)
+  PIEALM                    String?   @db.NVarChar(255)
+  RCAALM                    String?   @db.NVarChar(255)
+  RPIALM                    String?   @db.NVarChar(255)
+  CTKALM                    String?   @db.NVarChar(255)
+  PTKALM                    String?   @db.NVarChar(255)
+  AV0ALM                    Int?
+  AFEALM                    Int?
+  AFGALM                    Int?
+  FLOALM                    Int?      @default(0, map: "DF__ALM__FLOALM__78DED853")
+  PTOALM                    Int?
+  CDPALM                    Int?
+  EMCALM                    Int?
+  ABSALM                    Int?
+  CCOALM                    String?   @db.NVarChar(25)
+  APCALM                    Int?
+  TARALM                    Int?
+  WEBALM                    Int       @default(0, map: "DF__ALM__WEBALM__7FC0467F")
+  AWSALM                    Int?
+  EXTALM                    Int?
+  ABBALM                    Int?
+  CMOALM                    BigInt    @default(0, map: "DF__ALM__CMOALM__70E51BB1")
+  IMP_ALM_AFEALMToIMP       IMP?      @relation("ALM_AFEALMToIMP", fields: [AFEALM], references: [IDEIMP], onDelete: NoAction, onUpdate: NoAction, map: "AFEIMP_FK")
+  IMP_ALM_AFGALMToIMP       IMP?      @relation("ALM_AFGALMToIMP", fields: [AFGALM], references: [IDEIMP], onDelete: NoAction, onUpdate: NoAction, map: "AFGIMP_FK")
+  ALM_ALM_ALRALMToALM       ALM?      @relation("ALM_ALRALMToALM", fields: [ALRALM], references: [IDEALM], onDelete: NoAction, onUpdate: NoAction, map: "ALRALM_FK")
+  other_ALM_ALM_ALRALMToALM ALM[]     @relation("ALM_ALRALMToALM")
+  IMP_ALM_AOTALMToIMP       IMP?      @relation("ALM_AOTALMToIMP", fields: [AOTALM], references: [IDEIMP], onDelete: NoAction, onUpdate: NoAction, map: "AOTALM_FK")
+  IMP_ALM_AREALMToIMP       IMP?      @relation("ALM_AREALMToIMP", fields: [AREALM], references: [IDEIMP], onDelete: NoAction, onUpdate: NoAction, map: "AREALM_FK")
+  IMP_ALM_ARSALMToIMP       IMP?      @relation("ALM_ARSALMToIMP", fields: [ARSALM], references: [IDEIMP], onDelete: NoAction, onUpdate: NoAction, map: "ARSALM_FK")
+  ALM_ALM_AV0ALMToALM       ALM?      @relation("ALM_AV0ALMToALM", fields: [AV0ALM], references: [IDEALM], onDelete: NoAction, onUpdate: NoAction, map: "AV0ALM_FK")
+  other_ALM_ALM_AV0ALMToALM ALM[]     @relation("ALM_AV0ALMToALM")
+  IMP_ALM_AVEALMToIMP       IMP?      @relation("ALM_AVEALMToIMP", fields: [AVEALM], references: [IDEIMP], onDelete: NoAction, onUpdate: NoAction, map: "AVEALM_FK")
+  IMP_ALM_AVSALMToIMP       IMP?      @relation("ALM_AVSALMToIMP", fields: [AVSALM], references: [IDEIMP], onDelete: NoAction, onUpdate: NoAction, map: "AVSALM_FK")
+  DIR                       DIR       @relation(fields: [DIRALM], references: [IDEDIR], onUpdate: NoAction, map: "DIRALM_FK")
+  ENT                       ENT       @relation(fields: [ENTALM], references: [IDEENT], onUpdate: NoAction, map: "ENTALM_FK")
+  IMP_ALM_ABBALMToIMP       IMP?      @relation("ALM_ABBALMToIMP", fields: [ABBALM], references: [IDEIMP], onDelete: NoAction, onUpdate: NoAction, map: "FK__ALM__ABBALM__07B2A719")
+  IMP_ALM_ABSALMToIMP       IMP?      @relation("ALM_ABSALMToIMP", fields: [ABSALM], references: [IDEIMP], onDelete: NoAction, onUpdate: NoAction, map: "FK__ALM__ABSALM__26C2A302")
+  IMP_ALM_AWSALMToIMP       IMP?      @relation("ALM_AWSALMToIMP", fields: [AWSALM], references: [IDEIMP], onDelete: NoAction, onUpdate: NoAction, map: "FK__ALM__AWSALM__00B46AB8")
+  IMP_ALM_EXTALMToIMP       IMP?      @relation("ALM_EXTALMToIMP", fields: [EXTALM], references: [IDEIMP], onDelete: NoAction, onUpdate: NoAction, map: "FK__ALM__EXTALM__7ED70F3E")
+  CAB                       CAB[]
+  CFA                       CFA[]
+  CIN                       CIN[]
+  CPD                       CPD[]
+  CPS                       CPS[]
+  CTE                       CTE[]
+  FOT                       FOT[]
+  FVE                       FVE[]
+  GCH                       GCH[]
+  GDH                       GDH[]
+  HST                       HST[]
+  LAB                       LAB[]
+  LPD                       LPD[]
+  PAL                       PAL[]
+  Stock                     Stock[]
+  VEH                       VEH[]
+
+  @@index([NALALM], map: "NALALM_NX")
+  @@index([NOMALM], map: "NOMALM_NX")
+}
+
+model ALQ {
+  IDEALQ Int      @id(map: "PK__ALQ__205B8BFC04508AFF") @default(autoincrement())
+  DOCALQ String   @unique(map: "OBJ_UQ_DOCALQ") @db.NVarChar(50)
+  INIALQ DateTime @db.SmallDateTime
+  FINALQ DateTime @db.SmallDateTime
+  VEHALQ Int
+  DIRALQ String?  @db.NVarChar(50)
+  TELALQ String?  @db.NVarChar(20)
+  ODTALQ String?  @db.NVarChar(50)
+  CITALQ Int?
+  CATALQ Int
+  TFAALQ Int
+  KMIALQ Int?     @default(0, map: "DF__ALQ__KMIALQ__0638D371")
+  KMFALQ Int?     @default(0, map: "DF__ALQ__KMFALQ__072CF7AA")
+  DEIALQ Int?     @default(0, map: "DF__ALQ__DEIALQ__08211BE3")
+  DEFALQ Int?     @default(0, map: "DF__ALQ__DEFALQ__0915401C")
+  CADALQ Int?     @default(0, map: "DF__ALQ__CADALQ__0A096455")
+  OBEALQ String?  @db.NVarChar(255)
+  OBRALQ String?  @db.NVarChar(255)
+  CKMALQ Decimal? @default(0, map: "DF__ALQ__CKMALQ__0AFD888E") @db.Decimal(18, 2)
+  CLOALQ Decimal? @default(0, map: "DF__ALQ__CLOALQ__0BF1ACC7") @db.Decimal(18, 2)
+  CDIALQ Decimal? @default(0, map: "DF__ALQ__CDIALQ__0CE5D100") @db.Decimal(18, 2)
+  IVAALQ Float?   @default(0, map: "DF__ALQ__IVAALQ__0DD9F539") @db.Real
+  RECALQ Float?   @default(0, map: "DF__ALQ__RECALQ__0ECE1972") @db.Real
+  FECALQ DateTime @db.SmallDateTime
+  FAAALQ BigInt?
+  TCRALQ String?  @db.NVarChar(20)
+  FEXALQ String?  @db.NVarChar(10)
+  FZAALQ Decimal? @default(0, map: "DF__ALQ__FZAALQ__1F04813B") @db.Decimal(18, 2)
+  USOALQ Int?     @default(1, map: "DF__ALQ__USOALQ__6596F9B5")
+  CMDALQ Float?   @default(0, map: "DF__ALQ__CMDALQ__78C9C9BA") @db.Money
+  FRAALQ Float?   @db.Money
+  CEMALQ Float?   @default(0, map: "DF__ALQ__CEMALQ__40DA7652") @db.Money
+  CVVALQ String?  @db.NVarChar(5)
+  CAB    CAB      @relation(fields: [DOCALQ], references: [NUMCAB], onUpdate: NoAction, map: "CABALQ_FK")
+}
+
+model AMO {
+  IDEAMO Int      @id(map: "IDEAMO_PK") @default(autoincrement())
+  DESAMO String   @db.NVarChar(250)
+  SITAMO String?  @db.NVarChar(250)
+  PRVAMO Int
+  NFPAMO String?  @db.NVarChar(50)
+  FECAMO DateTime @default(now(), map: "DF__AMO__FECAMO__1F63A897") @db.DateTime
+  IMPAMO Float    @default(0, map: "DF__AMO__IMPAMO__2057CCD0") @db.Money
+  FAMAMO DateTime @db.DateTime
+  VAMAMO Float    @default(0, map: "DF__AMO__VAMAMO__214BF109") @db.Money
+  VREAMO Float    @default(0, map: "DF__AMO__VREAMO__22401542") @db.Money
+  PORAMO Float    @default(0, map: "DF__AMO__PORAMO__2334397B") @db.Real
+  CUEAMO String?  @db.NVarChar(20)
+  INDAMO Int?     @default(0, map: "DF__AMO__INDAMO__251C81ED")
+  EMCAMO Int      @default(0, map: "DF__AMO__EMCAMO__2610A626")
+  CUDAMO String?  @db.NVarChar(20)
+  CUHAMO String?  @db.NVarChar(20)
+  VEHAMO Int?
+  CALAMO Int?
+  EMC    EMC      @relation(fields: [EMCAMO], references: [IDEEMC], onUpdate: NoAction, map: "EMCAMO_FK")
+  CAL    CAL?     @relation(fields: [CALAMO], references: [IDECAL], onDelete: NoAction, onUpdate: NoAction, map: "fkAMOCAL")
+  VEH    VEH?     @relation(fields: [VEHAMO], references: [IDEVEH], onDelete: NoAction, onUpdate: NoAction, map: "fkAMOVEH")
+  FPR    FPR      @relation(fields: [PRVAMO], references: [ENTFPR], onUpdate: NoAction, map: "PRVAMO_FK")
+  LAM    LAM[]
+
+  @@index([DESAMO], map: "DESAMO_NX")
+}
+
+model AMT {
+  IDEAMT Int     @id(map: "PK__AMT__205B939A4A5B5599") @default(autoincrement())
+  TIPAMT String  @db.NVarChar(255)
+  CTAAMT String  @db.NVarChar(4)
+  AUXAMT String? @db.NVarChar(7)
+  NOTAMT String? @db.NText
+}
+
+model ASA {
+  NOMASA String  @db.NVarChar(15)
+  APTASA Int
+  CAXASA String  @db.NVarChar(20)
+  CCOASA Int
+  DESASA String? @db.NVarChar(255)
+  IMPASA String  @db.NVarChar(1)
+  TIMASA Int
+  CANASA Float   @db.Money
+  OPTASA Boolean @default(false, map: "DF__ASA__OPTASA__3D5E1FD2")
+  AGRASA Boolean @default(false, map: "DF__ASA__AGRASA__3E52440B")
+
+  @@id([NOMASA, APTASA], map: "NOMASA_PK")
+}
+
+model AUS {
+  IDEAUS Int       @id(map: "PK__AUS__205BD491560C3410") @default(autoincrement())
+  ENTAUS BigInt
+  INIAUS DateTime  @db.DateTime
+  FINAUS DateTime? @db.DateTime
+  TIPAUS Int?
+  NOTAUS String?   @db.NText
+  BAJAUS Boolean?  @default(false, map: "DF__AUS__BAJAUS__5BC50D66")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model AuxInf3 {
+  idOper          BigInt?
+  oper            String?  @db.NVarChar(255)
+  idCentro        BigInt?
+  centro          String?  @db.NVarChar(255)
+  claImp          BigInt?
+  tipo            String?  @db.NVarChar(255)
+  periodo         String?  @db.NVarChar(10)
+  horasConvenio   Decimal? @db.Decimal(18, 2)
+  horasPresenc    Decimal? @db.Decimal(18, 2)
+  porcAbsentis    Decimal? @db.Decimal(18, 2)
+  horasInvertidas Decimal? @db.Decimal(18, 2)
+  porcEficiencia  Decimal? @db.Decimal(18, 2)
+  horasFacturadas Decimal? @db.Decimal(18, 2)
+  porcProductiv   Decimal? @db.Decimal(18, 2)
+
+  @@ignore
+}
+
+model AuxNum {
+  IDENUM Int @id(map: "IDENUM_PK")
+}
+
+model CAB {
+  NUMCAB    String    @id(clustered: false, map: "NUMCAB_PK") @db.NVarChar(50)
+  ALPCAB    String?   @db.NVarChar(50)
+  FECCAB    DateTime  @default(now(), map: "DF__CAB__FECCAB__14B10FFA") @db.DateTime
+  ESTCAB    Int       @default(0, map: "DF__CAB__ESTCAB__15A53433")
+  FACCAB    String?   @db.NVarChar(50)
+  USUCAB    Int?
+  ENTCAB    Int
+  DIRCAB    Int?
+  ALMCAB    Int
+  PUECAB    Int
+  DEPCAB    Int
+  URGCAB    Float     @default(0, map: "DF__CAB__URGCAB__1699586C") @db.Real
+  PPGCAB    Float     @default(0, map: "DF__CAB__PPGCAB__178D7CA5") @db.Real
+  OBSCAB    String?   @db.NVarChar(255)
+  TIPCAB    Int
+  IMPCAB    Int
+  FPACAB    Int
+  TRACAB    Int?
+  PORCAB    Float?    @default(0, map: "DF__CAB__PORCAB__1881A0DE") @db.Money
+  REFCAB    String?   @db.NVarChar(50)
+  CO2CAB    Boolean
+  LINCAB    Int
+  DIVCAB    Int
+  BITCAB    Float     @default(0, map: "DF__CAB__BITCAB__1975C517") @db.Money
+  TOTCAB    Float     @default(0, map: "DF__CAB__TOTCAB__1A69E950") @db.Money
+  COTCAB    Float     @default(0, map: "DF__CAB__COTCAB__1B5E0D89") @db.Money
+  FCRCAB    DateTime? @db.SmallDateTime
+  ALQ       ALQ?
+  ALM       ALM       @relation(fields: [ALMCAB], references: [IDEALM], onUpdate: NoAction, map: "ALMCAB_FK")
+  DIR       DIR?      @relation(fields: [DIRCAB], references: [IDEDIR], onDelete: NoAction, onUpdate: NoAction, map: "DIRCAB_FK")
+  DIV       DIV       @relation(fields: [DIVCAB], references: [IDEDIV], onUpdate: NoAction, map: "DIVCAB_FK")
+  ENT       ENT       @relation(fields: [ENTCAB], references: [IDEENT], onUpdate: NoAction, map: "ENTCAB_FK")
+  IMP       IMP       @relation(fields: [IMPCAB], references: [IDEIMP], onUpdate: NoAction, map: "IMPCAB_FK")
+  CAB       CAB?      @relation("CABToCAB", fields: [REFCAB], references: [NUMCAB], onDelete: NoAction, onUpdate: NoAction, map: "REFCAB_FK")
+  other_CAB CAB[]     @relation("CABToCAB")
+  FTR       FTR?      @relation(fields: [TRACAB], references: [ENTFTR], onDelete: NoAction, onUpdate: NoAction, map: "TRACAB_FK")
+  FVE       FVE?      @relation(fields: [USUCAB], references: [ENTFVE], onDelete: NoAction, onUpdate: NoAction, map: "USUCAB_FK")
+  EXA       EXA[]
+  LAB       LAB[]
+  LAT       LAT[]
+  LIQ       LIQ[]
+  MAC       MAC[]
+  OKT       OKT[]
+  OTR       OTR?
+  RCO       RCO[]
+
+  @@index([ALPCAB], map: "ALPCAB_NX")
+  @@index([ESTCAB], map: "ESTCAB_NX")
+  @@index([FACCAB], map: "FACCAB_NX")
+  @@index([FECCAB], map: "FECCAB_NX")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model CAJ {
+  USUCAJ BigInt?
+  ALMCAJ BigInt
+  NALCAJ String    @db.NVarChar(100)
+  DPTCAJ BigInt
+  NDPCAJ String    @db.NVarChar(50)
+  FECCAJ DateTime? @db.DateTime
+  MPGCAJ String?   @db.NVarChar(50)
+  TIPCAJ String?   @db.NVarChar(255)
+  IMPCAJ String?   @db.NVarChar(255)
+  DOCCAJ String?   @db.NVarChar(255)
+  CLICAJ String?   @db.NVarChar(150)
+  TOTCAJ Float?    @db.Money
+  ENTCAJ Boolean?
+  MCJCAJ BigInt?
+  FACCAJ String?   @db.NVarChar(100)
+  TESCAJ Int?
+  ACCCAJ Int       @default(0, map: "DF__CAJ__ACCMCJ__60365376")
+  IDPCAJ BigInt?
+  NOMCAJ String?   @db.NVarChar(255)
+  UPGCAJ String?   @db.NVarChar(255)
+  IDICAJ BigInt?
+
+  @@ignore
+}
+
+model CAL {
+  IDECAL Int       @id(map: "PK__CAL__23D946CD638F8109") @default(autoincrement())
+  NOMCAL String    @db.NVarChar(100)
+  CLMCAL Int
+  TAMCAL Int
+  FBJCAL DateTime? @db.DateTime
+  NOTCAL String?   @db.NText
+  AMO    AMO[]
+}
+
+model CAT {
+  IDECAT Int      @id(map: "PK__CAT__23D946C547477CBF") @default(autoincrement())
+  CODCAT String   @unique(map: "UQ__CAT__CB56521F4A23E96A") @db.NVarChar(5)
+  DESCAT String?  @db.NVarChar(255)
+  Piezas Piezas[]
+  TFA    TFA[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model CATTV {
+  Id            BigInt?
+  IdFamilia     BigInt?
+  IdDivision    BigInt?
+  IdSubdivision BigInt?
+  Nombre        String? @db.NVarChar(255)
+
+  @@ignore
+}
+
+model CDC {
+  IDECDC Int      @id(map: "IDECDC_PK") @default(autoincrement())
+  NOMCDC String   @db.NVarChar(150)
+  CODCDC String   @db.NVarChar(50)
+  MARCDC String   @db.NVarChar(2)
+  NOTCDC String?  @db.NText
+  MAR    MAR      @relation(fields: [MARCDC], references: [IDEMAR], onUpdate: NoAction, map: "MARCDC_FK")
+  Piezas Piezas[]
+  VEH    VEH[]
+
+  @@unique([CODCDC, MARCDC], map: "CODMARCDC_UN")
+}
+
+model CDM {
+  IDECDM Int      @id(map: "IDECDM_PK") @default(autoincrement())
+  NOMCDM String   @db.NVarChar(150)
+  CODCDM String   @db.NVarChar(50)
+  MARCDM String   @db.NVarChar(2)
+  CILCDM Int?
+  POTCDM Int?
+  CMBCDM Int?
+  NOTCDM String?  @db.NText
+  MAR    MAR      @relation(fields: [MARCDM], references: [IDEMAR], onUpdate: NoAction, map: "MARCDM_FK")
+  Piezas Piezas[]
+  VEH    VEH[]
+
+  @@unique([CODCDM, MARCDM], map: "CODMARCDM_UN")
+}
+
+model CDT {
+  IDECDT Int      @id(map: "IDECDT_PK") @default(autoincrement())
+  NOMCDT String   @db.NVarChar(150)
+  CODCDT String   @db.NVarChar(50)
+  MARCDT String   @db.NVarChar(2)
+  IMGCDT String?  @db.NVarChar(255)
+  NOTCDT String?  @db.NText
+  MAR    MAR      @relation(fields: [MARCDT], references: [IDEMAR], onUpdate: NoAction, map: "MARCDT_FK")
+  Piezas Piezas[]
+  VEH    VEH[]
+
+  @@unique([CODCDT, MARCDT], map: "CODMARCDT_UN")
+}
+
+model CFA {
+  IDECFA Int      @id(clustered: false, map: "IDECFA_PK") @default(autoincrement())
+  NUMCFA String   @db.NVarChar(50)
+  ALMCFA Int?
+  DEPCFA Int
+  FECCFA DateTime @default(now(), map: "DF__CFA__FECCFA__79FD19BE") @db.DateTime
+  CO2CFA Boolean? @default(false, map: "DF__CFA__CO2CFA__7AF13DF7")
+  CONCFA Boolean? @default(false, map: "DF__CFA__CONCFA__7BE56230")
+  ENTCFA Int
+  DPPCFA Float    @default(0, map: "DF__CFA__DPPCFA__7CD98669") @db.Real
+  DCPCFA Int?
+  FPACFA Int
+  TIVCFA Int
+  DIVCFA Int
+  BI1CFA Float    @default(0, map: "DF__CFA__BI1CFA__7DCDAAA2") @db.Money
+  TI1CFA Float    @default(0, map: "DF__CFA__TI1CFA__7EC1CEDB") @db.Real
+  RE1CFA Float    @default(0, map: "DF__CFA__RE1CFA__7FB5F314") @db.Real
+  BI2CFA Float    @default(0, map: "DF__CFA__BI2CFA__00AA174D") @db.Money
+  TI2CFA Float    @default(0, map: "DF__CFA__TI2CFA__019E3B86") @db.Real
+  RE2CFA Float    @default(0, map: "DF__CFA__RE2CFA__02925FBF") @db.Real
+  BI3CFA Float    @default(0, map: "DF__CFA__BI3CFA__038683F8") @db.Money
+  TI3CFA Float    @default(0, map: "DF__CFA__TI3CFA__047AA831") @db.Real
+  RE3CFA Float    @default(0, map: "DF__CFA__RE3CFA__056ECC6A") @db.Real
+  BIPCFA Float    @default(0, map: "DF__CFA__BIPCFA__0662F0A3") @db.Money
+  TIPCFA Float    @default(0, map: "DF__CFA__TIPCFA__075714DC") @db.Real
+  REPCFA Float    @default(0, map: "DF__CFA__REPCFA__084B3915") @db.Real
+  TOTCFA Float    @default(0, map: "DF__CFA__TOTCFA__093F5D4E") @db.Money
+  FRECFA Boolean  @default(false, map: "DF__CFA__FRECFA__0A338187")
+  CPTCFA String?  @db.NVarChar(255)
+  IMPCFA Int?
+  CAXCFA String?  @db.NVarChar(13)
+  DIRCFA Int?
+  CI1CFA Float?   @db.Money
+  CR1CFA Float?   @db.Money
+  CI2CFA Float?   @db.Money
+  CR2CFA Float?   @db.Money
+  CI3CFA Float?   @db.Money
+  CR3CFA Float?   @db.Money
+  CIPCFA Float?   @db.Money
+  CRPCFA Float?   @db.Money
+  NOTCFA String?  @db.NText
+  FEMCFA DateTime @default(now(), map: "DF__CFA__FEMCFA__0B27A5C0") @db.DateTime
+  FICCFA Boolean  @default(false, map: "DF_CFA_FICCFA")
+  MPACFA Int?
+  MNECFA Int?
+  BRTCFA Float    @default(0, map: "DF__CFA__BRTCFA__2C345F27") @db.Money
+  TRTCFA Float    @default(0, map: "DF__CFA__TRTCFA__2D288360") @db.Real
+  CRTCFA Float    @default(0, map: "DF__CFA__CRTCFA__2E1CA799") @db.Money
+  CAMCFA Boolean? @default(false, map: "DF__CFA__CAMCFA__6E7723D0")
+  CG1CFA String?  @db.NVarChar(20)
+  CG2CFA String?  @db.NVarChar(20)
+  CG3CFA String?  @db.NVarChar(20)
+  CGPCFA String?  @db.NVarChar(20)
+  CGRCFA String?  @db.NVarChar(20)
+  BEXCFA Float?   @db.Money
+  CGXCFA String?  @db.NVarChar(20)
+  TESCFA Int?
+  CX2CFA String?  @db.NVarChar(20)
+  BX2CFA Float?   @db.Money
+  REFCFA String?  @db.NVarChar(50)
+  VEHCFA BigInt?
+  EXPCFA Boolean? @default(false, map: "DF__CFA__EXPCFA__105F2BEE")
+  RBUCFA Boolean?
+  ALM    ALM?     @relation(fields: [ALMCFA], references: [IDEALM], onDelete: NoAction, onUpdate: NoAction, map: "ALMCFA_FK")
+  DEP    DEP      @relation(fields: [DEPCFA], references: [IDEDEP], onUpdate: NoAction, map: "DEPCFA_FK")
+  DIR    DIR?     @relation(fields: [DIRCFA], references: [IDEDIR], onDelete: NoAction, onUpdate: NoAction, map: "DIRCFA_FK")
+  DIV    DIV      @relation(fields: [DIVCFA], references: [IDEDIV], onUpdate: NoAction, map: "DIVCFA_FK")
+  ENT    ENT      @relation(fields: [ENTCFA], references: [IDEENT], onUpdate: NoAction, map: "ENTCFA_FK")
+  CFP    CFP      @relation(fields: [FPACFA], references: [IDECFP], onUpdate: NoAction, map: "FPACFA_FK")
+  IMP    IMP?     @relation(fields: [IMPCFA], references: [IDEIMP], onDelete: NoAction, onUpdate: NoAction, map: "IMPCFA_FK")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model CFAtmp {
+  NUMCFA   String?   @db.NVarChar(50)
+  FECCFA   DateTime? @db.DateTime
+  NIFENT   String?   @db.NVarChar(50)
+  ENTCFA   BigInt?
+  CLIEN    String?   @db.NVarChar(250)
+  BIMP     Float?    @db.Money
+  CUOTIVA  Float?    @db.Money
+  TOTAL    Float?    @db.Money
+  CONCFA   Boolean?
+  DEPCFA   Int?
+  DIRDIR   String?   @db.NVarChar(200)
+  POBDIR   String?   @db.NVarChar(200)
+  NOMPRO   String?   @db.NVarChar(200)
+  CPODIR   String?   @db.NVarChar(10)
+  TLFDIR   String?   @db.NVarChar(20)
+  TL1DIR   String?   @db.NVarChar(20)
+  FAXDIR   String?   @db.NVarChar(20)
+  NOMDEP   String?   @db.NVarChar(100)
+  IDECFA   BigInt?
+  CO2CFA   Boolean?
+  NOMCFP   String?   @db.NVarChar(100)
+  MEDIO    String?   @db.NVarChar(100)
+  NOTCFA   String?   @db.NText
+  IDEENT   BigInt?
+  ALMCFA   Int?
+  NOMALM   String?   @db.NVarChar(100)
+  RBUCFA   Boolean?
+  BRTCFA   Float?    @db.Money
+  TRTCFA   Float?    @db.Real
+  CRTCFA   Float?    @db.Money
+  BEXCFA   Float?    @db.Money
+  BX2CFA   Float?    @db.Money
+  TOTALDOC Float?    @db.Money
+  EXPCFA   Boolean?  @default(false, map: "DF__CFAtmp__EXPCFA__11535027")
+  Cuenta   String?   @db.NVarChar(20)
+  IMPCFA   Int?
+
+  @@ignore
+}
+
+model CFB {
+  IDECFB Int       @id(map: "IDECFB_PK") @default(autoincrement())
+  NOMCFB String    @db.NVarChar(50)
+  DESCFB String?   @db.NText
+  TIPCFB Int
+  NOTCFB String?   @db.NText
+  FBJCFB DateTime? @db.DateTime
+  LFB    LFB[]
+}
+
+model CFP {
+  IDECFP Int       @id(map: "IDECFP_PK") @default(autoincrement())
+  NOMCFP String    @db.NVarChar(50)
+  INMCFP Boolean   @default(false, map: "DF__CFP__INMCFP__7E6CC920")
+  INTCFP Boolean   @default(false, map: "DF__CFP__INTCFP__7F60ED59")
+  FBJCFP DateTime? @db.DateTime
+  WEBCFP Int?
+  CFA    CFA[]
+  CPD    CPD[]
+  CPS    CPS[]
+  FCL    FCL[]
+  FPR    FPR[]
+  FVE    FVE[]
+  LFP    LFP[]
+
+  @@index([NOMCFP], map: "NOMCFP_NX")
+}
+
+model CIC {
+  IDECIC Int    @id(map: "IDECIC_PK") @default(autoincrement())
+  NOMCIC String @db.NVarChar(255)
+  LIC    LIC[]
+}
+
+model CIN {
+  IDECIN Int       @id(map: "IDECIN_PK") @default(autoincrement())
+  NOMCIN String    @db.NVarChar(50)
+  FECCIN DateTime  @default(now(), map: "DF__CIN__FECCIN__53A266AC") @db.DateTime
+  FEFCIN DateTime? @db.DateTime
+  ALMCIN Int
+  ESTCIN Int       @default(1, map: "DF__CIN__ESTCIN__54968AE5")
+  TIPCIN Int       @default(1, map: "DF__CIN__TIPCIN__558AAF1E")
+  NOTCIN String?   @db.NText
+  PASCIN Int?
+  USUCIN Int?
+  ALM    ALM       @relation(fields: [ALMCIN], references: [IDEALM], onDelete: Cascade, map: "ALMCIN_FK")
+  PAL    PAL?      @relation(fields: [PASCIN], references: [IDEPAL], onDelete: NoAction, onUpdate: NoAction, map: "PASCIN_FK")
+  DIN    DIN[]
+
+  @@index([NOMCIN], map: "NOMCIN_NX")
+}
+
+model CIT {
+  IDECIT              Int       @id(map: "IDECIT_PK") @default(autoincrement())
+  NOMCIT              String?   @db.NVarChar(150)
+  TLFCIT              String?   @db.NVarChar(50)
+  MATCIT              String?   @db.NVarChar(50)
+  MODCIT              String?   @db.NVarChar(50)
+  FECCIT              DateTime? @db.DateTime
+  OTRCIT              String?   @db.NVarChar(50)
+  ASECIT              Int
+  SCCCIT              Int?
+  ESTCIT              Int?
+  DURCIT              Float?    @db.Real
+  DESCIT              String?   @db.NText
+  CSECIT              String?   @db.NVarChar(255)
+  IENCIT              Int?
+  IVECIT              Int?
+  USUCIT              Int
+  FCRCIT              DateTime? @db.DateTime
+  ICSCIT              Int?
+  OPECIT              Int?
+  ALMCIT              Int?
+  VCOCIT              Boolean?  @default(false, map: "DF__CIT__VCOCIT__0904F58D")
+  TIPCIT              Int?      @default(1, map: "DF__CIT__TIPCIT__09F919C6")
+  MOPCIT              Float?    @db.Money
+  PERCIT              Float?    @db.Money
+  FVE_CIT_ASECITToFVE FVE       @relation("CIT_ASECITToFVE", fields: [ASECIT], references: [ENTFVE], onUpdate: NoAction, map: "ASECIT_FK")
+  FCS                 FCS?      @relation(fields: [ICSCIT], references: [ENTFCS], onDelete: NoAction, onUpdate: NoAction, map: "ICSCIT_FK")
+  FCL                 FCL?      @relation(fields: [IENCIT], references: [ENTFCL], onDelete: NoAction, onUpdate: NoAction, map: "IENCIT_FK")
+  VEH                 VEH?      @relation(fields: [IVECIT], references: [IDEVEH], onDelete: NoAction, onUpdate: NoAction, map: "IVECIT_FK")
+  OTR                 OTR?      @relation(fields: [OTRCIT], references: [ALBOTR], onDelete: NoAction, onUpdate: NoAction, map: "OTRCIT_FK")
+  SCC                 SCC?      @relation(fields: [SCCCIT], references: [IDESCC], onDelete: NoAction, onUpdate: NoAction, map: "SCCCIT_FK")
+  FVE_CIT_USUCITToFVE FVE       @relation("CIT_USUCITToFVE", fields: [USUCIT], references: [ENTFVE], onUpdate: NoAction, map: "USUCIT_FK")
+}
+
+model CJC {
+  IDECJC Int       @id(map: "PK__CJC__23DF963B6C121A76") @default(autoincrement())
+  NOMCJC String    @db.NVarChar(100)
+  ALMCJC Int
+  FMICJC Float?    @db.Money
+  FONCJC Float?    @db.Money
+  FECCJC DateTime? @db.DateTime
+  TESCJC Int?
+  FCRCJC DateTime? @db.SmallDateTime
+  BAJCJC Boolean?
+  FBACJC DateTime? @db.SmallDateTime
+  CIECJC Float?    @db.Money
+  FAPCJC DateTime? @db.DateTime
+  DATCJC Int?      @default(0, map: "DF__CJC__DATCJC__133B9899")
+}
+
+model CJL {
+  IDECJL Int @id(map: "PK__CJL__23DF96026FE2AB5A") @default(autoincrement())
+  CAJCJL Int
+  IMPCJL Int
+}
+
+model CKT {
+  IDECKT Int       @id(map: "IDECKT_PK") @default(autoincrement())
+  NOMCKT String    @unique(map: "NOMCKT_UQ") @db.VarChar(255)
+  PVPCKT Float     @db.Money
+  FEACKT DateTime  @db.SmallDateTime
+  FEBCKT DateTime? @db.SmallDateTime
+  NOTCKT String?   @db.NVarChar(255)
+  CODCKT String?   @db.NVarChar(50)
+  APLCKT String?   @db.NVarChar(250)
+  LKT    LKT[]
+  OKT    OKT[]
+}
+
+model CLO {
+  IDECLO    Int      @id(map: "IDECLO_PK") @default(autoincrement())
+  DESCLO    String   @db.NVarChar(50)
+  CLOCLO    Int      @default(0, map: "DF__CLO__CLOCLO__3A179ED3")
+  NOTCLO    String?  @db.NText
+  MARCLO    String?  @db.NVarChar(2)
+  CLBCLO    Int?
+  METCLO    Boolean  @default(false, map: "DF__CLO__METCLO__3B0BC30C")
+  CODCLO    String?  @db.NVarChar(50)
+  COMCLO    String?  @db.NVarChar(50)
+  CLO       CLO?     @relation("CLOToCLO", fields: [CLBCLO], references: [IDECLO], onDelete: NoAction, onUpdate: NoAction, map: "CLBCLO_FK")
+  other_CLO CLO[]    @relation("CLOToCLO")
+  MAR       MAR?     @relation(fields: [MARCLO], references: [IDEMAR], onDelete: NoAction, onUpdate: NoAction, map: "MARCLO_FK")
+  CPV       CPV[]
+  Piezas    Piezas[]
+  VEH       VEH[]
+
+  @@index([DESCLO], map: "DESCLO_NX")
+}
+
+model COL {
+  ENTCOL Int
+  PZACOL Int
+  MRECOL String    @db.NVarChar(150)
+  PVPCOL Float     @db.Money
+  DT1COL Float     @db.Real
+  DT2COL Float     @db.Real
+  FEACOL DateTime  @default(now(), map: "DF__COL__FEACOL__08162EEB") @db.DateTime
+  FEBCOL DateTime? @db.DateTime
+  NOTCOL String?   @db.NText
+  DTCCOL Int?
+  PRGCOL Boolean   @default(false, map: "DF__COL__PRGCOL__090A5324")
+  EANCOL String?   @db.NVarChar(50)
+  DTC    DTC?      @relation(fields: [DTCCOL], references: [IDEDTC], onDelete: NoAction, onUpdate: NoAction, map: "DTCCOL_FK")
+  FPR    FPR       @relation(fields: [ENTCOL], references: [ENTFPR], onDelete: Cascade, map: "ENTCOL_FK")
+  Piezas Piezas    @relation(fields: [PZACOL], references: [IDPieza], onUpdate: NoAction, map: "PZACOL_FK")
+
+  @@id([ENTCOL, PZACOL], map: "ENTPZACOL_PK")
+  @@index([FEBCOL], map: "FEBCOL_NX")
+  @@index([MRECOL], map: "MRECOL_NX")
+}
+
+model CON {
+  IDECON Int       @id(map: "IDECON_PK") @default(autoincrement())
+  ENTCON Int
+  DIRCON Int
+  NOMCON String    @db.NVarChar(255)
+  CARCON String?   @db.NVarChar(50)
+  TLFCON String?   @db.NVarChar(20)
+  TL1CON String?   @db.NVarChar(20)
+  FAXCON String?   @db.NVarChar(20)
+  EMACON String?   @db.NVarChar(255)
+  NOTCON String?   @db.NText
+  FNACON DateTime? @db.DateTime
+  DIR    DIR       @relation(fields: [DIRCON], references: [IDEDIR], onDelete: Cascade, map: "DIRCON_FK")
+  ENT    ENT       @relation(fields: [ENTCON], references: [IDEENT], onUpdate: NoAction, map: "ENTCON_FK")
+  TAR    TAR[]
+}
+
+model COT {
+  IDECOT Int      @id(map: "IDECOT_PK") @default(autoincrement())
+  DIVCOT Int
+  FECCOT DateTime @default(now(), map: "DF__COT__FECCOT__5EBF139D") @db.DateTime
+  COTCOT Float    @db.Real
+  DIV    DIV      @relation(fields: [DIVCOT], references: [IDEDIV], onDelete: Cascade, map: "DIVCOT_FK")
+
+  @@unique([DIVCOT, FECCOT], map: "FECDIVCOT_NX")
+}
+
+model CPD {
+  NUMCPD String    @id(map: "NUMCPD_PK") @db.NVarChar(50)
+  ALPCPD String?   @db.NVarChar(50)
+  FECCPD DateTime  @default(now(), map: "DF__CPD__FECCPD__5A846E65") @db.DateTime
+  ESTCPD Int       @default(0, map: "DF__CPD__ESTCPD__5B78929E")
+  USUCPD Int?
+  ENTCPD Int
+  DIRCPD Int?
+  ALMCPD Int
+  PUECPD Int
+  DEPCPD Int
+  URGCPD Float     @default(0, map: "DF__CPD__URGCPD__5C6CB6D7") @db.Real
+  PPGCPD Float     @default(0, map: "DF__CPD__PPGCPD__5D60DB10") @db.Real
+  OBSCPD String?   @db.NText
+  TIPCPD Int
+  IMPCPD Int
+  FPACPD Int
+  TRACPD Int?
+  PORCPD Float?    @default(0, map: "PORCPD_DF") @db.Money
+  LINCPD Int       @default(0, map: "LINCPD_DF")
+  DIVCPD Int?
+  BITCPD Float     @default(0, map: "BITCPD_DF") @db.Money
+  TOTCPD Float     @default(0, map: "TOTCPD_DF") @db.Money
+  COTCPD Float     @default(0, map: "COTCPD_DF") @db.Money
+  TURCPD Int?
+  ESMCPD Int?
+  DORCPD String?   @db.NVarChar(50)
+  DSTCPD String?   @db.NVarChar(50)
+  PFACPD String?   @db.NVarChar(100)
+  FPECPD DateTime? @db.SmallDateTime
+  ALM    ALM       @relation(fields: [ALMCPD], references: [IDEALM], onUpdate: NoAction, map: "ALMCPD_FK")
+  DEP    DEP       @relation(fields: [DEPCPD], references: [IDEDEP], onUpdate: NoAction, map: "DEPCPD_FK")
+  DIR    DIR?      @relation(fields: [DIRCPD], references: [IDEDIR], onDelete: NoAction, onUpdate: NoAction, map: "DIRCPD_FK")
+  DIV    DIV?      @relation(fields: [DIVCPD], references: [IDEDIV], onDelete: NoAction, onUpdate: NoAction, map: "DIVCPD_FK")
+  ENT    ENT       @relation(fields: [ENTCPD], references: [IDEENT], onUpdate: NoAction, map: "ENTCPD_FK")
+  CFP    CFP       @relation(fields: [FPACPD], references: [IDECFP], onUpdate: NoAction, map: "FPACPD_FK")
+  IMP    IMP       @relation(fields: [IMPCPD], references: [IDEIMP], onUpdate: NoAction, map: "IMPCPD_FK")
+  FVE    FVE?      @relation(fields: [USUCPD], references: [ENTFVE], onDelete: NoAction, onUpdate: NoAction, map: "USUCPD_FK")
+  CPT    CPT?
+  DPP    DPP[] @ignore
+  LPD    LPD[]
+  LPT    LPT[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model CPP {
+  Id     Int      @default(autoincrement())
+  NUMCPP String   @db.NVarChar(50)
+  FECCPP DateTime @db.SmallDateTime
+  ESTCPP Int
+  ENTCPP Int
+  ALMCPP Int
+  DEPCPP Int
+  PPGCPP Float    @db.Real
+  FPACPP Int
+  OBSCPP String?  @db.NText
+
+  @@ignore
+}
+
+model CPS {
+  IDECPS Int      @id(map: "IDECPS_PK") @default(autoincrement())
+  NUMCPS String   @db.NVarChar(50)
+  FECCPS DateTime @default(now(), map: "DF__CPS__FECCPS__3F6663D5") @db.DateTime
+  ESTCPS Int
+  ENTCPS Int
+  ALMCPS Int
+  PUECPS Int?
+  DEPCPS Int
+  PPGCPS Float    @db.Real
+  OBSCPS String?  @db.NText
+  FPACPS Int
+  VEHCPS Int?
+  KILCPS Int?
+  DAVCPS String?  @db.NText
+  CSECPS Int?
+  NSICPS String?  @db.NVarChar(50)
+  DIVCPS Int?
+  ALM    ALM      @relation(fields: [ALMCPS], references: [IDEALM], onUpdate: NoAction, map: "ALMCPS_FK")
+  FCS    FCS?     @relation(fields: [CSECPS], references: [ENTFCS], onDelete: NoAction, onUpdate: NoAction, map: "CSECPS_FK")
+  DEP    DEP      @relation(fields: [DEPCPS], references: [IDEDEP], onUpdate: NoAction, map: "DEPCPS_FK")
+  DIV    DIV?     @relation(fields: [DIVCPS], references: [IDEDIV], onDelete: NoAction, onUpdate: NoAction, map: "DIVCPS_FK")
+  ENT    ENT      @relation(fields: [ENTCPS], references: [IDEENT], onUpdate: NoAction, map: "ENTCPS_KF")
+  CFP    CFP      @relation(fields: [FPACPS], references: [IDECFP], onUpdate: NoAction, map: "FPACPS_FK")
+  VEH    VEH?     @relation(fields: [VEHCPS], references: [IDEVEH], onDelete: NoAction, onUpdate: NoAction, map: "VEHCPS_FK")
+  LPS    LPS[]
+
+  @@index([FECCPS], map: "FECCPS_NX")
+}
+
+model CPT {
+  ALBCPT String    @id(clustered: false, map: "ALBCPT_PK") @db.NVarChar(50)
+  CSECPT Int?
+  NSICPT String?   @db.NVarChar(50)
+  VEHCPT Int?
+  KILCPT Int?
+  DAVCPT String?   @db.NText
+  BITCPT Float     @default(0, map: "DF__CPT__BITCPT__35DCF99B") @db.Money
+  COTCPT Float     @default(0, map: "DF__CPT__COTCPT__36D11DD4") @db.Money
+  OTRCPT String?   @db.NVarChar(50)
+  FQTCPT Int?
+  FQCCPT Float?    @db.Money
+  PERCPT Int?
+  FQECPT Boolean?  @default(false, map: "DF__CPT__FQECPT__77DA698B")
+  FETCPT DateTime? @db.SmallDateTime
+  CTECPT Boolean?  @default(false, map: "DF__CPT__CTECPT__18F471EF")
+  MORCPT Int       @default(0, map: "DF__CPT__MORCPT__71D93FEA")
+  UARCPT BigInt    @default(0, map: "DF__CPT__UARCPT__72CD6423")
+  FARCPT DateTime? @db.SmallDateTime
+  CPD    CPD       @relation(fields: [ALBCPT], references: [NUMCPD], onDelete: Cascade, map: "ALBCPT_FK")
+  ENT    ENT?      @relation(fields: [CSECPT], references: [IDEENT], onDelete: NoAction, onUpdate: NoAction, map: "CSECPT_FK")
+  VEH    VEH?      @relation(fields: [VEHCPT], references: [IDEVEH], onDelete: NoAction, onUpdate: NoAction, map: "VEHCPT_FK")
+}
+
+model CPV {
+  IDECPV              Int       @id(map: "IDECPV_PK") @default(autoincrement())
+  NUMCPV              String    @unique(map: "NUMCPV_UK") @db.NVarChar(50)
+  FECCPV              DateTime  @db.SmallDateTime
+  INTCPV              Int       @default(0, map: "DF__CPV__INTCPV__4B8221F7")
+  VALCPV              Int       @default(1, map: "DF__CPV__VALCPV__4C764630")
+  USUCPV              Int
+  ASICPV              Int
+  MODCPV              Int
+  PMOCPV              Float     @default(0, map: "DF__CPV__PMOCPV__4D6A6A69") @db.Money
+  TOTCPV              Float     @default(0, map: "DF__CPV__TOTCPV__4E5E8EA2") @db.Money
+  COSCPV              Float     @default(0, map: "DF__CPV__COSCPV__4F52B2DB") @db.Money
+  VODCPV              String?   @db.NVarChar(255)
+  VOVCPV              Float?    @db.Money
+  VOFCPV              DateTime? @db.SmallDateTime
+  VOMCPV              String?   @db.NVarChar(10)
+  NOMCPV              String    @db.NVarChar(50)
+  APECPV              String?   @db.NVarChar(100)
+  DIRCPV              String?   @db.NVarChar(255)
+  LOCCPV              String?   @db.NVarChar(50)
+  CPOCPV              String?   @db.VarChar(10)
+  PROCPV              String?   @db.NVarChar(50)
+  TLFCPV              String?   @db.NVarChar(15)
+  EMACPV              String?   @db.NVarChar(50)
+  IMPCPV              Int
+  CLOCPV              Int?
+  NOTCPV              String?   @db.NVarChar(255)
+  EDACPV              Int?
+  HOMCPV              Boolean?
+  VOKCPV              Int?
+  TL2CPV              String?   @db.NVarChar(15)
+  OBSCPV              String?   @db.NVarChar(Max)
+  PORCPV              Decimal?  @default(0, map: "DF__CPV__PORCPV__1C281490") @db.Decimal(18, 2)
+  ACCCPV              Decimal?  @default(0, map: "DF__CPV__ACCCPV__1D1C38C9") @db.Decimal(18, 2)
+  DTOCPV              Decimal?  @default(0, map: "DF__CPV__DTOCPV__1E105D02") @db.Decimal(18, 2)
+  OPCCPV              Decimal?  @default(0, map: "DF__CPV__OPCCPV__0B95B2C7") @db.Decimal(18, 2)
+  NIFCPV              String?   @db.NVarChar(50)
+  RBUCPV              Boolean?  @default(false, map: "DF__CPV__RBUCPV__2618C956")
+  MATCPV              String?   @db.NVarChar(255)
+  FVE_CPV_ASICPVToFVE FVE       @relation("CPV_ASICPVToFVE", fields: [ASICPV], references: [ENTFVE], onUpdate: NoAction, map: "ASICPV_FK")
+  CLO                 CLO?      @relation(fields: [CLOCPV], references: [IDECLO], onDelete: NoAction, onUpdate: NoAction, map: "CLOCPV_FK")
+  IMP                 IMP       @relation(fields: [IMPCPV], references: [IDEIMP], onUpdate: NoAction, map: "IMPCPV_FK")
+  Piezas              Piezas    @relation(fields: [MODCPV], references: [IDPieza], onUpdate: NoAction, map: "MODCPV_FK")
+  FVE_CPV_USUCPVToFVE FVE       @relation("CPV_USUCPVToFVE", fields: [USUCPV], references: [ENTFVE], onUpdate: NoAction, map: "USUCPV_FK")
+  LAC                 LAC[]
+  LFI                 LFI[]
+  LSP                 LSP[]
+}
+
+model CRD {
+  IDECRD Int       @id(map: "IDECRD_PK") @default(autoincrement())
+  NUMCRD String?   @db.NVarChar(50)
+  USUCRD Int?
+  ESTCRD Int?
+  FECCRD DateTime  @default(now(), map: "DF__CRD__FECCRD__25DB9BFC") @db.DateTime
+  FIMCRD DateTime? @db.DateTime
+  FRECRD DateTime? @db.DateTime
+  CONCRD Int?
+  TOTCRD Float?    @default(0, map: "DF__CRD__TOTCRD__26CFC035") @db.Money
+  CO2CRD Boolean?  @default(false, map: "DF__CRD__CO2CRD__27C3E46E")
+  PORCRD Int?
+  PDECRD Int?
+  APOCRD Boolean?  @default(false, map: "DF__CRD__APOCRD__28B808A7")
+  APDCRD Boolean?  @default(false, map: "DF__CRD__APDCRD__29AC2CE0")
+  TESCRD Int?
+  IMPCRD Float?    @db.Money
+  FVE    FVE?      @relation(fields: [USUCRD], references: [ENTFVE], onDelete: NoAction, onUpdate: NoAction, map: "USUCRD_FK")
+  LRD    LRD[]
+}
+
+model CRT {
+  IDECRT              Int       @id(map: "IDECRT_PK") @default(autoincrement())
+  NUMCRT              String?   @db.NVarChar(50)
+  ENTCRT              Int
+  LIBCRT              Int
+  POCCRT              Boolean   @default(false, map: "DF__CRT__POCCRT__22CA2527")
+  CPTCRT              String?   @db.NText
+  AOECRT              Boolean   @default(false, map: "DF__CRT__AOECRT__23BE4960")
+  DOCCRT              String?   @db.NVarChar(50)
+  CANCRT              Float     @db.Money
+  RESCRT              Float     @db.Money
+  FEMCRT              DateTime  @default(now(), map: "DF__CRT__FEMCRT__24B26D99") @db.DateTime
+  FVTCRT              DateTime? @db.DateTime
+  CUECRT              String?   @db.NVarChar(34)
+  DEPCRT              Int
+  CO2CRT              Boolean   @default(false, map: "DF__CRT__CO2CRT__25A691D2")
+  EMCCRT              Int
+  VEHCRT              Int?
+  ENVCRT              Int?
+  TESCRT              Int?
+  MPGCRT              Int?
+  FPGCRT              DateTime? @db.SmallDateTime
+  SELCRT              Boolean?  @default(false, map: "DF__CRT__SELCRT__1B33F057")
+  EFSCRT              String?   @db.NText
+  ALMCRT              Int?
+  CPMCRT              String?   @db.NVarChar(20)
+  USUCRT              BigInt?
+  CAJCRT              BigInt?
+  NOTCRT              String?   @db.NText
+  USMCRT              BigInt?
+  FMOCRT              DateTime? @db.SmallDateTime
+  DEP                 DEP       @relation(fields: [DEPCRT], references: [IDEDEP], onUpdate: NoAction, map: "DEPCRT_FK")
+  EMC                 EMC       @relation(fields: [EMCCRT], references: [IDEEMC], onUpdate: NoAction, map: "EMCCRT_FK")
+  ENT_CRT_ENTCRTToENT ENT       @relation("CRT_ENTCRTToENT", fields: [ENTCRT], references: [IDEENT], onUpdate: NoAction, map: "ENTCRT_FK")
+  ENT_CRT_LIBCRTToENT ENT       @relation("CRT_LIBCRTToENT", fields: [LIBCRT], references: [IDEENT], onUpdate: NoAction, map: "LIBCRT_FK")
+  TES                 TES?      @relation(fields: [TESCRT], references: [IDETES], onDelete: NoAction, onUpdate: NoAction, map: "TESCRT_FK")
+
+  @@index([DOCCRT], map: "DOCCRT_NX")
+  @@index([FEMCRT], map: "FEMCRT_NX")
+}
+
+model CTD {
+  IDECTD Int       @id(map: "IDECTD_PK") @default(autoincrement())
+  TIPCTD String?   @db.NVarChar(3)
+  SERCTD String    @db.NVarChar(1)
+  NALCTD String    @db.NVarChar(1)
+  CONCTD Int       @default(1, map: "DF__CTD__CONCTD__55BFB948")
+  DESCTD String?   @db.NVarChar(150)
+  TDOCTD Int
+  DEFCTD Boolean   @default(false, map: "DF__CTD__DEFCTD__56B3DD81")
+  DEPCTD Int?
+  FBJCTD DateTime? @db.DateTime
+
+  @@unique([TIPCTD, NALCTD], map: "TIPALMCTD_UN")
+  @@index([FBJCTD], map: "FBJCTD_NX")
+}
+
+model CTE {
+  IDECTE Int      @default(autoincrement())
+  LINCTE Int      @id(clustered: false, map: "LINCTE_PK")
+  ALPCTE String?  @db.NVarChar(50)
+  ALMCTE Int
+  FECCTE DateTime @db.DateTime
+  ESTCTE Int
+  FACCTE String?  @db.NVarChar(50)
+  USUCTE Int?
+  ENTCTE Int
+  DIRCTE Int?
+  BITCTE Float    @db.Money
+  TOTCTE Float    @db.Money
+  CO2CTE Boolean  @default(false, map: "DF__CTE__CO2CTE__02A7A022")
+  OBSCTE String?  @db.NVarChar(255)
+  CABCTE String?  @db.NVarChar(15)
+  ALM    ALM      @relation(fields: [ALMCTE], references: [IDEALM], onUpdate: NoAction, map: "ALMCTE_FK")
+  DIR    DIR?     @relation(fields: [DIRCTE], references: [IDEDIR], onDelete: NoAction, onUpdate: NoAction, map: "DIRCTE_FK")
+  ENT    ENT      @relation(fields: [ENTCTE], references: [IDEENT], onUpdate: NoAction, map: "ENTCTE_FK")
+  FVE    FVE?     @relation(fields: [USUCTE], references: [ENTFVE], onDelete: NoAction, onUpdate: NoAction, map: "USUCTE_FK")
+}
+
+model CVE {
+  IDECVE Int     @id(map: "PK__CVE__23DFB6B46A90B8FC") @default(autoincrement())
+  CODCVE String  @unique(map: "OBJ_UQ_CODCVE") @db.NVarChar(5)
+  NOMCVE String? @db.NVarChar(255)
+  IMGCVE String? @db.NVarChar(255)
+  VEH    VEH[]
+}
+
+model DEP {
+  IDEDEP Int    @id(map: "IDEDEP_PK") @default(autoincrement())
+  NOMDEP String @db.NVarChar(50)
+  CFA    CFA[]
+  CPD    CPD[]
+  CPS    CPS[]
+  CRT    CRT[]
+  ERD    ERD[]
+  FAM    FAM[]
+  FVE    FVE[]
+  TAL    TAL[]
+
+  @@index([NOMDEP], map: "NOMDEP_NX")
+}
+
+model DIN {
+  IDEDIN Int      @id(map: "IDEDIN_PK") @default(autoincrement())
+  INVDIN Int
+  DESDIN Int
+  NORDIN Int      @default(0, map: "DF__DIN__NORDIN__2D47B39A")
+  FECDIN DateTime @default(now(), map: "DF__DIN__FECDIN__2E3BD7D3") @db.DateTime
+  USUDIN Int
+  PZADIN Int?
+  CANDIN Float    @db.Real
+  PVPDIN Float    @db.Money
+  COSDIN Float    @db.Money
+  ERRDIN Int      @default(0, map: "DF__DIN__ERRDIN__2F2FFC0C")
+  CALDIN Int?
+  MODDIN Int?
+  PASDIN Int?
+  CIN    CIN      @relation(fields: [INVDIN], references: [IDECIN], onUpdate: NoAction, map: "INVDIN_FK")
+  PAL    PAL?     @relation(fields: [PASDIN], references: [IDEPAL], onDelete: NoAction, onUpdate: NoAction, map: "PASDIN_FK")
+  Piezas Piezas?  @relation(fields: [PZADIN], references: [IDPieza], onDelete: NoAction, onUpdate: NoAction, map: "PZADIN_FK")
+  FVE    FVE      @relation(fields: [USUDIN], references: [ENTFVE], onUpdate: NoAction, map: "USUDIN_FK")
+}
+
+model DIR {
+  IDEDIR              Int       @id(map: "IDEDIR_PK") @default(autoincrement())
+  ENTDIR              Int
+  NOMDIR              String    @db.NVarChar(50)
+  DIRDIR              String    @db.NVarChar(255)
+  POBDIR              String    @db.NVarChar(150)
+  CPODIR              String    @db.NVarChar(10)
+  PRODIR              Int
+  PAIDIR              Int
+  TLFDIR              String?   @db.NVarChar(20)
+  TL1DIR              String?   @db.NVarChar(20)
+  FAXDIR              String?   @db.NVarChar(20)
+  EMADIR              String?   @db.NVarChar(255)
+  NOTDIR              String?   @db.NText
+  VTIDIR              Int?
+  VNODIR              String?   @db.NVarChar(75)
+  VNUDIR              Int?
+  VN2DIR              String?   @db.NVarChar(20)
+  VLODIR              String?   @db.NVarChar(50)
+  FBADIR              DateTime? @db.SmallDateTime
+  ALM                 ALM?
+  CAB                 CAB[]
+  CFA                 CFA[]
+  CON                 CON[]
+  CPD                 CPD[]
+  CTE                 CTE[]
+  ENT_DIR_ENTDIRToENT ENT       @relation("DIR_ENTDIRToENT", fields: [ENTDIR], references: [IDEENT], onDelete: Cascade, map: "ENTDIR_FK")
+  PAI                 PAI       @relation(fields: [PAIDIR], references: [IDEPAI], onDelete: Cascade, map: "PAIDIR_FK")
+  PRO                 PRO       @relation(fields: [PRODIR], references: [IDEPRO], onUpdate: NoAction, map: "PRODIR_FK")
+  ENT_ENT_DFAENTToDIR ENT[]     @relation("ENT_DFAENTToDIR")
+
+  @@index([NOMDIR], map: "NOMDIR_NX")
+}
+
+model DIV {
+  IDEDIV Int     @id(map: "IDEDIV_PK") @default(autoincrement())
+  NOMDIV String  @db.NVarChar(50)
+  SIMDIV String  @db.NVarChar(10)
+  DECDIV Int     @default(0, map: "DF__DIV__DECDIV__1367E606")
+  DENDIV String? @db.NVarChar(50)
+  FEMDIV Boolean @default(false, map: "DF__DIV__FEMDIV__145C0A3F")
+  CAB    CAB[]
+  CFA    CFA[]
+  COT    COT[]
+  CPD    CPD[]
+  CPS    CPS[]
+
+  @@index([NOMDIV], map: "NOMDIV_NX")
+}
+
+model DLL {
+  IDEDLL Int       @id(map: "IDEDLL_PK") @default(autoincrement())
+  NOMDLL String    @db.NVarChar(50)
+  DESDLL String    @db.NVarChar(255)
+  ALIDLL String    @db.NVarChar(50)
+  VERDLL String?   @db.NVarChar(50)
+  PAPDLL String    @db.NVarChar(50)
+  NABDLL String?   @db.NVarChar(50)
+  FBJDLL DateTime? @db.SmallDateTime
+}
+
+model DOT {
+  IDEDOT Int     @id(map: "PK__DOT__2B9F624A") @default(autoincrement())
+  ALBDOT String? @db.NVarChar(50)
+  NOMDOT String  @db.NVarChar(255)
+  LOCDOT String  @db.NVarChar(255)
+  NOTDOT String? @db.NVarChar(255)
+  DRODOT Boolean @default(false, map: "DF__DOT__DRODOT__0D5574B5")
+}
+
+model DPE {
+  ENTDPE Int       @id(map: "ENTDPE_PK") @default(0, map: "DF__DPE__ENTDPE__01142BA1")
+  PRFDPE String?   @db.NVarChar(50)
+  ECVDPE String?   @db.NVarChar(1)
+  FNADPE DateTime? @db.DateTime
+  SEXDPE String?   @db.NVarChar(1)
+  NPIDPE String?   @db.NVarChar(50)
+  AP1DPE String?   @db.NVarChar(50)
+  AP2DPE String?   @db.NVarChar(50)
+  IRPDPE Boolean   @default(false, map: "DF__DPE__IRPDPE__02FC7413")
+  ENT    ENT       @relation(fields: [ENTDPE], references: [IDEENT], onDelete: Cascade, map: "ENTDPE_FK")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model DPP {
+  IDEDPP Int     @default(autoincrement())
+  CPDDPP String  @db.NVarChar(50)
+  NOMDPP String? @db.NVarChar(200)
+  TLFDPP String? @db.NVarChar(20)
+  CPD    CPD     @relation(fields: [CPDDPP], references: [NUMCPD], onUpdate: NoAction, map: "FK__DPP__CPDDPP__07079E82")
+
+  @@ignore
+}
+
+model DRA {
+  IDEDRA Int     @id(map: "PK__DRA__2113EF782F3AE904") @default(autoincrement())
+  DESDRA String? @db.NVarChar(255)
+  PADDRA BigInt?
+  ORDDRA Int?
+}
+
+model DTC {
+  IDEDTC Int     @id(map: "IDEDTC_PK") @default(autoincrement())
+  CODDTC String  @db.NVarChar(255)
+  FAMDTC String? @db.NVarChar(255)
+  FPRDTC Int?
+  MARDTC String? @db.NVarChar(2)
+  DTNDTC Float   @db.Real
+  DTUDTC Float   @db.Real
+  DTVDTC Float   @db.Real
+  DESDTC String? @db.NText
+  COL    COL[]
+  FPR    FPR?    @relation(fields: [FPRDTC], references: [ENTFPR], onDelete: NoAction, onUpdate: NoAction, map: "FPRDTC_FK")
+  MAR    MAR?    @relation(fields: [MARDTC], references: [IDEMAR], onDelete: NoAction, onUpdate: NoAction, map: "MARDTC_FK")
+}
+
+model DVS {
+  IDEDVS Int       @id(map: "IDEDVS_PK") @default(autoincrement())
+  FAMDVS Int
+  NOMDVS String    @db.NVarChar(50)
+  FEADVS DateTime  @default(now(), map: "DF__DVS__FEADVS__51300E55") @db.DateTime
+  FEBDVS DateTime? @db.DateTime
+  NOTDVS String?   @db.NText
+  GCHDVS Int?
+  IMGDVS String?   @db.NVarChar(255)
+  FAM    FAM       @relation(fields: [FAMDVS], references: [IDEFAM], onDelete: Cascade, map: "FAMDVS_FK")
+  Piezas Piezas[]
+  SDV    SDV[]
+
+  @@index([FEBDVS], map: "FEBDVS_NX")
+  @@index([NOMDVS], map: "NOMDVS_NX")
+}
+
+model EMA {
+  IDEEMA Int      @id(map: "PK__EMA__21534389185783AC") @default(autoincrement())
+  FECEMA DateTime @db.SmallDateTime
+  DESEMA String?  @db.NText
+  DCCEMA String?  @db.NText
+  CCOEMA String?  @db.NText
+  ASUEMA String?  @db.NText
+  MSJEMA String?  @db.NText
+  ADJEMA String?  @db.NText
+  TAREMA Int?
+  ESTEMA Int?
+  ENVEMA Boolean? @default(false, map: "DF__EMA__ENVEMA__1A3FCC1E")
+  ALMEMA Int?
+}
+
+model EMC {
+  IDEEMC              Int     @id(map: "IDEEMC_PK") @default(autoincrement())
+  NOMEMC              String  @db.NVarChar(255)
+  RUTEMC              String? @db.NVarChar(255)
+  CIZEMC              String? @db.NVarChar(255)
+  CDEEMC              String? @db.NVarChar(255)
+  PIEEMC              String? @db.NVarChar(255)
+  RCAEMC              String? @db.NVarChar(255)
+  RPIEMC              String? @db.NVarChar(255)
+  CTKEMC              String? @db.NVarChar(255)
+  PTKEMC              String? @db.NVarChar(255)
+  CTMEMC              Int?
+  CTCEMC              Int?
+  CTPEMC              Int?
+  CTTEMC              Int?
+  CBTEMC              Int?
+  CBAEMC              Int?
+  ENTEMC              Int?
+  CA3EMC              String? @db.NVarChar(10)
+  DA3EMC              Int?    @default(11, map: "DF__EMC__DA3EMC__16FB1397")
+  AMO                 AMO[]
+  CRT                 CRT[]
+  TES_EMC_CBAEMCToTES TES?    @relation("EMC_CBAEMCToTES", fields: [CBAEMC], references: [IDETES], onDelete: NoAction, onUpdate: NoAction, map: "CBAEMC_FK")
+  TES_EMC_CBTEMCToTES TES?    @relation("EMC_CBTEMCToTES", fields: [CBTEMC], references: [IDETES], onDelete: NoAction, onUpdate: NoAction, map: "CBTEMC_FK")
+  TES_EMC_CTCEMCToTES TES?    @relation("EMC_CTCEMCToTES", fields: [CTCEMC], references: [IDETES], onDelete: NoAction, onUpdate: NoAction, map: "CTCEMC_FK")
+  TES_EMC_CTMEMCToTES TES?    @relation("EMC_CTMEMCToTES", fields: [CTMEMC], references: [IDETES], onDelete: NoAction, onUpdate: NoAction, map: "CTMEMC_FK")
+  TES_EMC_CTPEMCToTES TES?    @relation("EMC_CTPEMCToTES", fields: [CTPEMC], references: [IDETES], onDelete: NoAction, onUpdate: NoAction, map: "CTPEMC_FK")
+  TES_EMC_CTTEMCToTES TES?    @relation("EMC_CTTEMCToTES", fields: [CTTEMC], references: [IDETES], onDelete: NoAction, onUpdate: NoAction, map: "CTTEMC_FK")
+  FOT                 FOT[]
+  FVE                 FVE[]
+  IMP                 IMP[]
+  NMN                 NMN[]
+  TES_TES_EMCTESToEMC TES[]   @relation("TES_EMCTESToEMC")
+
+  @@index([NOMEMC], map: "NOMEMC_NX")
+}
+
+model ENT {
+  IDEENT              Int       @id(map: "IDEENT_PK") @default(autoincrement())
+  NIFENT              String    @unique(map: "NIFENT_UK") @db.NVarChar(50)
+  NCOENT              String    @db.NVarChar(255)
+  NOMENT              String?   @db.NVarChar(255)
+  DFAENT              Int?
+  PERENT              Boolean   @default(false, map: "DF__ENT__PERENT__59063A47")
+  ETQENT              Int       @default(0, map: "DF__ENT__ETQENT__59FA5E80")
+  FEAENT              DateTime  @default(now(), map: "DF__ENT__FEAENT__5AEE82B9") @db.DateTime
+  FEBENT              DateTime? @db.DateTime
+  NOTENT              String?   @db.NText
+  ZONENT              Int?
+  ABRENT              String?   @db.NVarChar(10)
+  EXTENT              Int?
+  USUENT              Int?
+  FEMENT              DateTime? @db.SmallDateTime
+  EXPENT              Boolean?  @default(false, map: "DF__ENT__EXPENT__0F6B07B5")
+  INTENT              Boolean?  @default(false, map: "DF__ENT__INTENT__19E89628")
+  WEBENT              Boolean?
+  WPAENT              Boolean?
+  MONENT              Int?
+  TNIENT              String    @default("02", map: "DF__ENT__TNIENT__2094FA2A") @db.NVarChar(2)
+  CANENT              Boolean?  @default(false, map: "DF__ENT__CANENT__264DD380")
+  PAOENT              Int?
+  ALM                 ALM[]
+  CAB                 CAB[]
+  CFA                 CFA[]
+  CON                 CON[]
+  CPD                 CPD[]
+  CPS                 CPS[]
+  CPT                 CPT[]
+  CRT_CRT_ENTCRTToENT CRT[]     @relation("CRT_ENTCRTToENT")
+  CRT_CRT_LIBCRTToENT CRT[]     @relation("CRT_LIBCRTToENT")
+  CTE                 CTE[]
+  DIR_DIR_ENTDIRToENT DIR[]     @relation("DIR_ENTDIRToENT")
+  DPE                 DPE?
+  DIR_ENT_DFAENTToDIR DIR?      @relation("ENT_DFAENTToDIR", fields: [DFAENT], references: [IDEDIR], onDelete: NoAction, onUpdate: NoAction, map: "DFAENT_FK")
+  ZON                 ZON?      @relation(fields: [ZONENT], references: [IDEZON], onDelete: Cascade, map: "ZONENT_FK")
+  ERD                 ERD[]
+  EXP                 EXP[]
+  FBA                 FBA?
+  FCL                 FCL?
+  FFI                 FFI?
+  FOR                 FOR[]
+  FOT                 FOT?
+  FPR                 FPR?
+  FTR                 FTR?
+  MNE                 MNE[]
+  NMN                 NMN[]
+  PER                 PER[]
+  TAR                 TAR[]
+  USU                 USU?
+  VEH                 VEH[]
+
+  @@index([ETQENT], map: "ETQENT_NX")
+  @@index([FEBENT], map: "FEBENT_NX")
+  @@index([NCOENT], map: "NCOENT_NX")
+  @@index([NIFENT], map: "NIFENT_NX")
+}
+
+model EPA {
+  PZAEPA  Int       @id(map: "PZAEPA_PK")
+  MREEPA  String?   @db.NVarChar(150)
+  NOMEPA  String?   @db.NVarChar(255)
+  FPREPA  Int?
+  NPREPA  String?   @db.NVarChar(255)
+  TPREPA  Int?
+  NTPEPA  String?   @db.NVarChar(255)
+  UCAEPA  Int?
+  CNTEPA  Int?
+  FEDEPA  DateTime? @db.SmallDateTime
+  FEHEPA  DateTime? @db.SmallDateTime
+  CN1EPA  Int?
+  CN2EPA  Int?
+  CN3EPA  Int?
+  CN4EPA  Int?
+  CN5EPA  Int?
+  CN6EPA  Int?
+  CN7EPA  Int?
+  CN8EPA  Int?
+  CN9EPA  Int?
+  CN10EPA Int?
+  CN11EPA Int?
+  CN12EPA Int?
+  CN13EPA Int?
+  CNDEPA  Float?    @db.Real
+  STMEPA  Int?
+  STDEPA  Int?
+  CPCEPA  Int?
+  STREPA  Int?
+  SPREPA  Int?
+  SPSEPA  Int?
+  STVEPA  Int?
+  DIFEPA  Int?
+  CANEPA  Int?
+  CHKEPA  Int?
+  COSEPA  Float?    @db.Money
+  IMPEPA  Float?    @db.Money
+  FPR     FPR?      @relation(fields: [FPREPA], references: [ENTFPR], onDelete: NoAction, onUpdate: NoAction, map: "FPREPA_FK")
+  Piezas  Piezas    @relation(fields: [PZAEPA], references: [IDPieza], onUpdate: NoAction, map: "PZAEPA_FK")
+}
+
+model ERD {
+  ENTERD Int
+  DEPERD Int
+  DEP    DEP @relation(fields: [DEPERD], references: [IDEDEP], onDelete: Cascade, map: "DEPERD_FK")
+  ENT    ENT @relation(fields: [ENTERD], references: [IDEENT], onDelete: Cascade, map: "ENTERD_FK")
+
+  @@id([ENTERD, DEPERD], map: "ENTDEPERD_PK")
+}
+
+model ETT {
+  IDEETT Int     @id(clustered: false, map: "IDEETT_PK") @default(autoincrement())
+  VIAETT Int
+  NOMETT String  @db.NVarChar(100)
+  NOTETT String? @db.NVarChar(255)
+  VIA    VIA     @relation(fields: [VIAETT], references: [IDEVIA], onUpdate: NoAction, map: "VIAETT_FK")
+  TAR    TAR[]
+}
+
+model EXA {
+  IDEEXA Int      @id(map: "PK__EXA__21521C797CAF6937") @default(autoincrement())
+  DOCEXA String   @db.NVarChar(50)
+  EXTEXA Int
+  DESEXA String   @db.NVarChar(50)
+  NOTEXA String?  @db.NVarChar(255)
+  PPDEXA Decimal? @default(0, map: "DF__EXA__PPDEXA__7E97B1A9") @db.Decimal(18, 2)
+  PMXEXA Decimal? @default(0, map: "DF__EXA__PMXEXA__7F8BD5E2") @db.Decimal(18, 2)
+  CAB    CAB      @relation(fields: [DOCEXA], references: [NUMCAB], onUpdate: NoAction, map: "CABEXA_FK")
+  EXT    EXT      @relation(fields: [EXTEXA], references: [IDEEXT], onUpdate: NoAction, map: "EXTEXA_FK")
+}
+
+model EXP {
+  VTAEXP              String    @id(map: "VTAEXP_PK") @db.NVarChar(50)
+  TVVEXP              Float     @db.Money
+  TVOEXP              Float     @db.Money
+  TSUEXP              Float     @db.Money
+  TOBEXP              Float     @db.Money
+  TPGEXP              Float     @db.Money
+  FINEXP              Int?
+  TFIEXP              Float?    @db.Money
+  EFIEXP              Int?
+  PLAEXP              Int
+  TAFEXP              Int?
+  BFIEXP              Float?    @db.Money
+  TPREXP              Float     @db.Money
+  TCOEXP              Float     @db.Money
+  ANGEXP              Float?    @db.Real
+  FIREXP              Int?
+  VIJEXP              Int?
+  FCTEXP              DateTime? @db.DateTime
+  FCOEXP              String?   @db.NVarChar(50)
+  IDEEXP              Int       @default(autoincrement())
+  TAIEXP              Float     @default(0, map: "DF__EXP__TAIEXP__5CACADF9") @db.Money
+  TDIEXP              Float     @default(0, map: "DF__EXP__TDIEXP__5DA0D232") @db.Money
+  FEGEXP              DateTime? @db.SmallDateTime
+  FRGEXP              DateTime? @db.SmallDateTime
+  PREEXP              String?   @db.NVarChar(8)
+  EQPEXP              String?   @db.NVarChar(8)
+  BEQEXP              Float?    @db.Money
+  TCAEXP              Float?    @db.Money
+  TCVEXP              Float?    @db.Money
+  CFIEXP              String?   @db.NVarChar(50)
+  UFIEXP              Float?    @db.Money
+  VEFEXP              Boolean?
+  CHREXP              Float?    @default(0, map: "DF__EXP__CHREXP__1ADCBA61") @db.Money
+  GASEXP              Float?    @default(0, map: "DF__EXP__GASEXP__4CC2276B") @db.Money
+  TSPEXP              Float?    @default(0, map: "DF__EXP__TSPEXP__3CCBB6C4") @db.Money
+  TBOEXP              Float?    @default(0, map: "DF__EXP__TBOEXP__2524A51D") @db.Money
+  ENT                 ENT?      @relation(fields: [EFIEXP], references: [IDEENT], onDelete: NoAction, onUpdate: NoAction, map: "EFIEXP_FK")
+  FFI                 FFI?      @relation(fields: [FINEXP], references: [ENTFFI], onDelete: NoAction, onUpdate: NoAction, map: "FINEXP_FK")
+  FVE_EXP_FIREXPToFVE FVE?      @relation("EXP_FIREXPToFVE", fields: [FIREXP], references: [ENTFVE], onDelete: NoAction, onUpdate: NoAction, map: "FIREXP_FK")
+  TFI                 TFI?      @relation(fields: [TAFEXP], references: [IDETFI], onDelete: NoAction, onUpdate: NoAction, map: "TAFEXP_FK")
+  FVE_EXP_VIJEXPToFVE FVE?      @relation("EXP_VIJEXPToFVE", fields: [VIJEXP], references: [ENTFVE], onDelete: NoAction, onUpdate: NoAction, map: "VIJEXP_FK")
+}
+
+model EXT {
+  IDEEXT Int      @id(map: "PK__EXT__21521C565F1F0650") @default(autoincrement())
+  DESEXT String   @unique(map: "OBJ_UQ_EXT") @db.NVarChar(50)
+  NOTEXT String?  @db.NVarChar(255)
+  PPDEXT Decimal? @default(0, map: "DF__EXT__PPDEXT__61074EC2") @db.Decimal(18, 2)
+  PMXEXT Decimal? @default(0, map: "DF__EXT__PMXEXT__61FB72FB") @db.Decimal(18, 2)
+  FBJEXT String   @default("", map: "DF__EXT__FBJEXT__1FA0D5F1") @db.NVarChar(20)
+  EXA    EXA[]
+}
+
+model FAM {
+  IDEFAM Int       @id(map: "IDEFAM_PK") @default(autoincrement())
+  DEPFAM Int
+  NOMFAM String    @db.NVarChar(50)
+  FEAFAM DateTime  @default(now(), map: "DF__FAM__FEAFAM__693CA210") @db.DateTime
+  FEBFAM DateTime? @db.DateTime
+  NOTFAM String?   @db.NText
+  IMGFAM String?   @db.NVarChar(255)
+  WEBFAM Int?
+  CLAFAM Int?
+  EXTFAM Boolean   @default(false, map: "DF__FAM__EXTFAM__7DE2EB05")
+  IMPFAM Float?    @db.Real
+  OBRFAM Boolean   @default(false, map: "DF__FAM__OBRFAM__508D5AB8")
+  DVS    DVS[]
+  DEP    DEP       @relation(fields: [DEPFAM], references: [IDEDEP], onUpdate: NoAction, map: "DEPFAM_FK")
+  Piezas Piezas[]
+
+  @@index([FEBFAM], map: "FBJFAM_NX")
+  @@index([NOMFAM], map: "NOMFAM_NX")
+}
+
+model FBA {
+  ENTFBA Int       @id(map: "ENTFBA_PK") @default(0, map: "DF__FBA__ENTFBA__1F98B2C1")
+  CBAFBA String    @db.NVarChar(4)
+  FEAFBA DateTime  @default(now(), map: "DF__FBA__FEAFBA__2180FB33") @db.DateTime
+  FBJFBA DateTime? @db.DateTime
+  NOTFBA String?   @db.NText
+  IBAFBA String?   @db.NVarChar(4)
+  SUFFBA String?   @db.NVarChar(3)
+  BICFBA String?   @db.NVarChar(50)
+  ENT    ENT       @relation(fields: [ENTFBA], references: [IDEENT], onDelete: Cascade, map: "ENTFBA_FK")
+  POL    POL[]
+
+  @@index([FBJFBA], map: "FBJFBA_NX")
+}
+
+model FCL {
+  ENTFCL Int       @id(map: "ENTFCL_PK")
+  DPAFCL Int       @default(1, map: "DF__FCL__DPAFCL__3A4CA8FD")
+  PORFCL Int       @default(3, map: "DF__FCL__PORFCL__3B40CD36")
+  TFAFCL Int       @default(1, map: "DF__FCL__TFAFCL__3C34F16F")
+  DCPFCL Int       @default(1, map: "DF__FCL__DCPFCL__3D2915A8")
+  FPAFCL Int
+  TIVFCL Int       @default(1, map: "DF__FCL__TIVFCL__3E1D39E1")
+  CUEFCL String?   @db.NVarChar(34)
+  RURFCL Float     @default(0, map: "DF__FCL__RURFCL__3F115E1A") @db.Real
+  DPPFCL Float     @default(0, map: "DF__FCL__DPPFCL__40058253") @db.Real
+  SBCFCL String?   @db.NVarChar(20)
+  TCLFCL Int       @default(0, map: "DF__FCL__TCLFCL__40F9A68C")
+  CONFCL String?   @db.NText
+  FEAFCL DateTime  @default(now(), map: "DF__FCL__FEAFCL__41EDCAC5") @db.DateTime
+  FBJFCL DateTime? @db.DateTime
+  NOTFCL String?   @db.NText
+  FVEFCL Int?
+  COVFCL Float?    @db.Real
+  RIEFCL Float?    @db.Money
+  ACTFCL Int?
+  POTFCL Boolean   @default(false, map: "DF__FCL__POTFCL__42E1EEFE")
+  AVSFCL String?   @db.NVarChar(255)
+  TESFCL Int?
+  TRAFCL Int?
+  NACFCL String?   @db.NVarChar(100)
+  LENFCL String?   @db.NVarChar(100)
+  FENFCL DateTime? @db.SmallDateTime
+  FCNFCL DateTime? @db.SmallDateTime
+  NPCFCL String?   @db.NVarChar(100)
+  LEPFCL String?   @db.NVarChar(100)
+  FEPFCL DateTime? @db.SmallDateTime
+  FCPFCL DateTime? @db.SmallDateTime
+  EMAFCL String?   @db.NVarChar(200)
+  EAMFCL Boolean?
+  CODFCL String?   @db.NVarChar(50)
+  CNSFCL Boolean?
+  CNMFCL Boolean?
+  CASFCL Boolean?
+  CAMFCL Boolean?
+  EALFCL String?   @db.NVarChar(100)
+  TPEFCL String?   @db.NVarChar(15)
+  USMFCL BigInt?
+  FEMFCL DateTime? @db.SmallDateTime
+  PROFCL Boolean?  @default(false, map: "DF__FCL__PROFCL__270CED8F")
+  CIT    CIT[]
+  ACT    ACT?      @relation(fields: [ACTFCL], references: [IDEACT], onDelete: NoAction, onUpdate: NoAction, map: "ACTFCL_FK")
+  ENT    ENT       @relation(fields: [ENTFCL], references: [IDEENT], onDelete: Cascade, map: "ENTFCL_FK")
+  CFP    CFP       @relation(fields: [FPAFCL], references: [IDECFP], onUpdate: NoAction, map: "FPAFCL_FK")
+  TCL    TCL       @relation(fields: [TCLFCL], references: [IDETCL], onUpdate: NoAction, map: "TCLFCL_FK")
+  FCS    FCS?
+  FVE    FVE?
+
+  @@index([FBJFCL], map: "FBJFCL_NX")
+}
+
+model FCS {
+  ENTFCS Int       @id(map: "ENTFCS_PK")
+  FACFCS Boolean   @default(false, map: "DF__FCS__FACFCS__2CBDA3B5")
+  FFNFCS Int       @default(0, map: "DF__FCS__FFNFCS__2DB1C7EE")
+  FEAFCS DateTime  @default(now(), map: "DF__FCS__FEAFCS__2EA5EC27") @db.DateTime
+  FBJFCS DateTime? @db.DateTime
+  NOTFCS String?   @db.NText
+  PMOFCS Float?    @db.Money
+  CIT    CIT[]
+  CPS    CPS[]
+  FCL    FCL       @relation(fields: [ENTFCS], references: [ENTFCL], onDelete: Cascade, map: "ENTFCS_FK")
+  VEH    VEH[]
+
+  @@index([FBJFCS], map: "FBJFOT_NX")
+}
+
+model FES {
+  IDEFES Int      @id(map: "PK__FES__3C9FC76359DCC4F4") @default(autoincrement())
+  NOMFES String   @db.NVarChar(255)
+  FECFES DateTime @db.DateTime
+  TIPFES Int?
+  NOTFES String?  @db.NText
+  ALMFES Int?
+}
+
+model FFI {
+  ENTFFI Int       @id(map: "ENTFFI_PK")
+  SBCFFI String?   @db.NVarChar(20)
+  FEAFFI DateTime  @default(now(), map: "DF__FFI__FEAFFI__25518C17") @db.DateTime
+  FBJFFI DateTime? @db.DateTime
+  NOTFFI String?   @db.NText
+  OFMFFI Boolean?
+  CTCFFI String?   @db.NVarChar(20)
+  EXP    EXP[]
+  ENT    ENT       @relation(fields: [ENTFFI], references: [IDEENT], onDelete: Cascade, map: "ENTFFI_FK")
+  TFI    TFI[]
+
+  @@index([FBJFFI], map: "FBJFFI_NX")
+}
+
+model FLS {
+  IDEFLS Int      @id(map: "PK__FLS__3C9FB8441486F2C8") @default(autoincrement())
+  VEHFLS Int
+  FETFLS DateTime @db.SmallDateTime
+  DSSFLS Boolean
+}
+
+model FOR {
+  IDEFOR Int       @id(map: "IDEFOR_PK") @default(autoincrement())
+  ENTFOR Int
+  NOMFOR String    @db.NVarChar(100)
+  FECFOR DateTime? @db.DateTime
+  DURFOR Float?    @db.Real
+  CENFOR String?   @db.NVarChar(100)
+  TITFOR String?   @db.NVarChar(100)
+  COSFOR Float?    @db.Money
+  NOTFOR String?   @db.NText
+  ENT    ENT       @relation(fields: [ENTFOR], references: [IDEENT], onUpdate: NoAction, map: "ENTFOR_FK")
+}
+
+model FOT {
+  ENTFOT Int       @id(map: "ENTFOT_PK")
+  FEAFOT DateTime  @default(now(), map: "DF__FOT__FEAFOT__6BAEFA67") @db.DateTime
+  FBJFOT DateTime? @db.DateTime
+  NOTFOT String?   @db.NText
+  ALMFOT Int
+  PUEFOT Int?
+  SCCFOT Int?
+  EMCFOT Int?
+  SBCFOT String?   @db.NVarChar(20)
+  MPGFOT Int?
+  CPHFOT Float?    @default(0, map: "DF__FOT__CPHFOT__39B87777") @db.Money
+  CTLFOT String?   @db.NVarChar(255)
+  NHDFOT Decimal?  @db.Decimal(18, 2)
+  NHSFOT Decimal?  @db.Decimal(18, 2)
+  CPAFOT Float?    @db.Money
+  NHCFOT Int?
+  RNTFOT Int?
+  NHFFOT Decimal?  @db.Decimal(18, 2)
+  CBRFOT String?   @db.NVarChar(50)
+  PASFOT String?   @db.NVarChar(50)
+  ALM    ALM       @relation(fields: [ALMFOT], references: [IDEALM], onUpdate: NoAction, map: "ALMFOT_FK")
+  EMC    EMC?      @relation(fields: [EMCFOT], references: [IDEEMC], onDelete: NoAction, onUpdate: NoAction, map: "EMCFOT_FK")
+  ENT    ENT       @relation(fields: [ENTFOT], references: [IDEENT], onDelete: Cascade, map: "ENTFOT_FK")
+  SCC    SCC?      @relation(fields: [SCCFOT], references: [IDESCC], onDelete: NoAction, onUpdate: NoAction, map: "SCCFOT_FK")
+  LAB    LAB[]
+
+  @@index([FBJFOT], map: "FBJFOT_NX")
+}
+
+model FPR {
+  ENTFPR Int       @id(map: "ENTFPR_PK")
+  DPAFPR Int       @default(1, map: "DF__FPR__DPAFPR__29221CFB")
+  PORFPR Int       @default(3, map: "DF__FPR__PORFPR__2A164134")
+  TFAFPR Int       @default(1, map: "DF__FPR__TFAFPR__2B0A656D")
+  DCPFPR Int       @default(1, map: "DF__FPR__DCPFPR__2BFE89A6")
+  FPAFPR Int
+  TIVFPR Int       @default(1, map: "DF__FPR__TIVFPR__2CF2ADDF")
+  CUEFPR String?   @db.NVarChar(34)
+  RURFPR Float     @default(0, map: "DF__FPR__RURFPR__2DE6D218") @db.Real
+  DPPFPR Float     @default(0, map: "DF__FPR__DPPFPR__2EDAF651") @db.Real
+  SBCFPR String?   @db.NVarChar(20)
+  CONFPR String?   @db.NText
+  FEAFPR DateTime  @default(now(), map: "DF__FPR__FEAFPR__2FCF1A8A") @db.DateTime
+  FBJFPR DateTime? @db.DateTime
+  NOTFPR String?   @db.NText
+  SCOFPR Boolean   @default(false, map: "DF__FPR__SCOFPR__30C33EC3")
+  POLFPR Int?
+  ACTFPR Int?
+  TESFPR Int?
+  CTGFPR String?   @db.NVarChar(15)
+  ACRFPR Boolean?
+  RACFPR Boolean?
+  USMFPR BigInt?
+  FEMFPR DateTime? @db.SmallDateTime
+  AMO    AMO[]
+  COL    COL[]
+  DTC    DTC[]
+  EPA    EPA[]
+  ENT    ENT       @relation(fields: [ENTFPR], references: [IDEENT], onDelete: Cascade, map: "ENTFPR_FK")
+  CFP    CFP       @relation(fields: [FPAFPR], references: [IDECFP], onUpdate: NoAction, map: "FPAFPR_FK")
+  MAR    MAR[]
+  OTR    OTR[]
+  Piezas Piezas[]
+  TPR    TPR[]
+
+  @@index([FBJFPR], map: "FBJFPR_NX")
+}
+
+model FRC {
+  ENTFRC Int       @id(map: "PK__FRC__3D4CC26B65CC03DF")
+  FEAFRC DateTime  @default(now(), map: "DF__FRC__FEAFRC__67B44C51") @db.SmallDateTime
+  FBJFRC DateTime? @db.SmallDateTime
+  NOTFRC String?   @db.NVarChar(255)
+}
+
+model FTR {
+  ENTFTR Int       @id(map: "ENTFTR_PK") @default(0, map: "DF__FTR__ENTFTR__3587F3E0")
+  FEAFTR DateTime  @default(now(), map: "DF__FTR__FEAFTR__367C1819") @db.DateTime
+  FBJFTR DateTime? @db.DateTime
+  NOTFTR String?   @db.NText
+  CAB    CAB[]
+  ENT    ENT       @relation(fields: [ENTFTR], references: [IDEENT], onDelete: Cascade, map: "ENTFTR_FK")
+
+  @@index([FBJFTR], map: "FBJFTR_NX")
+}
+
+model FVE {
+  ENTFVE              Int       @id(map: "ENTFVE_PK")
+  AGEFVE              Int       @default(1, map: "DF__FVE__AGEFVE__7FEAFD3E")
+  FPAFVE              Int       @default(0, map: "DF__FVE__FPAFVE__01D345B0")
+  FEAFVE              DateTime  @default(now(), map: "DF__FVE__FEAFVE__02C769E9") @db.DateTime
+  FBJFVE              DateTime? @db.DateTime
+  NOTFVE              String?   @db.NText
+  FACFVE              Boolean   @default(false, map: "DF__FVE__FACFVE__03BB8E22")
+  CARFVE              String?   @db.NVarChar(50)
+  DEPFVE              Int?
+  EMCFVE              Int?
+  SBCFVE              String?   @db.NVarChar(20)
+  MPGFVE              Int?
+  ALMFVE              Int?
+  CAB                 CAB[]
+  CIT_CIT_ASECITToFVE CIT[]     @relation("CIT_ASECITToFVE")
+  CIT_CIT_USUCITToFVE CIT[]     @relation("CIT_USUCITToFVE")
+  CPD                 CPD[]
+  CPV_CPV_ASICPVToFVE CPV[]     @relation("CPV_ASICPVToFVE")
+  CPV_CPV_USUCPVToFVE CPV[]     @relation("CPV_USUCPVToFVE")
+  CRD                 CRD[]
+  CTE                 CTE[]
+  DIN                 DIN[]
+  EXP_EXP_FIREXPToFVE EXP[]     @relation("EXP_FIREXPToFVE")
+  EXP_EXP_VIJEXPToFVE EXP[]     @relation("EXP_VIJEXPToFVE")
+  DEP                 DEP?      @relation(fields: [DEPFVE], references: [IDEDEP], onDelete: Cascade, map: "DEPFVE_FK")
+  EMC                 EMC?      @relation(fields: [EMCFVE], references: [IDEEMC], onDelete: NoAction, onUpdate: NoAction, map: "EMCFVE_FK")
+  FCL                 FCL       @relation(fields: [ENTFVE], references: [ENTFCL], onUpdate: NoAction, map: "ENTFVE_FK")
+  ALM                 ALM?      @relation(fields: [ALMFVE], references: [IDEALM], onDelete: NoAction, onUpdate: NoAction, map: "FK__FVE__ALMFVE__47C20D6C")
+  CFP                 CFP       @relation(fields: [FPAFVE], references: [IDECFP], onUpdate: NoAction, map: "FPAFVE_FK")
+  OKT                 OKT[]
+  ZON                 ZON[]
+}
+
+model GCH {
+  IDEGCH Int     @id(map: "PK__GCH__3CD7C1BF15EABAB6") @default(autoincrement())
+  ALMGCH Int?
+  CODGCH String  @db.NVarChar(50)
+  DESGCH String? @db.NVarChar(255)
+  TIPGCH Int
+  CONGCH String? @db.NVarChar(10)
+  CCTGCH String? @db.NVarChar(20)
+  ALM    ALM?    @relation(fields: [ALMGCH], references: [IDEALM], onDelete: NoAction, onUpdate: NoAction, map: "fkGCHconALM")
+  GCL    GCL[]
+  SUP    SUP[]
+}
+
+model GCL {
+  IDEGCL Int     @id(map: "PK__GCL__3CD7C1B31BA3940C") @default(autoincrement())
+  GCHGCL Int?
+  TIPGCL Int
+  DESGCL String  @db.NVarChar(200)
+  VTAGCL String? @db.NVarChar(20)
+  DTOGCL String? @db.NVarChar(20)
+  INVGCL String? @db.NVarChar(20)
+  CSTGCL String? @db.NVarChar(20)
+  VCIGCL String? @db.NVarChar(20)
+  CCIGCL String? @db.NVarChar(20)
+  GCH    GCH?    @relation(fields: [GCHGCL], references: [IDEGCH], onDelete: NoAction, onUpdate: NoAction, map: "fkGCLconGCH")
+}
+
+model GDH {
+  IDEGDH Int     @id(map: "PK__GDH__3CD7295C65D19340") @default(autoincrement())
+  ALMGDH Int?
+  CONGDH String  @db.NVarChar(255)
+  FACGDH String? @db.NVarChar(20)
+  ABOGDH String? @db.NVarChar(20)
+  ALM    ALM?    @relation(fields: [ALMGDH], references: [IDEALM], onDelete: NoAction, onUpdate: NoAction, map: "fkGDHconALM")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model GMP {
+  NAEGMP String?  @db.NVarChar(50)
+  NPPGMP String?  @db.NVarChar(50)
+  NPCGMP String?  @db.NVarChar(50)
+  NDSGMP String?  @db.NVarChar(50)
+  PZAGMP Int?
+  CANGMP Int?
+  AEDGMP Boolean?
+  DEPGMP Int?
+
+  @@ignore
+}
+
+model HSE {
+  IDEHSE Int       @id(map: "PK__HSE__226BD55D16180544") @default(autoincrement())
+  ENTHSE Int?
+  FECHSE DateTime? @db.SmallDateTime
+  TIPHSE Int?
+  TEMHSE Int?
+}
+
+model HST {
+  ALMHST Int
+  PZAHST Int
+  FECHST DateTime @db.DateTime
+  STRHST Int
+  MEDHST Float    @db.Money
+  ALM    ALM      @relation(fields: [ALMHST], references: [IDEALM], onDelete: Cascade, map: "ALMHST_FK")
+
+  @@id([ALMHST, PZAHST, FECHST], map: "ALMPZAFECHST_PK")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model HST1 {
+  ALMHST1 Int
+  PZAHST1 Int
+  FECHST1 DateTime @db.SmallDateTime
+  STRHST1 Int
+  MEDHST1 Decimal  @db.Decimal(18, 2)
+
+  @@ignore
+}
+
+model HVE {
+  IDEHVE Int       @id(map: "PK__HVE__226BCD372A9333E6") @default(autoincrement())
+  VEHHVE Int?
+  TIPHVE Int?
+  COSHVE Float?    @db.Money
+  FCMHVE DateTime? @db.SmallDateTime
+  FREHVE DateTime? @db.SmallDateTime
+  ALMHVE Int?
+  PVPHVE Float?    @db.Money
+  FECHVE DateTime? @db.SmallDateTime
+}
+
+model IAT {
+  IDEIAT Int     @id(map: "PK__IAT__22AB14003AAA6B75") @default(autoincrement())
+  TIPIAT Int?
+  VALIAT String? @db.NVarChar(150)
+  CORIAT String? @db.NVarChar(10)
+}
+
+model IMC {
+  IMPIMC BigInt
+  TCTIMC Int
+  CTAIMC String? @db.NVarChar(50)
+
+  @@id([IMPIMC, TCTIMC], map: "PK__IMC__0127B5E2B76A8820")
+}
+
+model IMP {
+  IDEIMP              Int       @id(map: "IDEIMP_PK") @default(autoincrement())
+  TIPIMP              Int       @default(0, map: "DF__IMP__TIPIMP__498EEC8D")
+  NOMIMP              String    @db.NVarChar(50)
+  FACIMP              Boolean   @default(false, map: "DF__IMP__FACIMP__4B7734FF")
+  PREIMP              Int
+  EMCIMP              Int
+  CFTIMP              Int
+  ASAIMP              String?   @db.NVarChar(15)
+  CLAIMP              Int?
+  CABIMP              String?   @db.NVarChar(3)
+  CCOIMP              String?   @db.NVarChar(3)
+  CCRIMP              String?   @db.NVarChar(3)
+  IABIMP              Int?
+  FBJIMP              DateTime? @db.SmallDateTime
+  FOIIMP              Int
+  GPCIMP              Int
+  GCHIMP              Int?
+  USUIMP              BigInt?
+  FECIMP              DateTime? @db.SmallDateTime
+  ISRIMP              BigInt?
+  IPAIMP              BigInt?
+  ALM_ALM_AFEALMToIMP ALM[]     @relation("ALM_AFEALMToIMP")
+  ALM_ALM_AFGALMToIMP ALM[]     @relation("ALM_AFGALMToIMP")
+  ALM_ALM_AOTALMToIMP ALM[]     @relation("ALM_AOTALMToIMP")
+  ALM_ALM_AREALMToIMP ALM[]     @relation("ALM_AREALMToIMP")
+  ALM_ALM_ARSALMToIMP ALM[]     @relation("ALM_ARSALMToIMP")
+  ALM_ALM_AVEALMToIMP ALM[]     @relation("ALM_AVEALMToIMP")
+  ALM_ALM_AVSALMToIMP ALM[]     @relation("ALM_AVSALMToIMP")
+  ALM_ALM_ABBALMToIMP ALM[]     @relation("ALM_ABBALMToIMP")
+  ALM_ALM_ABSALMToIMP ALM[]     @relation("ALM_ABSALMToIMP")
+  ALM_ALM_AWSALMToIMP ALM[]     @relation("ALM_AWSALMToIMP")
+  ALM_ALM_EXTALMToIMP ALM[]     @relation("ALM_EXTALMToIMP")
+  CAB                 CAB[]
+  CFA                 CFA[]
+  CPD                 CPD[]
+  CPV                 CPV[]
+  EMC                 EMC       @relation(fields: [EMCIMP], references: [IDEEMC], onUpdate: NoAction, map: "EMCIMP_FK")
+  TAL                 TAL       @relation(fields: [TIPIMP], references: [IDETAL], onDelete: Cascade, map: "TIPIMP_FK")
+  OBJ                 OBJ[]
+
+  @@index([NOMIMP], map: "NOMIMP_NX")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model ITL {
+  IDEITL Int    @default(autoincrement())
+  NOMITL String @db.NVarChar(50)
+
+  @@ignore
+}
+
+model IVA {
+  IDEIVA Int      @id(map: "IDEIVA_PK") @default(0, map: "DF__IVA__IDEIVA__1A14E395")
+  NOMIVA String   @db.NVarChar(50)
+  TIPIVA Float    @default(0, map: "DF__IVA__TIPIVA__1BFD2C07") @db.Real
+  REQIVA Float    @default(0, map: "DF__IVA__REQIVA__1CF15040") @db.Real
+  Piezas Piezas[]
+
+  @@index([NOMIVA], map: "NOMIVA_NX")
+}
+
+model LAB {
+  IDELAB Int      @id(clustered: false, map: "IDELAB_PK") @default(autoincrement())
+  ALBLAB String   @db.NVarChar(50)
+  PZALAB Int
+  ALMLAB Int
+  PVTLAB Float    @db.Money
+  DT1LAB Float    @db.Real
+  DT2LAB Float    @db.Real
+  NETLAB Float    @default(0, map: "NETLAB_DF") @db.Money
+  PEDLAB Float    @db.Real
+  SERLAB Float    @db.Real
+  IPTLAB Float    @db.Money
+  IVALAB Float    @db.Real
+  REQLAB Float    @default(0, map: "REQLAB_DF") @db.Real
+  COSLAB Float    @db.Money
+  NPELAB String?  @db.NVarChar(50)
+  VEHLAB Int?
+  FECLAB DateTime @default(now(), map: "DF__LAB__FECLAB__6F1576F7") @db.DateTime
+  USULAB Int?
+  NAVLAB Int?
+  PPCLAB Float?   @db.Real
+  TEXLAB Int?
+  OKTLAB Int?
+  CAB    CAB      @relation(fields: [ALBLAB], references: [NUMCAB], onDelete: Cascade, map: "ALBLAB_FK")
+  ALM    ALM      @relation(fields: [ALMLAB], references: [IDEALM], onUpdate: NoAction, map: "ALMLAB_FK")
+  Piezas Piezas   @relation(fields: [PZALAB], references: [IDPieza], onUpdate: NoAction, map: "PZALAB_FK")
+  TEX    TEX?     @relation(fields: [TEXLAB], references: [IDETEX], onDelete: NoAction, onUpdate: NoAction, map: "TEXLAB_FK")
+  FOT    FOT?     @relation(fields: [USULAB], references: [ENTFOT], onDelete: NoAction, onUpdate: NoAction, map: "USULAB_FK")
+  VEH    VEH?     @relation(fields: [VEHLAB], references: [IDEVEH], onDelete: NoAction, onUpdate: NoAction, map: "VEHLAB_FK")
+  LOT    LOT[]
+
+  @@index([ALBLAB], map: "ALBLAB_NX")
+  @@index([FECLAB], map: "FECLAB_NX")
+}
+
+model LAC {
+  IDELAC Int      @id(map: "IDELAC_PK") @default(autoincrement())
+  PRELAC Int
+  DESLAC String   @db.NVarChar(255)
+  PVPLAC Float    @db.Money
+  DSELAC Boolean?
+  CPV    CPV      @relation(fields: [PRELAC], references: [IDECPV], onUpdate: NoAction, map: "PRELAC_FK")
+}
+
+model LAM {
+  IDELAM Int     @id(map: "IDELAM_PK") @default(autoincrement())
+  AMOLAM Int
+  EJELAM Int?
+  IMPLAM Float?  @db.Money
+  CO2LAM Boolean @default(false, map: "DF__LAM__CO2LAM__3429BB53")
+  IMALAM Float?  @db.Money
+  AMO    AMO     @relation(fields: [AMOLAM], references: [IDEAMO], onUpdate: NoAction, map: "AMOLAM_FK")
+}
+
+model LAT {
+  IDELAT Int    @id(map: "IDELAT_PK") @default(autoincrement())
+  CABLAT String @db.NVarChar(50)
+  NOMLAT String @db.NVarChar(255)
+  PRELAT Float  @default(0, map: "DF__TMP__PRELAT__16B953FD") @db.Money
+  CANLAT Int    @default(0, map: "DF__TMP__CANLAT__17AD7836")
+  IMPLAT Float  @default(0, map: "DF__TMP__IMPLAT__18A19C6F") @db.Money
+  TASLAT Int
+  IVALAT Int    @default(0, map: "DF__TMP__IVALAT__1995C0A8")
+  CAB    CAB    @relation(fields: [CABLAT], references: [NUMCAB], onDelete: Cascade, map: "CABLAT_FK")
+  TAS    TAS    @relation(fields: [TASLAT], references: [IDETAS], onUpdate: NoAction, map: "TASLAT_FK")
+}
+
+model LES {
+  IDELES Int       @id(map: "IDELES_PK") @default(autoincrement())
+  TESLES Int
+  FEOLES DateTime? @db.DateTime
+  FEVLES DateTime? @db.DateTime
+  CONLES Int?
+  DECLES String?   @db.NVarChar(255)
+  DESLES String?   @db.NVarChar(255)
+  IMPLES Float?    @db.Money
+  SACLES Float?    @db.Money
+  PUNLES Boolean   @default(false, map: "DF__LES__PUNLES__55009F39")
+  NUMLES Int?
+  TES    TES       @relation(fields: [TESLES], references: [IDETES], onUpdate: NoAction, map: "TESLES_FK")
+}
+
+model LFB {
+  IDELFB Int     @id(map: "IDELFB_PK") @default(autoincrement())
+  CFBLFB Int
+  TABLFB Int
+  PZALFB Int
+  RESLFB Boolean @default(false, map: "DF__LFB__RESLFB__595B4002")
+  CANLFB Float   @db.Real
+  CFB    CFB     @relation(fields: [CFBLFB], references: [IDECFB], onUpdate: NoAction, map: "CFBLFB_FK")
+  Piezas Piezas  @relation(fields: [PZALFB], references: [IDPieza], onUpdate: NoAction, map: "PZALFB_FK")
+}
+
+model LFI {
+  IDELFI Int    @id(map: "IDELFI_PK") @default(autoincrement())
+  PRELFI Int
+  IMPLFI Float? @default(0, map: "DF__LFI__IMPLFI__56F3D4A3") @db.Money
+  TFILFI Int?
+  MESLFI Int
+  CUOLFI Float? @default(0, map: "DF__LFI__CUOLFI__57E7F8DC") @db.Money
+  GASLFI Float? @default(0, map: "DF__LFI__GASLFI__58DC1D15") @db.Money
+  ENTLFI Float  @default(0, map: "DF__LFI__ENTLFI__7E0DA1C4") @db.Money
+  FINLFI Int?
+  TARLFI Int?
+  ULCLFI Float? @db.Money
+  CPV    CPV    @relation(fields: [PRELFI], references: [IDECPV], onUpdate: NoAction, map: "PRELFI_FK")
+  TFI    TFI?   @relation(fields: [TFILFI], references: [IDETFI], onDelete: NoAction, onUpdate: NoAction, map: "TFILFI_FK")
+}
+
+model LFP {
+  FPALFP Int
+  PLALFP Int   @db.SmallInt
+  PORLFP Float @default(0, map: "DF__LFP__PORLFP__4E88ABD4") @db.Real
+  CFP    CFP   @relation(fields: [FPALFP], references: [IDECFP], onUpdate: NoAction, map: "FPALFP_FK")
+
+  @@id([FPALFP, PLALFP], map: "FPALFP_PK")
+}
+
+model LIC {
+  IDELIC Int     @id(map: "IDELIC_PK") @default(autoincrement())
+  CICLIC Int
+  NOMLIC String? @db.NVarChar(255)
+  DEPLIC Int
+  GRPLIC String  @db.NVarChar(50)
+  CANLIC Float?  @db.Money
+  CIC    CIC     @relation(fields: [CICLIC], references: [IDECIC], onUpdate: NoAction, map: "CICLIC_FK")
+  VIC    VIC[]
+}
+
+model LIQ {
+  IDELIQ Int      @id(map: "IDELIQ_PK") @default(autoincrement())
+  ALBLIQ String   @db.NVarChar(50)
+  CONLIQ Int      @default(0, map: "DF__LIQ__CONLIQ__5F141958")
+  IMPLIQ Float    @default(0, map: "DF__LIQ__IMPLIQ__60083D91") @db.Money
+  NOTLIQ String?  @db.NText
+  COSLIQ Float?   @db.Money
+  FACLIQ String?  @db.NVarChar(50)
+  SELLIQ Boolean?
+  CAB    CAB      @relation(fields: [ALBLIQ], references: [NUMCAB], onDelete: Cascade, map: "ALBLIQ_FK")
+  SUP    SUP      @relation(fields: [CONLIQ], references: [IDESUP], onUpdate: NoAction, map: "CONLIQ_FK")
+}
+
+model LKT {
+  IDELKT Int     @id(map: "IDELKT_PK") @default(autoincrement())
+  CKTLKT Int
+  PZALKT Int
+  PVPLKT Float?  @db.Money
+  DTOLKT Float   @db.Money
+  CANLKT Decimal @default(0, map: "DF__LKT__CANLKT__4282C7A2") @db.Decimal(18, 2)
+  CKT    CKT     @relation(fields: [CKTLKT], references: [IDECKT], onUpdate: NoAction, map: "CKTLKT_FK")
+  Piezas Piezas  @relation(fields: [PZALKT], references: [IDPieza], onUpdate: NoAction, map: "PZALKT_FK")
+}
+
+model LOP {
+  IDELOP Int      @id(map: "IDELOP_PK") @default(autoincrement())
+  MODLOP Int
+  DESLOP String   @db.NVarChar(255)
+  PVPLOP Float    @db.Money
+  DSELOP Boolean?
+  CHKLOP Boolean  @default(false, map: "DF__LOP__CHKLOP__0C89D700")
+}
+
+model LOT {
+  IDELOT Int       @id(map: "IDELOT_PK") @default(autoincrement())
+  ESJLOT Boolean   @default(false, map: "DF__LOT__ESJLOT__08D548FA")
+  OTRLOT String?   @db.NVarChar(50)
+  DESLOT String?   @db.NVarChar(Max)
+  FOTLOT Int?
+  FEILOT DateTime  @db.DateTime
+  FEFLOT DateTime? @db.DateTime
+  FORLOT Boolean   @default(false, map: "DF__LOT__FORLOT__09C96D33")
+  DURLOT Float?    @db.Real
+  CORLOT DateTime? @db.DateTime
+  TEOLOT Boolean   @default(false, map: "DF__LOT__TEOLOT__0ABD916C")
+  TIPLOT Int?
+  LABLOT Int?
+  DUFLOT Float?    @db.Real
+  IMFLOT Float?    @db.Money
+  USMLOT BigInt?
+  FEMLOT DateTime? @db.SmallDateTime
+  TARLOT String?   @db.NVarChar(250)
+  MATLOT String?   @db.NVarChar(20)
+  LAB    LAB?      @relation(fields: [LABLOT], references: [IDELAB], onDelete: NoAction, onUpdate: NoAction, map: "LABLOT_FK")
+  OTR    OTR?      @relation(fields: [OTRLOT], references: [ALBOTR], onDelete: NoAction, onUpdate: NoAction, map: "OTRLOT_FK")
+}
+
+model LPD {
+  IDELPD Int     @id(map: "IDELPD_PK") @default(autoincrement())
+  NUMLPD String  @db.NVarChar(50)
+  PZALPD Int     @default(0, map: "DF__LPD__PZALPD__4CC05EF3")
+  ALMLPD Int     @default(0, map: "DF__LPD__ALMLPD__4DB4832C")
+  PVTLPD Float   @default(0, map: "DF__LPD__PVTLPD__4EA8A765") @db.Money
+  DT1LPD Float   @default(0, map: "DF__LPD__DT1LPD__4F9CCB9E") @db.Real
+  DT2LPD Float   @default(0, map: "DF__LPD__DT2LPD__5090EFD7") @db.Real
+  NETLPD Float   @default(0, map: "DF__LPD__NETLPD__51851410") @db.Money
+  PEDLPD Float   @default(0, map: "DF__LPD__PEDLPD__52793849") @db.Real
+  SERLPD Float   @default(0, map: "DF__LPD__SERLPD__536D5C82") @db.Real
+  IPTLPD Float   @default(0, map: "DF__LPD__IPTLPD__546180BB") @db.Money
+  IVALPD Float   @default(0, map: "DF__LPD__IVALPD__5555A4F4") @db.Real
+  REQLPD Float   @default(0, map: "DF__LPD__REQLPD__5649C92D") @db.Real
+  COSLPD Float   @default(0, map: "DF__LPD__COSLPD__573DED66") @db.Money
+  VEHLPD Int?
+  TPRLPD Int?
+  TEXLPD Int?
+  NPPLPD String? @db.NVarChar(50)
+  CLOLPD BigInt?
+  DSTLPD String? @db.NVarChar(50)
+  ALM    ALM     @relation(fields: [ALMLPD], references: [IDEALM], onUpdate: NoAction, map: "ALMLPD_FK")
+  CPD    CPD     @relation(fields: [NUMLPD], references: [NUMCPD], onDelete: Cascade, map: "NUMLPD_FK")
+  Piezas Piezas  @relation(fields: [PZALPD], references: [IDPieza], onUpdate: NoAction, map: "PZALPD_FK")
+  TEX    TEX?    @relation(fields: [TEXLPD], references: [IDETEX], onDelete: NoAction, onUpdate: NoAction, map: "TEXLPD_FK")
+  TPR    TPR?    @relation(fields: [TPRLPD], references: [IDETPR], onDelete: NoAction, onUpdate: NoAction, map: "TPRLPD_FK")
+  VEH    VEH?    @relation(fields: [VEHLPD], references: [IDEVEH], onDelete: NoAction, onUpdate: NoAction, map: "VEHLPD_FK")
+}
+
+model LPI {
+  IDELPI Int   @id(map: "PK__LPI__2363BB2D0A79080A") @default(autoincrement())
+  POLLPI Int?
+  DIALPI Int
+  TIPLPI Float @db.Real
+  POL    POL?  @relation(fields: [POLLPI], references: [IDEPOL], onDelete: NoAction, onUpdate: NoAction, map: "fkQPOconLP")
+}
+
+model LPO {
+  IDELPO Int   @id(map: "IDELPO_PK") @default(autoincrement())
+  POLLPO Int
+  DIALPO Int
+  TIPLPO Float @db.Real
+  POL    POL   @relation(fields: [POLLPO], references: [IDEPOL], onUpdate: NoAction, map: "POLLPO_FK")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model LPP {
+  IDELPP Int    @default(autoincrement())
+  ALBLPP String @db.NVarChar(50)
+  REFLPP String @db.NVarChar(150)
+  NOMLPP String @db.NVarChar(255)
+  PVTLPP Float  @db.Money
+  DT1LPP Float  @db.Real
+  IVALPP Float  @db.Real
+  SERLPP Float  @db.Real
+  TOTLPP Float? @db.Money
+
+  @@ignore
+}
+
+model LPS {
+  IDELPS Int     @id(map: "IDELPS_PK") @default(autoincrement())
+  ALBLPS Int
+  MRELPS String? @db.NVarChar(150)
+  NOMLPS String? @db.NVarChar(255)
+  PVTLPS Float   @default(0, map: "DF__LPS__PVTLPS__7F4BDEC0") @db.Money
+  DT1LPS Float   @default(0, map: "DF__LPS__DT1LPS__004002F9") @db.Real
+  NETLPS Float   @default(0, map: "DF__LPS__NETLPS__01342732") @db.Money
+  SERLPS Float   @default(0, map: "DF__LPS__SERLPS__02284B6B") @db.Real
+  IPTLPS Float   @default(0, map: "DF__LPS__IPTLPS__031C6FA4") @db.Money
+  IVALPS Float   @default(0, map: "DF__LPS__IVALPS__041093DD") @db.Real
+  REQLPS Float   @default(0, map: "DF__LPS__REQLPS__0504B816") @db.Real
+  CPS    CPS     @relation(fields: [ALBLPS], references: [IDECPS], onDelete: Cascade, map: "ALBLPS_FK")
+}
+
+model LPT {
+  IDELPT Int    @id(clustered: false, map: "IDELPT_PK") @default(autoincrement())
+  NUMLPT String @db.NVarChar(50)
+  NOMLPT String @db.NVarChar(255)
+  PRELPT Float  @default(0, map: "DF__LPT__PRELPT__2D9CB955") @db.Money
+  CANLPT Int    @default(0, map: "DF__LPT__CANLPT__2E90DD8E")
+  IMPLPT Float  @default(0, map: "DF__LPT__IMPLPT__2F8501C7") @db.Money
+  TASLPT Int
+  IVALPT Int    @default(0, map: "DF__LPT__IVALPT__30792600")
+  CPD    CPD    @relation(fields: [NUMLPT], references: [NUMCPD], onDelete: Cascade, map: "NUMLPT_FK")
+  TAS    TAS    @relation(fields: [TASLPT], references: [IDETAS], onUpdate: NoAction, map: "TASLPT_FK")
+}
+
+model LRD {
+  IDELRD Int    @id(map: "IDELRD_PK") @default(autoincrement())
+  CRDLRD Int
+  VEHLRD Int
+  IMPLRD Float? @db.Money
+  CRD    CRD    @relation(fields: [CRDLRD], references: [IDECRD], onUpdate: NoAction, map: "CRDLRD_FK")
+  VEH    VEH    @relation(fields: [VEHLRD], references: [IDEVEH], onUpdate: NoAction, map: "VEHLRD_FK")
+}
+
+model LRZ {
+  IDELRZ Int    @id(map: "IDELRZ_PK") @default(autoincrement())
+  ZONLRZ Int
+  LOCLRZ String @db.NVarChar(150)
+  ZON    ZON    @relation(fields: [ZONLRZ], references: [IDEZON], onUpdate: NoAction, map: "ZONLRZ_FK")
+
+  @@index([LOCLRZ], map: "LOCLRZ_NX")
+}
+
+model LSP {
+  IDELSP Int   @id(map: "IDELSP_PK") @default(autoincrement())
+  PRELSP Int
+  SUPLSP Int
+  IMPLSP Float @default(0, map: "DF__LSP__IMPLSP__097F5470") @db.Money
+  CPV    CPV   @relation(fields: [PRELSP], references: [IDECPV], onUpdate: NoAction, map: "PRELSP_FK")
+  SUP    SUP   @relation(fields: [SUPLSP], references: [IDESUP], onUpdate: NoAction, map: "SUPLSP_FK")
+}
+
+model LTE {
+  IDELTE Int    @id(clustered: false, map: "IDELTE_PK") @default(autoincrement())
+  LABLTE Int
+  COSLTE Float  @db.Money
+  PZALTE Int?
+  CANLTE Float? @db.Real
+  PVPLTE Float? @db.Money
+  TOTLTE Float? @db.Money
+  IVALTE Float? @db.Real
+  DTOLTE Float  @default(0, map: "DF__LTE__DTOLTE__7CEEC6CC") @db.Real
+}
+
+model MAC {
+  ALBMAC String @db.NVarChar(50)
+  DESMAC String @db.NVarChar(255)
+  CAB    CAB    @relation(fields: [ALBMAC], references: [NUMCAB], onDelete: Cascade, map: "ALBMAC_FK")
+
+  @@id([ALBMAC, DESMAC], map: "ALBDESMAC_PK")
+}
+
+model MAR {
+  IDEMAR String   @id(map: "IDEMAR_PK") @db.NVarChar(2)
+  NOMMAR String   @db.NVarChar(50)
+  PRBMAR Int      @default(0, map: "DF__MAR__PRBMAR__5E8A0973")
+  DTOMAR Int      @default(0, map: "DF__MAR__DTOMAR__607251E5")
+  INCMAR Int      @default(0, map: "DF__MAR__INCMAR__625A9A57")
+  MOBMAR Float    @default(0, map: "DF__MAR__MOBMAR__634EBE90") @db.Money
+  PRVMAR Int?
+  CONMAR String?  @db.NVarChar(25)
+  NOTMAR String?  @db.NText
+  CMOMAR Int?
+  PATMAR String?  @db.NVarChar(150)
+  PTTMAR String?  @db.NVarChar(150)
+  LCMMAR Int?
+  LCCMAR Int?
+  LCPMAR Int?
+  LCTMAR Int?
+  LCEMAR Int?
+  LCVMAR Int?
+  DSVMAR Int?
+  PTVMAR String?  @db.NVarChar(50)
+  COVMAR String?  @db.NVarChar(20)
+  DSCMAR String?  @db.NText
+  DSLMAR String?  @db.NText
+  SE1MAR String?  @db.NText
+  SE2MAR String?  @db.NText
+  SE3MAR String?  @db.NText
+  WPAMAR Boolean?
+  GARMAR Int      @default(2, map: "DF__MAR__GARMAR__4DB64BA4")
+  PRGMAR Int?
+  CDC    CDC[]
+  CDM    CDM[]
+  CDT    CDT[]
+  CLO    CLO[]
+  DTC    DTC[]
+  FPR    FPR?     @relation(fields: [PRVMAR], references: [ENTFPR], onDelete: Cascade, map: "PRVMAR_FK")
+  MGA    MGA[]
+  Piezas Piezas[]
+  SDV    SDV[]
+
+  @@index([NOMMAR], map: "NOMMAR_NX")
+}
+
+model MCJ {
+  IDEMCJ Int       @id(map: "PK__MCJ__23A352C529820FAE") @default(autoincrement())
+  CONMCJ String?   @db.NVarChar(255)
+  CANMCJ Float     @db.Money
+  ALMMCJ BigInt
+  ENTMCJ BigInt
+  FECMCJ DateTime? @db.DateTime
+  DEPMCJ BigInt
+  MPAMCJ BigInt
+  SALMCJ Boolean
+  CARMCJ Int?
+  CJCMCJ Int?
+  CO2MCJ Boolean   @default(false, map: "DF__MCJ__CO2MCJ__74A76077")
+  TESMCJ Int?
+  ACCMCJ Int       @default(0, map: "DF__MCJ__ACCMCJ__5F422F3D")
+  NOMMCJ String?   @db.NVarChar(250)
+  USUMCJ BigInt?
+  ANTMCJ Boolean   @default(false, map: "DF__MCJ__ANTMCJ__70C1F2C4")
+  ANAMCJ Boolean   @default(false, map: "DF__MCJ__ANAMCJ__71B616FD")
+  FACMCJ String    @default("", map: "DF__MCJ__FACMCJ__72AA3B36") @db.NVarChar(50)
+}
+
+model MDC {
+  IDEMDC Int     @id(map: "PK__MDC__23A35AEF7153907B") @default(autoincrement())
+  PZAMDC BigInt
+  SUPMDC BigInt
+  BASMDC String? @db.NVarChar(100)
+}
+
+model MGA {
+  IDEMGA Int       @id(map: "PK__MGA__23A3725770499252") @default(autoincrement())
+  MARMGA String    @db.NVarChar(2)
+  NOMMGA String    @db.NVarChar(50)
+  FEAMGA DateTime  @default(now(), map: "DF__MGA__FEAMGA__7231DAC4") @db.SmallDateTime
+  FBJMGA DateTime? @db.SmallDateTime
+  MAR    MAR       @relation(fields: [MARMGA], references: [IDEMAR], onUpdate: NoAction, map: "MARMGA_FK")
+  Piezas Piezas[]
+}
+
+model MLT {
+  IDEMLT Int       @id(map: "PK__MLT__23A399D422D5121F") @default(autoincrement())
+  PZAMLT BigInt
+  CABMLT String    @db.NVarChar(50)
+  CNTMLT BigInt
+  ENTMLT Boolean
+  FECMLT DateTime? @db.SmallDateTime
+}
+
+model MNE {
+  IDEMNE Int       @id(map: "PK__MNE__3528CC84") @default(autoincrement())
+  ENTMNE Int
+  MNTMNE Int
+  CANMNE Int
+  FEAMNE DateTime? @db.SmallDateTime
+  FBJMNE DateTime? @db.SmallDateTime
+  NOTMNE String?   @db.NVarChar(255)
+  ENT    ENT       @relation(fields: [ENTMNE], references: [IDEENT], onUpdate: NoAction, map: "ENTMNE_FK")
+  MNT    MNT       @relation(fields: [MNTMNE], references: [IDEMNT], onUpdate: NoAction, map: "MNEMNT_FK")
+}
+
+model MNT {
+  IDEMNT Int       @id(map: "PK__MNT__2E7BCEF5") @default(autoincrement())
+  NOMMNT String    @db.NVarChar(100)
+  TEMMNT Int
+  FBJMNT DateTime? @db.SmallDateTime
+  NOTMNT String?   @db.NText
+  CUOMNT Decimal   @default(0, map: "DF__MNT__CUOMNT__39ED81A1") @db.Decimal(18, 2)
+  MNE    MNE[]
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model MOVTEMP {
+  FEC               DateTime? @db.SmallDateTime
+  NUMCAB            String?   @db.NVarChar(50)
+  DOC               String?   @db.NVarChar(50)
+  ALPCAB            String?   @db.NVarChar(50)
+  IMPUT             String?   @db.NVarChar(150)
+  ENT               String?   @db.NVarChar(255)
+  MREPZA            String?   @db.NVarChar(255)
+  DENOMINACIONPIEZA String?   @db.NVarChar(255)
+  PVTLAB            Float?    @db.Money
+  NETLAB            Float?    @db.Money
+  DT1LAB            Float?    @db.Real
+  SERLAB            Float?    @db.Real
+  TOTAL             Float?    @db.Money
+  TIPCAB            Int?
+  ENTTAL            Boolean?
+  DEPCAB            Int?
+  ESTCAB            Int?
+  ALMLAB            Int?
+  FECCAB            DateTime? @db.SmallDateTime
+  ESTADO            String?   @db.NVarChar(50)
+  SECCION           String?   @db.NVarChar(50)
+  NOMVEH            String?   @db.NVarChar(150)
+  MATVEH            String?   @db.NVarChar(20)
+  COSLAB            Float?    @db.Money
+  COSTE             Float?    @db.Money
+  BENEF             Float?    @db.Money
+  PORCBENEF         Float?    @db.Real
+  VEND              String?   @db.NVarChar(150)
+  NOMALM            String?   @db.NVarChar(50)
+  AADPZA            Boolean?
+  FAMILIA           String?   @db.NVarChar(50)
+  OBSCAB            String?   @db.NVarChar(255)
+  PVPPIEZA          Float?    @db.Money
+  DESCUENTO1PIEZA   Float?    @db.Real
+  COSTEACTUAL       Float?    @db.Money
+  DIVISION          String?   @db.NVarChar(100)
+  SUBDIVISION       String?   @db.NVarChar(100)
+  FECHA             DateTime? @db.SmallDateTime
+  BASVEH            String?   @db.NVarChar(50)
+  EXPEDIENTE        String?   @db.NVarChar(50)
+
+  @@ignore
+}
+
+model NMN {
+  IDENMN Int       @id(map: "IDENMN_PK") @default(autoincrement())
+  ENTNMN Int
+  TIPNMN Int
+  FPGNMN DateTime? @db.DateTime
+  FCTNMN DateTime? @db.DateTime
+  ESTNMN Int
+  LIQNMN Float     @db.Money
+  SSTNMN Float     @db.Money
+  SSENMN Float     @db.Money
+  IRPNMN Float     @db.Money
+  MPGNMN Int
+  TESNMN Int?
+  HORNMN Int?
+  CCNNMN Boolean
+  NOTNMN String?   @db.NText
+  FEFNMN DateTime? @db.DateTime
+  FEINMN DateTime? @db.DateTime
+  EMCNMN Int
+  TDINMN Int?
+  THENMN Int?
+  HDINMN Int?
+  TDLNMN Int?
+  SHENMN Decimal   @default(0, map: "DF__NMN__SHENMN__3AE1A5DA") @db.Decimal(18, 2)
+  SGENMN Decimal   @default(0, map: "DF__NMN__SGENMN__3BD5CA13") @db.Decimal(18, 2)
+  SESNMN Decimal   @default(0, map: "DF__NMN__SESNMN__3CC9EE4C") @db.Decimal(18, 2)
+  SCSNMN Decimal   @default(0, map: "DF__NMN__SCSNMN__3DBE1285") @db.Decimal(18, 2)
+  SISNMN Decimal   @default(0, map: "DF__NMN__SISNMN__3EB236BE") @db.Decimal(18, 2)
+  PSSNMN Decimal   @default(0, map: "DF__NMN__PSSNMN__3FA65AF7") @db.Decimal(18, 2)
+  CNSNMN Decimal?  @db.Decimal(18, 2)
+  ANTNMN Decimal   @default(0, map: "DF__NMN__ANTNMN__409A7F30") @db.Decimal(18, 2)
+  ODENMN Decimal   @default(0, map: "DF__NMN__ODENMN__418EA369") @db.Decimal(18, 2)
+  EMC    EMC       @relation(fields: [EMCNMN], references: [IDEEMC], onUpdate: NoAction, map: "EMCNMN_FK")
+  ENT    ENT       @relation(fields: [ENTNMN], references: [IDEENT], onUpdate: NoAction, map: "ENTNMN_FK")
+  TES    TES?      @relation(fields: [TESNMN], references: [IDETES], onDelete: NoAction, onUpdate: NoAction, map: "TESNMN_FK")
+}
+
+model OBJ {
+  IDEOBJ Int     @id(map: "PK__OBJ__30641767") @default(autoincrement())
+  TIPOBJ Int
+  IMPOBJ Int
+  EJEOBJ Int
+  MESOBJ Int
+  VALOBJ Decimal @db.Decimal(18, 0)
+  IMP    IMP     @relation(fields: [IMPOBJ], references: [IDEIMP], onUpdate: NoAction, map: "fkOBJconIMP")
+  TAL    TAL     @relation(fields: [TIPOBJ], references: [IDETAL], onUpdate: NoAction, map: "fkOBJconTAL")
+
+  @@unique([TIPOBJ, IMPOBJ, EJEOBJ, MESOBJ], map: "OBJ_UK")
+}
+
+model OKT {
+  IDEOKT Int       @id(map: "IDEOKT_PK") @default(autoincrement())
+  CKTOKT Int
+  ALBOKT String    @db.NVarChar(50)
+  USUOKT Int
+  FEAOKT DateTime  @db.SmallDateTime
+  NOTOKT String?   @db.NVarChar(255)
+  FEBOKT DateTime? @db.SmallDateTime
+  CAB    CAB       @relation(fields: [ALBOKT], references: [NUMCAB], onDelete: Cascade, map: "ALBOKT_FK")
+  CKT    CKT       @relation(fields: [CKTOKT], references: [IDECKT], onUpdate: NoAction, map: "CKTOKT_FK")
+  FVE    FVE       @relation(fields: [USUOKT], references: [ENTFVE], onUpdate: NoAction, map: "USUOKT_FK")
+}
+
+model OPL {
+  IDEOPL Int     @id(map: "IDEOPL_PK") @default(autoincrement())
+  PREOPL Int
+  LOPOPL Int
+  IMPOPL Float   @default(0, map: "DF__OPL__IMPOPL__316655F4") @db.Money
+  DESOPL String? @db.NVarChar(255)
+}
+
+model OTR {
+  ALBOTR String    @id(map: "ALBOTR_PK") @db.NVarChar(50)
+  FEROTR DateTime? @db.DateTime
+  TESOTR Float?    @db.Real
+  CSEOTR Int?
+  NSIOTR String?   @db.NVarChar(50)
+  VEHOTR Int?
+  KILOTR Int?      @default(0, map: "DF__OTR__KILOTR__62AFA012")
+  DAVOTR String?   @db.NText
+  PAROTR String?   @db.NVarChar(50)
+  BITOTR Float     @default(0, map: "DF__OTR__BITOTR__63A3C44B") @db.Money
+  COTOTR Float     @default(0, map: "DF__OTR__COTOTR__6497E884") @db.Money
+  FABOTR Int?
+  FC2OTR String?   @db.NVarChar(50)
+  FQTOTR Int?
+  FQCOTR Float     @default(0, map: "DF__OTR__FQCOTR__658C0CBD") @db.Money
+  FDPOTR Boolean   @default(false, map: "DF__OTR__FDPOTR__668030F6")
+  FDDOTR Boolean   @default(false, map: "DF__OTR__FDDOTR__6774552F")
+  ALROTR Int?
+  MAROTR String?   @db.NVarChar(2)
+  MOTOTR Float?    @default(0, map: "DF__OTR__MOTOTR__68687968") @db.Money
+  HMFOTR Float?    @db.Real
+  HMPOTR Float?    @db.Real
+  FEIOTR DateTime? @db.DateTime
+  FETOTR DateTime? @db.DateTime
+  ESMOTR Int?
+  PESOTR Boolean   @default(false, map: "DF__OTR__PESOTR__695C9DA1")
+  PDIOTR Boolean   @default(false, map: "DF__OTR__PDIOTR__6A50C1DA")
+  DAOOTR String?   @db.NText
+  OPPOTR String?   @db.NText
+  PROOTR Int?
+  FEDOTR DateTime? @db.DateTime
+  SCCOTR Int?
+  DEFOTR Int?
+  TRROTR Int?
+  FPROTR DateTime? @db.SmallDateTime
+  DASOTR Int?
+  EPEOTR Int?
+  LOCOTR String?   @db.NVarChar(50)
+  PEROTR Int?
+  DEPOTR Int?
+  REVOTR Int?      @default(0, map: "DF__OTR__REVOTR__2C5E7C59")
+  OPEOTR BigInt?
+  RVAOTR Int?
+  RVNOTR Int?
+  FQEOTR Boolean?  @default(false, map: "DF__OTR__FQEOTR__76E64552")
+  FC3OTR String?   @db.NVarChar(50)
+  CTEOTR Boolean?  @default(false, map: "DF__OTR__CTEOTR__18004DB6")
+  PRTOTR Int?
+  FEAOTR DateTime? @db.SmallDateTime
+  CIT    CIT[]
+  LOT    LOT[]
+  CAB    CAB       @relation(fields: [ALBOTR], references: [NUMCAB], onDelete: Cascade, map: "ALBOTR_FK")
+  FPR    FPR?      @relation(fields: [TRROTR], references: [ENTFPR], onDelete: NoAction, onUpdate: NoAction, map: "TRROTR_FK")
+  VEH    VEH?      @relation(fields: [VEHOTR], references: [IDEVEH], onDelete: NoAction, onUpdate: NoAction, map: "VEHOTR_FK")
+}
+
+model PAI {
+  IDEPAI Int     @id(map: "IDEPAI_PK") @default(autoincrement())
+  NOMPAI String  @db.NVarChar(50)
+  TFMPAI String? @db.NVarChar(25)
+  TPFPAI String? @db.NVarChar(10)
+  CIVPAI String? @db.NVarChar(3)
+  DIR    DIR[]
+  PRO    PRO[]
+
+  @@index([NOMPAI], map: "NOMPAI_NX")
+  @@index([IDEPAI], map: "NOMPRO_NX")
+}
+
+model PAL {
+  IDEPAL Int     @id(map: "IDEPAL_PK") @default(autoincrement())
+  ALMPAL Int
+  NOMPAL String  @db.NVarChar(50)
+  CIN    CIN[]
+  DIN    DIN[]
+  ALM    ALM     @relation(fields: [ALMPAL], references: [IDEALM], onUpdate: NoAction, map: "ALMPAL_FK")
+  Stock  Stock[]
+
+  @@index([NOMPAL], map: "NOMPAL_NX")
+}
+
+model PAT {
+  IDEPAT Int     @id(map: "PK__PAT__3C1B68013E7AFC59") @default(autoincrement())
+  PZAPAT BigInt?
+  IATPAT BigInt?
+}
+
+model PER {
+  IDEPER Int     @id(map: "PK__PER__25E688F4") @default(autoincrement())
+  ENTPER Int?
+  NOMPER String  @db.NVarChar(255)
+  TLFPER String? @db.NVarChar(12)
+  EMAPER String? @db.NVarChar(255)
+  ENT    ENT?    @relation(fields: [ENTPER], references: [IDEENT], onDelete: NoAction, onUpdate: NoAction, map: "fkPERconENT")
+}
+
+model PES {
+  IDEPES Int       @id(map: "PK__PES__3C1B85B5062888E2") @default(autoincrement())
+  CABPES String    @db.NVarChar(50)
+  CODPES String?   @db.NVarChar(20)
+  PINPES String?   @db.NVarChar(150)
+  CANPES Float?    @db.Real
+  PREPES Float?    @db.Money
+  FECPES DateTime? @db.SmallDateTime
+  OPEPES BigInt?
+  COSPES Float?    @db.Money
+}
+
+model PGS {
+  IDEPGS Int      @id(map: "IDEPGS_PK") @default(autoincrement())
+  NUMPGS String   @db.NVarChar(50)
+  ENTPGS Int
+  DOCPGS String   @db.NVarChar(50)
+  CPTPGS String?  @db.NVarChar(255)
+  CANPGS Float    @default(0, map: "DF__PGS__CANPGS__689D8392") @db.Money
+  FECPGS DateTime @default(now(), map: "DF__PGS__FECPGS__6991A7CB") @db.DateTime
+  CO2PGS Boolean  @default(false, map: "DF__PGS__CO2PGS__6A85CC04")
+  LIQPGS Boolean  @default(false, map: "DF__PGS__LIQPGS__6B79F03D")
+  CRTPGS Boolean  @default(false, map: "DF__PGS__CRTPGS__6C6E1476")
+  MPAPGS Int?
+  DEPPGS Int
+  TESPGS Int?
+  FACPGS Boolean  @default(false, map: "DF__PGS__FACPGS__75F22119")
+  VALPGS String?  @db.NVarChar(50)
+  VORPGS String?  @db.NVarChar(50)
+  CFAPGS String?  @db.NVarChar(50)
+  REGPGS Boolean?
+  ANTPGS Boolean?
+  USUPGS BigInt?
+  MANPGS Int      @default(0, map: "DF__PGS__MANPGS__3006B883")
+  EXPPGS String?  @db.NVarChar(20)
+  VVAPGS Boolean  @default(false, map: "DF__PGS__VVAPGS__0CFF0A16")
+  FAAPGS String?  @db.NVarChar(50)
+}
+
+model Piezas {
+  IDPieza                Int       @id(map: "IDPieza_PK") @default(autoincrement())
+  TipoPieza              Int
+  MarcaPieza             String    @db.NVarChar(2)
+  ReferenciaPieza        String    @db.NVarChar(150)
+  MREPZA                 String    @unique(map: "MREPZA_UK") @db.NVarChar(150)
+  STDPZA                 String?   @db.NVarChar(150)
+  DenominacionPieza      String    @db.NVarChar(255)
+  PVPPieza               Float     @default(0, map: "DF__PIEZAS__PVPPieza__3BCADD1B") @db.Money
+  Descuento1Pieza        Float     @default(0, map: "DF__PIEZAS__Descuent__3CBF0154") @db.Real
+  Descuento2Pieza        Float     @default(0, map: "DF__PIEZAS__Descuent__3DB3258D") @db.Real
+  IvaPieza               Int
+  ProveedorPriPieza      Int?
+  FAMPZA                 Int
+  DVIPZA                 Int
+  SUBPZA                 Int
+  COLPZA                 Int?
+  PORPZA                 Float     @default(0, map: "DF__PIEZAS__PORPZA__3EA749C6") @db.Money
+  UCAPZA                 Int       @default(1, map: "DF__PIEZAS__UCAPZA__3F9B6DFF")
+  BARPZA                 String?   @db.NVarChar(50)
+  TFRPZA                 Float     @default(1, map: "DF__PIEZAS__TFRPZA__408F9238") @db.Real
+  TEMPZA                 Float     @default(1, map: "DF__PIEZAS__TEMPZA__4183B671") @db.Real
+  ETQPZA                 Int       @default(0, map: "DF__PIEZAS__ETQPZA__4277DAAA")
+  FOTPZA                 String?   @db.NVarChar(255)
+  FechaAltaPieza         DateTime  @default(now(), map: "DF__PIEZAS__FechaAlt__436BFEE3") @db.DateTime
+  FBMPZA                 DateTime? @db.DateTime
+  FechaBajaPieza         DateTime? @db.DateTime
+  BajaPieza              Boolean   @default(false, map: "DF__PIEZAS__BajaPiez__4460231C")
+  NotasPieza             String?   @db.NText
+  ICOPZA                 String?   @db.NVarChar(255)
+  IMGPZA                 String?   @db.NVarChar(255)
+  HTMPZA                 String?   @db.NVarChar(255)
+  DESPZA                 String?   @db.NVarChar(255)
+  PVIPZA                 Float?    @db.Money
+  PAGPZA                 Int?
+  BANPZA                 String?   @db.NVarChar(50)
+  COMPZA                 Int?
+  FAPPZA                 DateTime? @db.DateTime
+  CDMPZA                 Int?
+  CDCPZA                 Int?
+  CDTPZA                 Int?
+  CMBPZA                 Int?
+  CILPZA                 Int?
+  POTPZA                 Int?
+  TVUPZA                 Int?
+  FVFPZA                 DateTime? @db.DateTime
+  IMMPZA                 Boolean   @default(false, map: "DF__PIEZAS__IMMPZA__45544755")
+  AADPZA                 Boolean   @default(false, map: "DF__PIEZAS__AADPZA__46486B8E")
+  TASPZA                 Int?
+  SUPPZA                 Int?
+  FBCPZA                 DateTime? @db.SmallDateTime
+  CAMPZA                 Int?
+  CATPZA                 Int?
+  VOCPZA                 Float?    @db.Real
+  CADPZA                 Int?
+  MGAPZA                 Int?
+  SE1PZA                 String?   @db.NText
+  SE2PZA                 String?   @db.NText
+  SE3PZA                 String?   @db.NText
+  CB2PZA                 String?   @db.NVarChar(255)
+  PFRPZA                 BigInt?
+  FMUPZA                 BigInt?   @default(0, map: "DF__Piezas__FMUPZA__3C94E422")
+  FRAPZA                 Float?    @db.Money
+  FIAPZA                 Float?    @db.Money
+  CODPZA                 String?   @db.NVarChar(150)
+  DCOPZA                 String?   @db.NText
+  IDCPZA                 String?   @db.NText
+  IDLPZA                 String?   @db.NText
+  ITLPZA                 BigInt?
+  STMPZA                 Int       @default(0, map: "DF__Piezas__STMPZA__07FBC2BB")
+  CAGPZA                 Float?    @db.Money
+  CVEPZA                 Float?    @db.Money
+  PZMPZA                 BigInt?
+  IMDPZA                 Boolean?
+  EANPZA                 String?   @db.NVarChar(50)
+  OPMPZA                 BigInt?
+  OPCPZA                 BigInt?
+  OPBPZA                 BigInt?
+  FMOPZA                 DateTime? @db.SmallDateTime
+  TRIPZA                 String?   @db.NVarChar(10)
+  PESPZA                 Float?    @db.Real
+  COL                    COL[]
+  CPV                    CPV[]
+  DIN                    DIN[]
+  EPA                    EPA?
+  LAB                    LAB[]
+  LFB                    LFB[]
+  LKT                    LKT[]
+  LPD                    LPD[]
+  SUP_Piezas_CAMPZAToSUP SUP?      @relation("Piezas_CAMPZAToSUP", fields: [CAMPZA], references: [IDESUP], onDelete: NoAction, onUpdate: NoAction, map: "CAMPZA_FK")
+  CAT                    CAT?      @relation(fields: [CATPZA], references: [IDECAT], onDelete: NoAction, onUpdate: NoAction, map: "CATPZA_FK")
+  CDC                    CDC?      @relation(fields: [CDCPZA], references: [IDECDC], onDelete: NoAction, onUpdate: NoAction, map: "CDCPZA_FK")
+  CDM                    CDM?      @relation(fields: [CDMPZA], references: [IDECDM], onDelete: NoAction, onUpdate: NoAction, map: "CDMPZA_FK")
+  CDT                    CDT?      @relation(fields: [CDTPZA], references: [IDECDT], onDelete: NoAction, onUpdate: NoAction, map: "CDTPZA_FK")
+  CLO                    CLO?      @relation(fields: [COLPZA], references: [IDECLO], onDelete: NoAction, onUpdate: NoAction, map: "COLPZA_FK")
+  DVS                    DVS       @relation(fields: [DVIPZA], references: [IDEDVS], onUpdate: NoAction, map: "DVIPZA_FK")
+  FAM                    FAM       @relation(fields: [FAMPZA], references: [IDEFAM], onUpdate: NoAction, map: "FAMPZA_FK")
+  TAS                    TAS?      @relation(fields: [TASPZA], references: [IDETAS], onDelete: NoAction, onUpdate: NoAction, map: "FK__Piezas__TASPZA__73A521EA")
+  IVA                    IVA       @relation(fields: [IvaPieza], references: [IDEIVA], onUpdate: NoAction, map: "IvaPieza_FK")
+  MAR                    MAR       @relation(fields: [MarcaPieza], references: [IDEMAR], onUpdate: NoAction, map: "MarcaPieza_FK")
+  MGA                    MGA?      @relation(fields: [MGAPZA], references: [IDEMGA], onDelete: NoAction, onUpdate: NoAction, map: "MGAPZA_FK")
+  FPR                    FPR?      @relation(fields: [ProveedorPriPieza], references: [ENTFPR], onDelete: NoAction, onUpdate: NoAction, map: "ProveedorPriPieza_FK")
+  SDV                    SDV       @relation(fields: [SUBPZA], references: [IDESDV], onUpdate: NoAction, map: "SUBPZA_FK")
+  SUP_Piezas_SUPPZAToSUP SUP?      @relation("Piezas_SUPPZAToSUP", fields: [SUPPZA], references: [IDESUP], onDelete: NoAction, onUpdate: NoAction, map: "SUPPZA_FK")
+  Stock                  Stock[]
+  TPP                    TPP[]
+  VEH                    VEH[]
+
+  @@unique([TipoPieza, MarcaPieza, ReferenciaPieza], map: "TipoMarcaReferenciaPieza_UK")
+  @@index([BANPZA], map: "BANPZA_NX")
+  @@index([FechaBajaPieza], map: "FechaBajaPieza_NX")
+  @@index([TipoPieza], map: "TipoPieza_NX")
+}
+
+model POB {
+  IDEPOB Int    @id(map: "PK__POB__3C1BDAC035534B41") @default(autoincrement())
+  CPOPOB String @db.NVarChar(20)
+  NOMPOB String @db.NVarChar(300)
+  MUNPOB String @db.NVarChar(300)
+}
+
+model POL {
+  IDEPOL              Int       @id(map: "IDEPOL_PK") @default(autoincrement())
+  NOMPOL              String    @unique(map: "NOMPOL") @db.NVarChar(50)
+  FEAPOL              DateTime? @db.DateTime
+  FEBPOL              DateTime? @db.DateTime
+  RENPOL              Boolean   @default(false, map: "DF__POL__RENPOL__0B5CAFEA")
+  SUSPOL              Int?
+  TIQPOL              Int
+  DURPOL              Float     @db.Real
+  FBAPOL              Int
+  ACOPOL              Int?
+  TPIPOL              Int?
+  CCRPOL              Int?
+  CCAPOL              Int?
+  PREPOL              String?   @db.NVarChar(255)
+  INIPOL              Int?
+  IMPPOL              Float?    @db.Money
+  NCOPOL              Boolean?
+  LPI                 LPI[]
+  LPO                 LPO[]
+  TES_POL_CCAPOLToTES TES?      @relation("POL_CCAPOLToTES", fields: [CCAPOL], references: [IDETES], onDelete: NoAction, onUpdate: NoAction, map: "CCAPOL_FK")
+  TES_POL_CCRPOLToTES TES?      @relation("POL_CCRPOLToTES", fields: [CCRPOL], references: [IDETES], onDelete: NoAction, onUpdate: NoAction, map: "CCRPOL_FK")
+  FBA                 FBA       @relation(fields: [FBAPOL], references: [ENTFBA], onUpdate: NoAction, map: "FBAPOL_FK")
+  QPO                 QPO[]
+  VEH                 VEH[]
+}
+
+model PRD {
+  IDEPRD Int       @id(map: "PK__PRD__38F95D68") @default(autoincrement())
+  NOMPRD String    @db.NVarChar(100)
+  VALPRD Int
+  TEMPRD String    @db.NVarChar(1)
+  FBJPRD DateTime? @db.SmallDateTime
+}
+
+model PRM {
+  NOMPRM String  @id(map: "NOMPRM_PK") @db.NVarChar(50)
+  DESPRM String? @db.NVarChar(50)
+  VALPRM String? @db.NVarChar(100)
+}
+
+model PRO {
+  IDEPRO Int     @id(map: "IDEPRO_PK") @default(autoincrement())
+  PAIPRO Int
+  CPOPRO String? @db.NVarChar(5)
+  NOMPRO String  @db.NVarChar(50)
+  DIR    DIR[]
+  PAI    PAI     @relation(fields: [PAIPRO], references: [IDEPAI], onDelete: Cascade, map: "PAIPRO_FK")
+
+  @@unique([CPOPRO, PAIPRO], map: "UNIC_PAICPOPRO_NX")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model PRT {
+  IDEPRT Int       @default(autoincrement())
+  PRCPRT String    @db.NVarChar(150)
+  FBJPRT DateTime? @db.SmallDateTime
+  INIPRT Int?
+
+  @@ignore
+}
+
+model PUB {
+  IDEPUB Int      @id(map: "PK__PUB__3C1A0790268E642F") @default(autoincrement())
+  ALMPUB BigInt?
+  RCPPUB String?  @db.NVarChar(255)
+  VALPUB Float?   @db.Money
+  TIPPUB Int?
+  GVLPUB Boolean?
+}
+
+model PUS {
+  USUPUS Int
+  NOMPUS String @db.NVarChar(50)
+  PERPUS Int    @default(0, map: "DF__PUS__PERPUS__719CDDE7") @db.SmallInt
+  USU    USU    @relation(fields: [USUPUS], references: [ENTUSU], onDelete: Cascade, map: "USUPUS_FK")
+
+  @@id([USUPUS, NOMPUS], map: "USUNOMPUS_PK")
+}
+
+model PZI {
+  PZAPZI BigInt    @id(map: "PK__PZI__F60F819E0257F7FE")
+  SE1PZI String?   @db.NText
+  SE2PZI String?   @db.NText
+  SE3PZI String?   @db.NText
+  DSCPZI String?   @db.NText
+  DSLPZI String?   @db.NText
+  TALPZI BigInt?
+  PREPZI Float?    @db.Money
+  DTOPZI Float?    @db.Real
+  REBPZI Float?    @db.Real
+  FIRPZI DateTime? @db.DateTime
+  FFRPZI DateTime? @db.DateTime
+  OUTPZI Boolean?
+  PZMPZI BigInt?
+  WPAPZI Boolean?
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model PZM {
+  IDEPZM Int    @default(autoincrement())
+  REFPZM String @db.NVarChar(50)
+  DESPZM String @db.NVarChar(200)
+
+  @@ignore
+}
+
+model QPO {
+  IDEQPO Int      @id(map: "IDEQPO_PK") @default(autoincrement())
+  POLQPO Int
+  VEHQPO Int
+  FECQPO DateTime @db.DateTime
+  CANQPO Float    @db.Money
+  POL    POL      @relation(fields: [POLQPO], references: [IDEPOL], onUpdate: NoAction, map: "POLQPO_FK")
+  VEH    VEH      @relation(fields: [VEHQPO], references: [IDEVEH], onUpdate: NoAction, map: "VEHQPO_FK")
+
+  @@index([FECQPO], map: "FECQPO")
+}
+
+model RCO {
+  IDERCO Int     @id(map: "IDERCO_PK") @default(autoincrement())
+  ALBRCO String  @db.NVarChar(50)
+  DESRCO String  @db.NVarChar(255)
+  RENRCO Boolean @default(false, map: "DF__RCO__RENRCO__7226EDCC")
+  CAB    CAB     @relation(fields: [ALBRCO], references: [NUMCAB], onDelete: Cascade, map: "ALBRCO_FK")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model REA {
+  ALBREA  String    @db.NVarChar(50)
+  B1_1    Int?
+  B1_2    Int?
+  B1_3    Int?
+  B1_4    Int?
+  B1_5    Int?
+  B1_6    Int?
+  B1_7    Int?
+  B1_8    Int?
+  B1_9    Int?
+  B1_10   String?   @db.NVarChar(255)
+  B2_1    Int?
+  B2_2    Int?
+  B2_3    Int?
+  B2_4    Int?
+  B2_5    Int?
+  B2_6    Int?
+  B2_7    Int?
+  B2_8    Int?
+  B2_9    String?   @db.NVarChar(255)
+  B3_1    Int?
+  B3_2    Int?
+  B3_3    String?   @db.NVarChar(255)
+  B4_1    Int?
+  B4_2    Int?
+  B4_3    Int?
+  B4_4    Int?
+  B4_5    Int?
+  B4_6    Int?
+  B4_7    String?   @db.NVarChar(255)
+  B5_1    Int?
+  B5_2    Int?
+  B5_3    String?   @db.NVarChar(255)
+  B5_D1   String?   @db.NVarChar(255)
+  B5_D2   String?   @db.NVarChar(255)
+  B6_O1   String?   @db.NVarChar(255)
+  B6_D1   Int?
+  B6_D2   Int?
+  B6_D3   Int?
+  B6_D4   Int?
+  B6_D5   Int?
+  B6_O2   String?   @db.NVarChar(255)
+  B7_1    DateTime? @db.SmallDateTime
+  B7_2    Int?
+  B7_3    Int?
+  B7_4    Int?
+  B7_5    Int?
+  B7_6    Int?
+  B7_7    Int?
+  B8_1_1  Int?
+  B8_1_2  Int?
+  B8_1_3  Int?
+  B8_1_4  Int?
+  B8_1_5  Int?
+  B8_1_6  Int?
+  B8_1_7  Int?
+  B8_1_8  Int?
+  B8_1_9  Int?
+  B8_1_10 Int?
+  B8_1_11 Int?
+  B8_1_12 Int?
+  B8_1_13 Int?
+  B8_2_1  Int?
+  B8_2_2  Int?
+  B8_2_3  Int?
+  B8_2_4  Int?
+  B8_2_5  Int?
+  B8_2_6  Int?
+  B8_2_7  Int?
+  B8_2_8  Int?
+  B8_2_9  Int?
+  B8_2_10 Int?
+  B8_2_11 Int?
+  B8_2_12 Int?
+  B8_2_13 Int?
+  B8_4_1  Int?
+  B8_4_2  Int?
+  B8_4_3  Int?
+  B8_3    String?   @db.NVarChar(255)
+  B9_1_1  Int?
+  B9_1_2  Int?
+  B9_1_3  Int?
+  B9_1_4  Int?
+  B9_1_5  Int?
+  B9_1_6  Int?
+  B9_1_7  Int?
+  B9_1_8  Int?
+  B9_1_9  Int?
+  B9_2_1  Int?
+  B9_2_2  Int?
+  B9_2_3  Int?
+  B9_2_4  Int?
+  B9_2_5  Int?
+  B9_2_6  Int?
+  B9_2_7  Int?
+  B9_2_8  Int?
+  B9_2_9  Int?
+  B9_3    String?   @db.NVarChar(255)
+  B10_1   String?   @db.NVarChar(255)
+  B10_2   String?   @db.NVarChar(255)
+  B10_3   String?   @db.NVarChar(255)
+  B11_1   Int?
+  B11_2   Int?
+  B11_3   Int?
+  B11_4   Int?
+  B11_5   Int?
+  B11_6   Int?
+  B11_7   Int?
+  B11_8   Int?
+  B11_9   Int?
+  B11_10  Int?
+  B11_11  Int?
+  B12_1   Int?
+  B12_2   Int?
+  B12_3   Int?
+  B12_4   String?   @db.NVarChar(255)
+  B13_1   Int?
+  B13_2   Int?
+  B13_3   Int?
+  B13_4   Int?
+  B13_5   Int?
+  B13_6   String?   @db.NVarChar(255)
+
+  @@ignore
+}
+
+model REE {
+  IDEREE Int       @id(map: "PK__REE__3F87A13D581027A5") @default(autoincrement())
+  LTAREE String?   @db.NVarChar(50)
+  USUREE Int?
+  FECREE DateTime? @db.SmallDateTime
+  NLTREE String?   @db.NVarChar(50)
+}
+
+model REFMARCA {
+  IDEREF Int       @id(map: "PK__REFMARCA__3F87A13CD410D68F") @default(autoincrement())
+  MARREF String    @db.NVarChar(2)
+  REFREF String    @db.NVarChar(150)
+  SUSREF String?   @db.NVarChar(150)
+  DESREF String?   @db.NVarChar(255)
+  PREREF Float     @db.Money
+  DTOREF Int?
+  IVAREF Int?
+  UCAREF Int?
+  FEAREF DateTime? @db.DateTime
+  FEBREF DateTime? @db.DateTime
+  FAMREF String?   @db.NVarChar(50)
+  COMREF Int?
+  DTCREF String?   @db.NVarChar(5)
+  FVFREF DateTime? @db.DateTime
+  MODREF Boolean?
+  DIVREF String?   @db.NVarChar(100)
+  SUBREF String?   @db.NVarChar(100)
+  EANREF String?   @db.NVarChar(50)
+  PSIREF Boolean?
+  PESREF Float?    @db.Real
+  UNMREF String?   @db.NVarChar(3)
+  INTREF String?   @db.NVarChar(10)
+}
+
+model REL {
+  IDEREL Int       @id(map: "PK__REL__3F87A126AFE99513") @default(autoincrement())
+  QUEREL String?   @db.NVarChar(250)
+  USUREL Int?
+  FECREL DateTime? @db.SmallDateTime
+}
+
+model REV {
+  IDEREV Int       @id(map: "IDEREV_PK") @default(autoincrement())
+  CODREV String?   @db.NVarChar(150)
+  VINREV String?   @db.NVarChar(50)
+  PCHREV String?   @db.NVarChar(50)
+  DMOREV String?   @db.NVarChar(255)
+  DCOREV String?   @db.NVarChar(15)
+  RCOREV String?   @db.NVarChar(10)
+  BARREV String?   @db.NVarChar(5)
+  CHVREV String?   @db.NVarChar(50)
+  SITREV String?   @db.NVarChar(50)
+  NCOREV Int?
+  COSREV Float?    @db.Money
+  TRAREV Float?    @db.Money
+  PVPREV Float?    @db.Money
+  IVAREV Int?
+  FVPREV DateTime? @db.DateTime
+  FUMREV DateTime? @db.DateTime
+}
+
+model RIM {
+  IDERIM Int       @id(map: "PK__RIM__3F8781A253D3FFA6") @default(autoincrement())
+  REPRIM String?   @db.NVarChar(50)
+  USURIM Int?
+  FECRIM DateTime? @db.SmallDateTime
+  NOMRIM String?   @db.NVarChar(100)
+}
+
+model RLF {
+  IDRLF  Int       @id(map: "PK__RLF__A686B970B3666104") @default(autoincrement())
+  LABRLF BigInt
+  CFARLF String    @db.NVarChar(50)
+  ENTRLF BigInt?
+  ALBRLF String?   @db.NVarChar(50)
+  TASRLF Boolean?  @default(false, map: "DF__RLF__TASRLF__7EFEFC35")
+  FECRLF DateTime? @db.SmallDateTime
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model RSP {
+  CPDRSP String  @db.NVarChar(50)
+  LINRSP Int?
+  PZARSP String? @db.NVarChar(150)
+  CODRSP Int?
+  VALRSP String? @db.NVarChar(255)
+  NOTRSP String? @db.NVarChar(255)
+
+  @@ignore
+}
+
+model SCC {
+  IDESCC Int       @id(map: "IDESCC_PK") @default(autoincrement())
+  NOMSCC String    @db.NVarChar(25)
+  CLASCC Int
+  FEASCC DateTime? @default(now(), map: "DF__SCC__FEASCC__46E78A0C") @db.DateTime
+  FBJSCC DateTime? @db.DateTime
+  NOTSCC String?   @db.NText
+  UOTSCC Boolean   @default(false, map: "DF__SCC__UOTSCC__47DBAE45")
+  CIT    CIT[]
+  FOT    FOT[]
+}
+
+model SDV {
+  IDESDV Int       @id(map: "IDESDV_PK") @default(autoincrement())
+  DIVSDV Int       @default(0, map: "DF__SDV__DIVSDV__32767D0B")
+  NOMSDV String    @db.NVarChar(50)
+  MARSDV String?   @db.NVarChar(2)
+  MGCSDV String?   @db.NVarChar(20)
+  MGESDV String?   @db.NVarChar(20)
+  MGVSDV String?   @db.NVarChar(20)
+  FEASDV DateTime  @default(now(), map: "DF__SDV__FEASDV__345EC57D") @db.DateTime
+  FEBSDV DateTime? @db.DateTime
+  NOTSDV String?   @db.NText
+  CMMSDV String?   @db.NVarChar(50)
+  GRPSDV Int       @default(3, map: "DF__SDV__GRPSDV__1A1FD08D")
+  AMOSDV Boolean   @default(false, map: "DF__SDV__AMOSDV__1B13F4C6")
+  STMSDV Int       @default(0, map: "DF__SDV__STMSDV__1B84959C")
+  PVPSDV Float?    @default(0, map: "DF__SDV__PVPSDV__2EA3225F") @db.Money
+  IMASDV Int?      @default(0, map: "DF__SDV__IMASDV__2F974698")
+  GMASDV Int?      @default(0, map: "DF__SDV__GMASDV__308B6AD1")
+  Piezas Piezas[]
+  DVS    DVS       @relation(fields: [DIVSDV], references: [IDEDVS], onDelete: Cascade, map: "DIVSDV_FK")
+  MAR    MAR?      @relation(fields: [MARSDV], references: [IDEMAR], onDelete: NoAction, onUpdate: NoAction, map: "MARSDV_FK")
+
+  @@index([FEBSDV], map: "FEBSDV_NX")
+  @@index([NOMSDV], map: "NOMSDV_NX")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model SEG {
+  IDESEG Int     @default(autoincrement())
+  ALBSEG String  @db.NVarChar(50)
+  REPSEG Boolean @default(false, map: "DF__SEG__REPSEG__79C2B1FD")
+  SUSSEG Boolean @default(false, map: "DF__SEG__SUSSEG__7AB6D636")
+  PINSEG Boolean @default(false, map: "DF__SEG__PINSEG__7BAAFA6F")
+  MONSEG Boolean @default(false, map: "DF__SEG__MONSEG__7C9F1EA8")
+  DESSEG Boolean @default(false, map: "DF__SEG__DESSEG__7D9342E1")
+  EXTSEG Boolean @default(false, map: "DF__SEG__EXTSEG__7E87671A")
+  PZASEG String? @db.NVarChar(150)
+  OBSSEG String? @db.NVarChar(150)
+
+  @@ignore
+}
+
+model SMS {
+  Id            Int       @id(map: "IDSMS_FK") @default(autoincrement())
+  Destino       String    @db.NVarChar(15)
+  Texto         String    @db.NVarChar(150)
+  Estado        Int
+  FechaPrevista DateTime  @db.SmallDateTime
+  FechaEnvio    DateTime? @db.SmallDateTime
+  ENTSMS        Int?
+  VEHSMS        Int?
+  ORISMS        String?   @db.NVarChar(50)
+  TORSMS        Int?
+  ALMSMS        Int?
+  VEH           VEH?      @relation(fields: [VEHSMS], references: [IDEVEH], onDelete: NoAction, onUpdate: NoAction, map: "VEHSMS_FK")
+}
+
+model STA {
+  TIPSTA Int     @default(0, map: "DF__STA__TIPSTA__2C3393D0")
+  CLASTA Int     @default(0, map: "DF__STA__CLASTA__2D27B809")
+  ESTSTA String  @db.NVarChar(50)
+  ABRSTA String? @db.NVarChar(10)
+
+  @@id([TIPSTA, CLASTA], map: "TIPCLASTA_PK")
+}
+
+model Stock {
+  Almac_nStock          Int       @map("AlmacénStock")
+  PiezaStock            Int
+  ActualStock           Int       @default(0, map: "DF__Stock__ActualSto__75F77EB0")
+  MinimoStock           Int       @default(0, map: "DF__Stock__MinimoSto__76EBA2E9")
+  MaximoStock           Int       @default(0, map: "DF__Stock__MaximoSto__77DFC722")
+  PdteRecibirStock      Int       @default(0, map: "DF__Stock__PdteRecib__78D3EB5B")
+  PdteServirStock       Int       @default(0, map: "DF__Stock__PdteServi__79C80F94")
+  PrecioReposicionStock Float     @default(0, map: "DF__Stock__PrecioRep__7ABC33CD") @db.Money
+  PrecioMedioStock      Float     @default(0, map: "DF__Stock__PrecioMed__7BB05806") @db.Money
+  PrecioUltCompraStock  Float     @default(0, map: "DF__Stock__PrecioUlt__7CA47C3F") @db.Money
+  FecAltaStock          DateTime  @default(now(), map: "DF__Stock__FecAltaSt__7D98A078") @db.DateTime
+  FecUltVentaStock      DateTime? @db.DateTime
+  PALSTO                Int?
+  FUCSTO                DateTime? @db.DateTime
+  UPMSTO                Float     @default(0, map: "DF__Stock__UPMSTO__237166D5") @db.Money
+  ALM                   ALM       @relation(fields: [Almac_nStock], references: [IDEALM], onUpdate: NoAction, map: "AlmacénStock_FK")
+  PAL                   PAL?      @relation(fields: [PALSTO], references: [IDEPAL], onDelete: NoAction, onUpdate: NoAction, map: "PALSTO_FK")
+  Piezas                Piezas    @relation(fields: [PiezaStock], references: [IDPieza], onUpdate: NoAction, map: "PiezasStock_FK")
+
+  @@id([Almac_nStock, PiezaStock], map: "Stock_PK")
+  @@index([ActualStock], map: "ActualStock_NX")
+  @@index([PiezaStock], map: "PiezaStock_NX")
+}
+
+model SUP {
+  IDESUP                    Int       @id(map: "IDESUP_PK") @default(autoincrement())
+  NOMSUP                    String?   @db.NVarChar(150)
+  PVPSUP                    Float     @default(0, map: "DF__SUP__PVPSUP__239E4DCF") @db.Money
+  DTOSUP                    Float     @default(0, map: "DF__SUP__DTOSUP__24927208") @db.Real
+  SBCSUP                    String?   @db.NVarChar(20)
+  PCVSUP                    Float?    @db.Real
+  NOTSUP                    String?   @db.NVarChar(255)
+  IMPSUP                    Boolean   @default(false, map: "DF__SUP__IMPSUP__697C9932")
+  TIPSUP                    Int?      @default(0, map: "DF__SUP__TIPSUP__42ECDBF6")
+  FBASUP                    DateTime? @db.SmallDateTime
+  COSSUP                    Float?    @db.Money
+  REGSUP                    Boolean   @default(false, map: "DF__SUP__REGSUP__2ECB7719")
+  GCHSUP                    Int?
+  FEASUP                    DateTime? @db.SmallDateTime
+  FACSUP                    Boolean?
+  FMASUP                    Boolean?
+  AIMSUP                    Boolean?
+  CCOSUP                    String?   @db.NVarChar(20)
+  IMVSUP                    Boolean   @default(false, map: "DF__SUP__IMVSUP__00CBDB56")
+  CLASUP                    Int       @default(0, map: "DF__SUP__CLASUP__4F99367F")
+  LIQ                       LIQ[]
+  LSP                       LSP[]
+  Piezas_Piezas_CAMPZAToSUP Piezas[]  @relation("Piezas_CAMPZAToSUP")
+  Piezas_Piezas_SUPPZAToSUP Piezas[]  @relation("Piezas_SUPPZAToSUP")
+  GCH                       GCH?      @relation(fields: [GCHSUP], references: [IDEGCH], onDelete: NoAction, onUpdate: NoAction, map: "FK__SUP__GCHSUP__18C72761")
+
+  @@index([NOMSUP], map: "NOMSUP_NX")
+}
+
+model sysdiagrams {
+  name         String @db.NVarChar(128)
+  principal_id Int
+  diagram_id   Int    @id(map: "PK__sysdiagrams__31D75E8D") @default(autoincrement())
+  version      Int?
+  definition   Bytes?
+
+  @@unique([principal_id, name], map: "UK_principal_name")
+}
+
+model TAL {
+  IDETAL Int      @id(map: "IDETAL_PK") @default(autoincrement())
+  TIPTAL String   @db.NVarChar(50)
+  PEDTAL Boolean  @default(false, map: "DF__TAL__PEDTAL__70DDC3D8")
+  ENTTAL Boolean  @default(false, map: "DF__TAL__ENTTAL__71D1E811")
+  SIGTAL Int      @default(1, map: "DF__TAL__SIGTAL__72C60C4A")
+  DEPTAL Int      @default(0, map: "DF__TAL__DEPTAL__73BA3083")
+  AUTTAL Boolean  @default(false, map: "DF__TAL__AUTTAL__74AE54BC")
+  REGTAL Boolean  @default(false, map: "DF__TAL__REGTAL__75A278F5")
+  FABTAL Boolean  @default(false, map: "DF__TAL__FABTAL__76969D2E")
+  ALQTAL Boolean? @default(false, map: "DF__TAL__ALQTAL__79D2FC8C")
+  IMP    IMP[]
+  OBJ    OBJ[]
+  DEP    DEP      @relation(fields: [DEPTAL], references: [IDEDEP], onUpdate: NoAction, map: "DEPTAL_FK")
+
+  @@index([TIPTAL], map: "TIPTAL_NX")
+}
+
+model TAR {
+  IDETAR              Int       @id(map: "IDETAR_PK") @default(autoincrement())
+  VIATAR              Int
+  FEATAR              DateTime  @db.DateTime
+  FECTAR              DateTime? @db.DateTime
+  ESTTAR              Int?
+  PRITAR              Int?
+  NOMTAR              String    @db.NVarChar(255)
+  DOCTAR              String?   @db.NVarChar(100)
+  ENTTAR              Int?
+  CONTAR              Int?
+  CRETAR              Int
+  USUTAR              Int
+  NOTTAR              String?   @db.NText
+  ETTTAR              Int?
+  EN2TAR              String?   @db.NVarChar(150)
+  CN2TAR              String?   @db.NVarChar(150)
+  TLFTAR              String?   @db.NVarChar(20)
+  TARTAR              Int?
+  MOVTAR              String?   @db.NVarChar(20)
+  CON                 CON?      @relation(fields: [CONTAR], references: [IDECON], onDelete: NoAction, onUpdate: NoAction, map: "CONTAR_FK")
+  USU_TAR_CRETARToUSU USU       @relation("TAR_CRETARToUSU", fields: [CRETAR], references: [ENTUSU], onUpdate: NoAction, map: "CRETAR_FK")
+  ENT                 ENT?      @relation(fields: [ENTTAR], references: [IDEENT], onDelete: NoAction, onUpdate: NoAction, map: "ENTTAR_FK")
+  ETT                 ETT?      @relation(fields: [ETTTAR], references: [IDEETT], onDelete: NoAction, onUpdate: NoAction, map: "ETTTAR_FK")
+  USU_TAR_USUTARToUSU USU       @relation("TAR_USUTARToUSU", fields: [USUTAR], references: [ENTUSU], onUpdate: NoAction, map: "USUTAR_FK")
+  VIA                 VIA       @relation(fields: [VIATAR], references: [IDEVIA], onUpdate: NoAction, map: "VIATAR_FK")
+}
+
+model TAS {
+  IDETAS Int      @id(map: "PK__TAS__6FD49106") @default(autoincrement())
+  NOMTAS String   @db.NVarChar(255)
+  IMPTAS Float    @default(0, map: "DF_TAS_IMPTAS") @db.Money
+  NOTTAS String?  @db.NVarChar(255)
+  TIPTAS Int?     @default(0, map: "DF__TAS__TIPTAS__25077354")
+  CODTAS String?  @db.NVarChar(150)
+  LAT    LAT[]
+  LPT    LPT[]
+  Piezas Piezas[]
+}
+
+model TCL {
+  IDETCL Int     @id(map: "IDETCL_PK") @default(autoincrement())
+  NOMTCL String  @db.NVarChar(50)
+  PRBTCL Int     @default(0, map: "DF__TCL__PRBTCL__31EC6D26")
+  PORTCL Float   @default(0, map: "DF__TCL__PORTCL__32E0915F") @db.Real
+  DDTTCL Boolean @default(false, map: "DF__TCL__DDTTCL__34C8D9D1")
+  DMOTCL Float?  @db.Real
+  FCL    FCL[]
+
+  @@index([NOMTCL], map: "NOMTCL_NX")
+}
+
+model TES {
+  IDETES              Int       @id(map: "IDETES_PK") @default(autoincrement())
+  NOMTES              String    @db.NVarChar(50)
+  FBATES              Int?
+  CAXTES              String?   @db.NVarChar(11)
+  CUETES              String?   @db.NVarChar(20)
+  FBJTES              DateTime? @db.DateTime
+  FAPTES              DateTime? @db.DateTime
+  EMCTES              Int
+  IBATES              String?   @db.NVarChar(4)
+  SUFTES              String?   @db.NVarChar(3)
+  DATTES              Boolean   @default(false, map: "DF__TES__DATTES__73B33C3E")
+  CRT                 CRT[]
+  EMC_EMC_CBAEMCToTES EMC[]     @relation("EMC_CBAEMCToTES")
+  EMC_EMC_CBTEMCToTES EMC[]     @relation("EMC_CBTEMCToTES")
+  EMC_EMC_CTCEMCToTES EMC[]     @relation("EMC_CTCEMCToTES")
+  EMC_EMC_CTMEMCToTES EMC[]     @relation("EMC_CTMEMCToTES")
+  EMC_EMC_CTPEMCToTES EMC[]     @relation("EMC_CTPEMCToTES")
+  EMC_EMC_CTTEMCToTES EMC[]     @relation("EMC_CTTEMCToTES")
+  LES                 LES[]
+  NMN                 NMN[]
+  POL_POL_CCAPOLToTES POL[]     @relation("POL_CCAPOLToTES")
+  POL_POL_CCRPOLToTES POL[]     @relation("POL_CCRPOLToTES")
+  EMC_TES_EMCTESToEMC EMC       @relation("TES_EMCTESToEMC", fields: [EMCTES], references: [IDEEMC], onUpdate: NoAction, map: "EMCTES_FK")
+}
+
+model TEX {
+  IDETEX Int     @id(map: "PK__TEX__59E54FE7") @default(autoincrement())
+  TEXTEX String? @db.NText
+  LAB    LAB[]
+  LPD    LPD[]
+}
+
+model TFA {
+  IDETFA Int      @id(map: "PK__TFA__3D138CE2587208C1") @default(autoincrement())
+  TTATFA Int
+  CATTFA Int
+  IMPTFA Decimal? @db.Decimal(18, 2)
+  NOTTFA String?  @db.NVarChar(255)
+  CAT    CAT      @relation(fields: [CATTFA], references: [IDECAT], onUpdate: NoAction, map: "CATTFA_FK")
+  TTA    TTA      @relation(fields: [TTATFA], references: [IDETTA], onUpdate: NoAction, map: "TTATFA_FK")
+
+  @@unique([TTATFA, CATTFA], map: "OBJ_UQ_TFA")
+}
+
+model TFI {
+  IDETFI Int       @id(map: "IDETFI_PK") @default(autoincrement())
+  ENTTFI Int
+  NOMTFI String    @db.NVarChar(50)
+  PORTFI Float     @default(0, map: "DF__TFI__PORTFI__76619304") @db.Real
+  PLATFI Int       @default(0, map: "DF__TFI__PLATFI__7849DB76")
+  NOTTFI String?   @db.NText
+  FBJTFI DateTime? @db.DateTime
+  COETFI Float     @default(0, map: "DF__TFI__COETFI__5BB889C0")
+  GASTFI Float     @default(0, map: "DF__TFI__GASTFI__477C86E9") @db.Money
+  EXP    EXP[]
+  LFI    LFI[]
+  FFI    FFI       @relation(fields: [ENTTFI], references: [ENTFFI], onDelete: Cascade, map: "ENTTFI_FK")
+
+  @@index([NOMTFI], map: "NOMTFI_NX")
+}
+
+model TPP {
+  PZATPP Int
+  TPRTPP Int
+  MINTPP Int       @default(0, map: "DF__TPP__MINTPP__0EC32C7A")
+  PODTPP Boolean   @default(false, map: "DF__TPP__PODTPP__0FB750B3")
+  PRETPP Float?    @db.Money
+  DTOTPP Float?    @db.Real
+  FEATPP DateTime  @default(now(), map: "DF__TPP__FEATPP__10AB74EC") @db.DateTime
+  FBJTPP DateTime? @db.DateTime
+  Piezas Piezas    @relation(fields: [PZATPP], references: [IDPieza], onUpdate: NoAction, map: "PZATPP_FK")
+  TPR    TPR       @relation(fields: [TPRTPP], references: [IDETPR], onDelete: Cascade, map: "TPRTPP_FK")
+
+  @@id([PZATPP, TPRTPP], map: "PZATPRTPP_PK")
+  @@index([FBJTPP], map: "FBJTPP_NX")
+  @@index([FEATPP], map: "FEATPP_NX")
+}
+
+model TPR {
+  IDETPR Int    @id(map: "IDETPR_PK") @default(autoincrement())
+  ENTTPR Int
+  TARTPR String @db.NVarChar(50)
+  INCTPR Float? @db.Real
+  LPD    LPD[]
+  TPP    TPP[]
+  FPR    FPR    @relation(fields: [ENTTPR], references: [ENTFPR], onDelete: Cascade, map: "ENTTPR_FK")
+
+  @@index([TARTPR], map: "TARTPR_NX")
+}
+
+model TSE {
+  IDETSE Int    @id(map: "PK__TSE__3D1276914EE89E87") @default(autoincrement())
+  DESTSE String @db.NVarChar(255)
+  VEH    VEH[]
+}
+
+model TTA {
+  IDETTA Int     @id(map: "PK__TTA__3D127EB454A177DD") @default(autoincrement())
+  TIPTTA Int
+  DESTTA String  @db.NVarChar(50)
+  NOTTTA String? @db.NVarChar(255)
+  TFA    TFA[]
+}
+
+model TXT {
+  IDETXT Int     @id(map: "IDETXT_PK") @default(0, map: "DF__TXT__IDETXT__37A5467C")
+  TXTTXT String? @db.NText
+}
+
+model UOR {
+  IDEUOR Int     @id(map: "PK__UOR__3D53D5BAE88D3719") @default(autoincrement())
+  ENTUOR BigInt
+  CODUOR String  @db.NVarChar(20)
+  ROLUOR String  @db.NVarChar(2)
+  NOMUOR String  @db.NVarChar(300)
+  DIRUOR String  @db.NVarChar(300)
+  CPOUOR String  @db.NVarChar(20)
+  CIUUOR String  @db.NVarChar(100)
+  PROUOR String  @db.NVarChar(100)
+  CPAUOR String  @db.NVarChar(10)
+  DESUOR String? @db.NVarChar(300)
+}
+
+model USU {
+  ENTUSU              Int       @id(map: "ENTUSU_PK")
+  CONUSU              String?   @db.NVarChar(50)
+  ACCUSU              Int       @default(0, map: "DF__USU__ACCUSU__06CD04F7")
+  VEHUSU              Int       @default(0, map: "DF__USU__VEHUSU__07C12930")
+  RECUSU              Int       @default(0, map: "DF__USU__RECUSU__09A971A2")
+  TALUSU              Int       @default(0, map: "DF__USU__TALUSU__0B91BA14")
+  ADMUSU              Int       @default(0, map: "DF__USU__ADMUSU__0D7A0286")
+  FEAUSU              DateTime  @default(now(), map: "DF__USU__FEAUSU__0F624AF8") @db.DateTime
+  FEBUSU              DateTime? @db.DateTime
+  NOTUSU              String?   @db.NText
+  FLOUSU              Int       @default(0, map: "DF__USU__FLOUSU__11AA861D")
+  ABOUSU              Int       @default(0, map: "DF__USU__ABOUSU__5AEA2243")
+  AGE                 AGE[]
+  PUS                 PUS[]
+  TAR_TAR_CRETARToUSU TAR[]     @relation("TAR_CRETARToUSU")
+  TAR_TAR_USUTARToUSU TAR[]     @relation("TAR_USUTARToUSU")
+  ENT                 ENT       @relation(fields: [ENTUSU], references: [IDEENT], onDelete: Cascade, map: "ENTUSU_FK")
+
+  @@index([FEBUSU], map: "FEBUSU_NX")
+}
+
+model VEH {
+  IDEVEH Int       @id(map: "IDEVEH_PK") @default(autoincrement())
+  PZAVEH Int
+  NOMVEH String?   @db.NVarChar(150)
+  BASVEH String?   @db.NVarChar(17)
+  MOTVEH String?   @db.NVarChar(50)
+  MATVEH String?   @db.NVarChar(10)
+  ESTVEH Int
+  ALMVEH Int?
+  ENTVEH Int?
+  COSVEH Float     @default(0, map: "DF__VEH__COSVEH__15702A09") @db.Money
+  VOVEH  Boolean   @default(false, map: "DF__VEH__VOVEH__16644E42")
+  REAVEH Float?    @db.Money
+  PVPVEH Float?    @db.Money
+  FCMVEH DateTime? @db.DateTime
+  FNBVEH DateTime? @db.DateTime
+  SNBVEH String?   @db.NVarChar(50)
+  FFPVEH DateTime? @db.DateTime
+  NFPVEH String?   @db.NVarChar(50)
+  FDCVEH DateTime? @db.DateTime
+  FDPVEH DateTime? @db.DateTime
+  FVTVEH DateTime? @db.DateTime
+  FGRVEH DateTime? @db.DateTime
+  NOTVEH String?   @db.NText
+  DPSVEH Boolean   @default(false, map: "DF__VEH__DPSVEH__1758727B")
+  FEDVEH DateTime? @db.DateTime
+  POLVEH Int?
+  POQVEH Float?    @db.Money
+  POFVEH DateTime? @db.DateTime
+  POVVEH Float?    @db.Money
+  TIPVEH Int?
+  COLVEH Int?
+  LLAVEH String?   @db.NVarChar(50)
+  FMAVEH DateTime? @db.DateTime
+  PICVEH Float?    @db.Real
+  RBUVEH Boolean   @default(false, map: "DF__VEH__RBUVEH__184C96B4")
+  CDMVEH Int?
+  CDCVEH Int?
+  CDTVEH Int?
+  COMVEH Int?
+  CILVEH Int?
+  POTVEH Int?
+  RADVEH String?   @db.NVarChar(50)
+  KILVEH BigInt?
+  FPIVEH DateTime? @db.DateTime
+  FUIVEH DateTime? @db.DateTime
+  FPRVEH DateTime? @db.DateTime
+  FURVEH DateTime? @db.DateTime
+  FGFVEH DateTime? @db.DateTime
+  TGRVEH String?   @db.NVarChar(150)
+  FPGVEH DateTime? @db.DateTime
+  REFVEH String?   @db.NVarChar(50)
+  FUVVEH DateTime? @db.SmallDateTime
+  CCOVEH String?   @db.NVarChar(255)
+  KMUVEH BigInt?
+  KMPVEH BigInt?
+  FLAVEH DateTime? @db.SmallDateTime
+  CSEVEH Int?
+  NPOVEH String?   @db.NVarChar(50)
+  FISVEH DateTime? @db.SmallDateTime
+  FFSVEH DateTime? @db.SmallDateTime
+  TPOVEH Decimal?  @db.Decimal(18, 2)
+  FPOVEH Decimal?  @db.Decimal(18, 2)
+  TASVEH String?   @db.NVarChar(20)
+  TSEVEH Int?
+  LOCVEH String?   @db.NVarChar(50)
+  CVEVEH Int?
+  SE1VEH String?   @db.NText
+  SE2VEH String?   @db.NText
+  SE3VEH String?   @db.NText
+  PAGVEH Int?
+  PVIVEH Float?    @db.Money
+  CFTVEH String?   @db.NVarChar(10)
+  REVVEH Int?      @default(0, map: "DF__VEH__REVVEH__1CE72E9F")
+  BTFVEH DateTime? @db.SmallDateTime
+  IALVEH DateTime? @db.SmallDateTime
+  FALVEH DateTime? @db.SmallDateTime
+  AMTVEH Int?
+  FREVEH DateTime? @db.SmallDateTime
+  RECVEH Boolean?
+  VHOVEH Boolean?
+  TIMVEH Int?      @default(0, map: "DF__VEH__TIMVEH__12477460")
+  PIRVEH Float?    @db.Money
+  AMO    AMO[]
+  CIT    CIT[]
+  CPS    CPS[]
+  CPT    CPT[]
+  LAB    LAB[]
+  LPD    LPD[]
+  LRD    LRD[]
+  OTR    OTR[]
+  QPO    QPO[]
+  SMS    SMS[]
+  ALM    ALM?      @relation(fields: [ALMVEH], references: [IDEALM], onDelete: NoAction, onUpdate: NoAction, map: "ALMVEH_FK")
+  CDC    CDC?      @relation(fields: [CDCVEH], references: [IDECDC], onDelete: NoAction, onUpdate: NoAction, map: "CDCVEH_FK")
+  CDM    CDM?      @relation(fields: [CDMVEH], references: [IDECDM], onDelete: NoAction, onUpdate: NoAction, map: "CDMVEH_FK")
+  CDT    CDT?      @relation(fields: [CDTVEH], references: [IDECDT], onDelete: NoAction, onUpdate: NoAction, map: "CDTVEH_FK")
+  CLO    CLO?      @relation(fields: [COLVEH], references: [IDECLO], onDelete: NoAction, onUpdate: NoAction, map: "COLVEH_FK")
+  FCS    FCS?      @relation(fields: [CSEVEH], references: [ENTFCS], onDelete: NoAction, onUpdate: NoAction, map: "CSEVEH_FK")
+  CVE    CVE?      @relation(fields: [CVEVEH], references: [IDECVE], onDelete: NoAction, onUpdate: NoAction, map: "CVEVEH_FK")
+  ENT    ENT?      @relation(fields: [ENTVEH], references: [IDEENT], onDelete: NoAction, onUpdate: NoAction, map: "ENTVEH_FK")
+  POL    POL?      @relation(fields: [POLVEH], references: [IDEPOL], onDelete: NoAction, onUpdate: NoAction, map: "POLVEH_FK")
+  Piezas Piezas    @relation(fields: [PZAVEH], references: [IDPieza], onUpdate: NoAction, map: "PZAVEH_FK")
+  TSE    TSE?      @relation(fields: [TSEVEH], references: [IDETSE], onDelete: NoAction, onUpdate: NoAction, map: "TSEVEH_FK")
+  VES    VES[]
+}
+
+model VES {
+  IDEVES Int     @id(map: "IDEVES_PK") @default(autoincrement())
+  VEHVES Int
+  PARVES Int
+  SITVES String? @db.NVarChar(255)
+  SUGVES String? @db.NVarChar(255)
+  VEH    VEH     @relation(fields: [VEHVES], references: [IDEVEH], onUpdate: NoAction, map: "VEHVES_FK")
+
+  @@unique([VEHVES, PARVES], map: "VEHPARVES_UN")
+}
+
+model VIA {
+  IDEVIA Int     @id(map: "IDEVIA_PK") @default(autoincrement())
+  NOMVIA String  @db.NVarChar(50)
+  ICOVIA String? @db.NVarChar(255)
+  RECVIA Boolean @default(false, map: "DF__VIA__RECVIA__060DEAE8")
+  CONVIA Boolean @default(false, map: "DF__VIA__CONVIA__07020F21")
+  DESVIA Boolean @default(false, map: "DF__VIA__DESVIA__07F6335A")
+  NOTVIA String? @db.NVarChar(255)
+  ETT    ETT[]
+  TAR    TAR[]
+}
+
+model VIC {
+  IDEVIC Int     @id(map: "IDEVIC_PK") @default(autoincrement())
+  LICVIC Int
+  CTAVIC String  @db.NVarChar(255)
+  AUXVIC String? @db.NVarChar(255)
+  DESVIC String  @db.NVarChar(255)
+  SIGVIC Int
+  PORVIC Float?  @db.Real
+  CANVIC Float?  @db.Money
+  LIC    LIC     @relation(fields: [LICVIC], references: [IDELIC], onUpdate: NoAction, map: "LICVIC_FK")
+}
+
+model VRA {
+  IDEVRA Int       @id(map: "PK__VRA__4E12A821330B79E8") @default(autoincrement())
+  DRAVRA BigInt?
+  ALBVRA String?   @db.NVarChar(50)
+  VALVRA Int?
+  OBSVRA String?   @db.NText
+  OPEVRA String?   @db.NVarChar(10)
+  COSVRA Float?    @db.Money
+  FERVRA DateTime? @db.SmallDateTime
+  RENVRA Boolean   @default(false, map: "DF__VRA__RENVRA__051F5610")
+}
+
+model ZON {
+  IDEZON Int     @id(map: "IDEZON_PK") @default(autoincrement())
+  NOMZON String  @db.NVarChar(50)
+  VIAZON Int?
+  NOTZON String? @db.NText
+  ENT    ENT[]
+  LRZ    LRZ[]
+  FVE    FVE?    @relation(fields: [VIAZON], references: [ENTFVE], onDelete: NoAction, onUpdate: NoAction, map: "VIAZON_FK")
+
+  @@index([NOMZON], map: "NOMZON_NX")
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model AuxInf2 {
+  idOper           BigInt?
+  operario         String?  @db.NVarChar(255)
+  idImp            BigInt?
+  tipo             String?  @db.NVarChar(255)
+  periodo          String?  @db.NVarChar(10)
+  orAbierta        Int?
+  porcOrAbierta    Decimal? @db.Decimal(18, 2)
+  orFacturada      Int?
+  porcOrFacturada  Decimal? @db.Decimal(18, 2)
+  orPendientes     Int?
+  porcOrPendientes Decimal? @db.Decimal(18, 2)
+  horFactXor       Decimal? @db.Decimal(18, 2)
+  horFactXorTotal  Decimal? @db.Decimal(18, 2)
+  recFactXor       Decimal? @db.Decimal(18, 2)
+  recFactXorTotal  Decimal? @db.Decimal(18, 2)
+  estancMedia      Decimal? @db.Decimal(18, 2)
+  horasConvenio    Decimal? @db.Decimal(18, 2)
+  horasPresenc     Decimal? @db.Decimal(18, 2)
+  porcAbsentis     Decimal? @db.Decimal(18, 2)
+  horasInvertidas  Decimal? @db.Decimal(18, 2)
+  porcEficiencia   Decimal? @db.Decimal(18, 2)
+  horasFacturadas  Decimal? @db.Decimal(18, 2)
+  porcProductiv    Decimal? @db.Decimal(18, 2)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Colores_ {
+  Cod_           String? @map("Cod#") @db.NVarChar(255)
+  Cod__Comercial String? @map("Cod# Comercial") @db.NVarChar(255)
+  Nombre         String? @db.NVarChar(255)
+  marca          String? @db.NVarChar(255)
+  Color_basico   String? @map("Color basico") @db.NVarChar(255)
+
+  @@map("Colores$")
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Imp_articulos {
+  Codigo      String? @db.NVarChar(255)
+  Nombre      String? @db.NVarChar(255)
+  Refproveed  String? @db.NVarChar(255)
+  Proveedor   String? @db.NVarChar(255)
+  Familia     String? @db.NVarChar(255)
+  Existencias String? @db.NVarChar(255)
+  PVP         String? @db.NVarChar(255)
+  F8          String? @db.NVarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Imp_Clientes {
+  Codigo    String? @db.NVarChar(255)
+  Nombre    String? @db.NVarChar(255)
+  Direccion String? @db.NVarChar(255)
+  Localidad String? @db.NVarChar(255)
+  Provincia String? @db.NVarChar(255)
+  Telefono  String? @db.NVarChar(255)
+  Cif       String? @db.NVarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Imp_modelos2 {
+  TipoPieza         Float?
+  MarcaPieza        Float?
+  ReferenciaPieza   String?   @db.NVarChar(255)
+  MREPZA            String?   @db.NVarChar(255)
+  STDPZA            String?   @db.NVarChar(255)
+  DenominacionPieza String?   @db.NVarChar(255)
+  PVPPieza          Float?    @db.Money
+  Descuento1Pieza   Float?
+  Descuento2Pieza   Float?
+  IvaPieza          Float?
+  ProveedorPriPieza String?   @db.NVarChar(255)
+  FAMPZA            Float?
+  DVIPZA            Float?
+  SUBPZA            Float?
+  COLPZA            String?   @db.NVarChar(255)
+  PORPZA            Float?    @db.Money
+  UCAPZA            Float?
+  BARPZA            String?   @db.NVarChar(255)
+  TFRPZA            Float?
+  TEMPZA            Float?
+  ETQPZA            Float?
+  FOTPZA            String?   @db.NVarChar(255)
+  FechaAltaPieza    DateTime? @db.DateTime
+  FBMPZA            String?   @db.NVarChar(255)
+  FechaBajaPieza    String?   @db.NVarChar(255)
+  BajaPieza         Float?
+  NotasPieza        String?   @db.NVarChar(255)
+  ICOPZA            String?   @db.NVarChar(255)
+  IMGPZA            String?   @db.NVarChar(255)
+  HTMPZA            String?   @db.NVarChar(255)
+  DESPZA            String?   @db.NVarChar(255)
+  PVIPZA            String?   @db.NVarChar(255)
+  PAGPZA            String?   @db.NVarChar(255)
+  BANPZA            String?   @db.NVarChar(255)
+  COMPZA            String?   @db.NVarChar(255)
+  FAPPZA            String?   @db.NVarChar(255)
+  CDMPZA            String?   @db.NVarChar(255)
+  CDCPZA            String?   @db.NVarChar(255)
+  CDTPZA            String?   @db.NVarChar(255)
+  CMBPZA            String?   @db.NVarChar(255)
+  CILPZA            String?   @db.NVarChar(255)
+  POTPZA            String?   @db.NVarChar(255)
+  TVUPZA            String?   @db.NVarChar(255)
+  FVFPZA            String?   @db.NVarChar(255)
+  IMMPZA            Float?
+  AADPZA            Float?
+  TASPZA            String?   @db.NVarChar(255)
+  SUPPZA            String?   @db.NVarChar(255)
+  FBCPZA            String?   @db.NVarChar(255)
+  CAMPZA            String?   @db.NVarChar(255)
+  CATPZA            String?   @db.NVarChar(255)
+  VOCPZA            String?   @db.NVarChar(255)
+  CADPZA            String?   @db.NVarChar(255)
+  MGAPZA            String?   @db.NVarChar(255)
+  SE1PZA            String?   @db.NVarChar(255)
+  SE2PZA            String?   @db.NVarChar(255)
+  SE3PZA            String?   @db.NVarChar(255)
+  CB2PZA            String?   @db.NVarChar(255)
+  PFRPZA            String?   @db.NVarChar(255)
+  FMUPZA            Float?
+  FRAPZA            String?   @db.NVarChar(255)
+  FIAPZA            String?   @db.NVarChar(255)
+  CODPZA            String?   @db.NVarChar(255)
+  IDCPZA            String?   @db.NVarChar(255)
+  IDLPZA            String?   @db.NVarChar(255)
+  ITLPZA            String?   @db.NVarChar(255)
+  STMPZA            Float?
+  CAGPZA            String?   @db.NVarChar(255)
+  CVEPZA            String?   @db.NVarChar(255)
+  PZMPZA            String?   @db.NVarChar(255)
+  IMDPZA            String?   @db.NVarChar(255)
+  EANPZA            String?   @db.NVarChar(255)
+  OPMPZA            String?   @db.NVarChar(255)
+  OPCPZA            String?   @db.NVarChar(255)
+  OPBPZA            String?   @db.NVarChar(255)
+  FMOPZA            String?   @db.NVarChar(255)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model imp_POB {
+  IDEPOB Float?
+  CPOPOB String? @db.NVarChar(Max)
+  NOMPOB String? @db.NVarChar(Max)
+  MUNPOB String? @db.NVarChar(Max)
+
+  @@ignore
+}
+
+/// The underlying table does not contain a valid unique identifier and can therefore currently not be handled by Prisma Client.
+model Imp_Proveedores {
+  Codigo    String? @db.NVarChar(255)
+  Nombre    String? @db.NVarChar(255)
+  Direccion String? @db.NVarChar(255)
+  Localidad String? @db.NVarChar(255)
+  Provincia String? @db.NVarChar(255)
+  CPostal   Float?
+  Telefono  String? @db.NVarChar(255)
+  F8        String? @db.NVarChar(255)
+  F9        String? @db.NVarChar(255)
+  Cif       String? @db.NVarChar(255)
+  F11       String? @db.NVarChar(255)
+
+  @@ignore
+}
