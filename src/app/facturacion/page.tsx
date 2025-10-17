@@ -12,8 +12,6 @@ export default function FacturacionPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
   const [totalResults, setTotalResults] = useState(0)
   const [columnFilters, setColumnFilters] = useState({
     factura: '',
@@ -45,14 +43,14 @@ export default function FacturacionPage() {
     //   return
     // }
     loadInvoices()
-  }, [isAuthenticated, router, currentPage, columnFilters, dateRange])
+  }, [isAuthenticated, router, columnFilters, dateRange])
 
   const loadInvoices = async () => {
     try {
       setLoading(true)
       const data = await MockInvoiceService.getInvoices({
-        page: currentPage,
-        limit: 10,
+        page: 1,
+        limit: 1000, // Load all invoices
         columnFilters: columnFilters,
         filters: {
           fechaDesde: dateRange.fechaDesde,
@@ -61,7 +59,6 @@ export default function FacturacionPage() {
       })
       
       setInvoices(data.invoices)
-      setTotalPages(data.pagination.pages)
       setTotalResults(data.pagination.total)
     } catch (err) {
       setError('Error al cargar las facturas')
@@ -141,7 +138,6 @@ export default function FacturacionPage() {
       ...prev,
       [columnName]: value
     }))
-    setCurrentPage(1)
   }
 
   const handleDateRangeChange = (field: 'fechaDesde' | 'fechaHasta', value: string) => {
@@ -149,7 +145,6 @@ export default function FacturacionPage() {
       ...prev,
       [field]: value
     }))
-    setCurrentPage(1)
   }
 
   const formatDateForDisplay = (dateString: string) => {
@@ -174,8 +169,8 @@ export default function FacturacionPage() {
 
   return (
     <LayoutWithSidebar>
-      <div className="bg-background">
-        <div className="w-full p-4">
+      <div className="bg-background h-screen flex flex-col">
+        <div className="w-full p-4 flex flex-col flex-1 min-h-0">
         {/* Header */}
         <div className="mb-4 sm:mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -289,7 +284,7 @@ export default function FacturacionPage() {
         )}
 
         {/* Invoices List */}
-        <div className="bg-white rounded-lg shadow-sm border">
+        <div className="bg-white rounded-lg shadow-sm border flex flex-col flex-1 min-h-0 overflow-hidden">
           {loading ? (
             <div className="p-8 text-center">
               <div className="text-gray-500">Cargando facturas...</div>
@@ -306,8 +301,9 @@ export default function FacturacionPage() {
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
-                <table className="min-w-full divide-y divide-gray-200">
+              <div className="flex flex-col flex-1 min-h-0">
+                <div className="overflow-auto flex-1">
+                  <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     {/* Filter Row */}
                     <tr className="border-b border-gray-200">
@@ -566,56 +562,10 @@ export default function FacturacionPage() {
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                  </table>
+                </div>
               </div>
 
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                  <div className="flex-1 flex justify-between sm:hidden">
-                    <button
-                      onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                      disabled={currentPage === 1}
-                      className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                    >
-                      Anterior
-                    </button>
-                    <button
-                      onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                      disabled={currentPage === totalPages}
-                      className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-                    >
-                      Siguiente
-                    </button>
-                  </div>
-                  <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-sm text-gray-700">
-                        Página <span className="font-medium">{currentPage}</span> de{' '}
-                        <span className="font-medium">{totalPages}</span>
-                      </p>
-                    </div>
-                    <div>
-                      <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                        <button
-                          onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                          disabled={currentPage === 1}
-                          className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                        >
-                          Anterior
-                        </button>
-                        <button
-                          onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                          disabled={currentPage === totalPages}
-                          className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                        >
-                          Siguiente
-                        </button>
-                      </nav>
-                    </div>
-                  </div>
-                </div>
-              )}
             </>
           )}
         </div>

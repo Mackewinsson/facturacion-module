@@ -769,13 +769,860 @@ export const mockInvoices: Invoice[] = [
     status: 'DRAFT',
     createdAt: '2024-12-08T10:00:00Z',
     updatedAt: '2024-12-08T10:00:00Z'
+  },
+  {
+    id: 9,
+    tipoFactura: 'ordinaria',
+    serie: '2024-B',
+    numero: '00001',
+    fechaExpedicion: '2024-12-10',
+    lugarEmision: 'Barcelona',
+    
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+    },
+    
+    cliente: {
+      tipo: 'empresario/profesional',
+      nombreORazonSocial: 'María González López',
+      NIF: '87654321B',
+      domicilio: {
+        calle: 'Avenida Diagonal 456',
+        codigoPostal: '08008',
+        municipio: 'Barcelona',
+        provincia: 'Barcelona',
+        pais: 'España'
+      },
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Mantenimiento preventivo completo',
+        cantidad: 1,
+        precioUnitario: 320.00,
+        tipoIVA: 21,
+        baseLinea: 320.00,
+        cuotaIVA: 67.20,
+        cuotaRE: 0,
+        totalLinea: 387.20
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 320.00,
+          cuotaIVA: 67.20,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 320.00,
+      cuotaIVATotal: 67.20,
+      cuotaRETotal: 0,
+      totalFactura: 387.20
+    },
+    
+    formaPago: 'Transferencia bancaria',
+    medioPago: 'IBAN: ES34 5678 9012 3456 7890 1234',
+    fechaVencimiento: '2025-01-10',
+    notas: 'Mantenimiento programado',
+    status: 'PAID',
+    createdAt: '2024-12-10T09:15:00Z',
+    updatedAt: '2024-12-10T09:15:00Z'
+  },
+  {
+    id: 10,
+    tipoFactura: 'simplificada',
+    numero: '00003',
+    fechaExpedicion: '2024-12-12',
+    
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      }
+    },
+    
+    cliente: {
+      tipo: 'particular',
+      nombreORazonSocial: 'Carlos Ruiz Martín',
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Cambio de neumáticos',
+        cantidad: 4,
+        precioUnitario: 85.00,
+        tipoIVA: 21,
+        baseLinea: 340.00,
+        cuotaIVA: 71.40,
+        cuotaRE: 0,
+        totalLinea: 411.40
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 340.00,
+          cuotaIVA: 71.40,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 340.00,
+      cuotaIVATotal: 71.40,
+      cuotaRETotal: 0,
+      totalFactura: 411.40
+    },
+    
+    formaPago: 'Efectivo',
+    medioPago: 'Pago en efectivo',
+    fechaVencimiento: '2024-12-12',
+    notas: 'Cambio de neumáticos de invierno',
+    status: 'SENT',
+    createdAt: '2024-12-12T14:30:00Z',
+    updatedAt: '2024-12-12T14:30:00Z'
+  },
+  {
+    id: 11,
+    tipoFactura: 'ordinaria',
+    serie: '2024-A',
+    numero: '00005',
+    fechaExpedicion: '2024-12-14',
+    lugarEmision: 'Madrid',
+    
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+    },
+    
+    cliente: {
+      tipo: 'empresario/profesional',
+      nombreORazonSocial: 'Ana Fernández Silva',
+      NIF: '11223344C',
+      domicilio: {
+        calle: 'Calle Gran Vía 789',
+        codigoPostal: '28013',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Reparación de transmisión',
+        cantidad: 1,
+        precioUnitario: 1200.00,
+        tipoIVA: 21,
+        baseLinea: 1200.00,
+        cuotaIVA: 252.00,
+        cuotaRE: 0,
+        totalLinea: 1452.00
+      },
+      {
+        id: 2,
+        descripcion: 'Mano de obra especializada',
+        cantidad: 8,
+        precioUnitario: 45.00,
+        tipoIVA: 21,
+        baseLinea: 360.00,
+        cuotaIVA: 75.60,
+        cuotaRE: 0,
+        totalLinea: 435.60
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 1560.00,
+          cuotaIVA: 327.60,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 1560.00,
+      cuotaIVATotal: 327.60,
+      cuotaRETotal: 0,
+      totalFactura: 1887.60
+    },
+    
+    formaPago: 'Transferencia bancaria',
+    medioPago: 'IBAN: ES56 7890 1234 5678 9012 3456',
+    fechaVencimiento: '2025-01-14',
+    notas: 'Reparación compleja de transmisión automática',
+    status: 'OVERDUE',
+    createdAt: '2024-12-14T11:45:00Z',
+    updatedAt: '2024-12-14T11:45:00Z'
+  },
+  {
+    id: 12,
+    tipoFactura: 'simplificada',
+    numero: '00004',
+    fechaExpedicion: '2024-12-16',
+    
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      }
+    },
+    
+    cliente: {
+      tipo: 'particular',
+      nombreORazonSocial: 'Roberto Jiménez Vega',
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Limpieza de inyectores',
+        cantidad: 1,
+        precioUnitario: 120.00,
+        tipoIVA: 21,
+        baseLinea: 120.00,
+        cuotaIVA: 25.20,
+        cuotaRE: 0,
+        totalLinea: 145.20
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 120.00,
+          cuotaIVA: 25.20,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 120.00,
+      cuotaIVATotal: 25.20,
+      cuotaRETotal: 0,
+      totalFactura: 145.20
+    },
+    
+    formaPago: 'Efectivo',
+    medioPago: 'Pago en efectivo',
+    fechaVencimiento: '2024-12-16',
+    notas: 'Servicio rápido de limpieza',
+    status: 'PAID',
+    createdAt: '2024-12-16T16:20:00Z',
+    updatedAt: '2024-12-16T16:20:00Z'
+  },
+  {
+    id: 13,
+    tipoFactura: 'ordinaria',
+    serie: '2024-B',
+    numero: '00002',
+    fechaExpedicion: '2024-12-18',
+    lugarEmision: 'Valencia',
+    
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+    },
+    
+    cliente: {
+      tipo: 'empresario/profesional',
+      nombreORazonSocial: 'Luis Martínez Torres',
+      NIF: '99887766D',
+      domicilio: {
+        calle: 'Calle Colón 321',
+        codigoPostal: '46004',
+        municipio: 'Valencia',
+        provincia: 'Valencia',
+        pais: 'España'
+      },
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Revisión ITV y preparación',
+        cantidad: 1,
+        precioUnitario: 180.00,
+        tipoIVA: 21,
+        baseLinea: 180.00,
+        cuotaIVA: 37.80,
+        cuotaRE: 0,
+        totalLinea: 217.80
+      },
+      {
+        id: 2,
+        descripcion: 'Ajuste de faros',
+        cantidad: 1,
+        precioUnitario: 35.00,
+        tipoIVA: 21,
+        baseLinea: 35.00,
+        cuotaIVA: 7.35,
+        cuotaRE: 0,
+        totalLinea: 42.35
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 215.00,
+          cuotaIVA: 45.15,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 215.00,
+      cuotaIVATotal: 45.15,
+      cuotaRETotal: 0,
+      totalFactura: 260.15
+    },
+    
+    formaPago: 'Transferencia bancaria',
+    medioPago: 'IBAN: ES78 9012 3456 7890 1234 5678',
+    fechaVencimiento: '2025-01-18',
+    notas: 'Preparación para ITV',
+    status: 'SENT',
+    createdAt: '2024-12-18T10:30:00Z',
+    updatedAt: '2024-12-18T10:30:00Z'
+  },
+  {
+    id: 14,
+    tipoFactura: 'simplificada',
+    numero: '00005',
+    fechaExpedicion: '2024-12-20',
+    
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      }
+    },
+    
+    cliente: {
+      tipo: 'particular',
+      nombreORazonSocial: 'Isabel Moreno Castro',
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Cambio de batería',
+        cantidad: 1,
+        precioUnitario: 95.00,
+        tipoIVA: 21,
+        baseLinea: 95.00,
+        cuotaIVA: 19.95,
+        cuotaRE: 0,
+        totalLinea: 114.95
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 95.00,
+          cuotaIVA: 19.95,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 95.00,
+      cuotaIVATotal: 19.95,
+      cuotaRETotal: 0,
+      totalFactura: 114.95
+    },
+    
+    formaPago: 'Efectivo',
+    medioPago: 'Pago en efectivo',
+    fechaVencimiento: '2024-12-20',
+    notas: 'Batería nueva con garantía',
+    status: 'PAID',
+    createdAt: '2024-12-20T13:15:00Z',
+    updatedAt: '2024-12-20T13:15:00Z'
+  },
+  {
+    id: 15,
+    tipoFactura: 'ordinaria',
+    serie: '2024-A',
+    numero: '00006',
+    fechaExpedicion: '2024-12-22',
+    lugarEmision: 'Madrid',
+    
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+    },
+    
+    cliente: {
+      tipo: 'empresario/profesional',
+      nombreORazonSocial: 'Pedro Sánchez Ruiz',
+      NIF: '55443322E',
+      domicilio: {
+        calle: 'Calle Alcalá 654',
+        codigoPostal: '28009',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Reparación de climatización',
+        cantidad: 1,
+        precioUnitario: 280.00,
+        tipoIVA: 21,
+        baseLinea: 280.00,
+        cuotaIVA: 58.80,
+        cuotaRE: 0,
+        totalLinea: 338.80
+      },
+      {
+        id: 2,
+        descripcion: 'Recarga de gas refrigerante',
+        cantidad: 1,
+        precioUnitario: 85.00,
+        tipoIVA: 21,
+        baseLinea: 85.00,
+        cuotaIVA: 17.85,
+        cuotaRE: 0,
+        totalLinea: 102.85
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 365.00,
+          cuotaIVA: 76.65,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 365.00,
+      cuotaIVATotal: 76.65,
+      cuotaRETotal: 0,
+      totalFactura: 441.65
+    },
+    
+    formaPago: 'Transferencia bancaria',
+    medioPago: 'IBAN: ES90 1234 5678 9012 3456 7890',
+    fechaVencimiento: '2025-01-22',
+    notas: 'Reparación sistema climatización',
+    status: 'DRAFT',
+    createdAt: '2024-12-22T15:45:00Z',
+    updatedAt: '2024-12-22T15:45:00Z'
+  },
+  {
+    id: 16,
+    tipoFactura: 'simplificada',
+    numero: '00006',
+    fechaExpedicion: '2024-12-24',
+    
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      }
+    },
+    
+    cliente: {
+      tipo: 'particular',
+      nombreORazonSocial: 'Carmen López Díaz',
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Cambio de aceite y filtro',
+        cantidad: 1,
+        precioUnitario: 65.00,
+        tipoIVA: 21,
+        baseLinea: 65.00,
+        cuotaIVA: 13.65,
+        cuotaRE: 0,
+        totalLinea: 78.65
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 65.00,
+          cuotaIVA: 13.65,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 65.00,
+      cuotaIVATotal: 13.65,
+      cuotaRETotal: 0,
+      totalFactura: 78.65
+    },
+    
+    formaPago: 'Efectivo',
+    medioPago: 'Pago en efectivo',
+    fechaVencimiento: '2024-12-24',
+    notas: 'Mantenimiento básico',
+    status: 'PAID',
+    createdAt: '2024-12-24T11:30:00Z',
+    updatedAt: '2024-12-24T11:30:00Z'
+  },
+  {
+    id: 17,
+    tipoFactura: 'ordinaria',
+    serie: '2024-B',
+    numero: '00003',
+    fechaExpedicion: '2024-12-26',
+    lugarEmision: 'Sevilla',
+    
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+    },
+    
+    cliente: {
+      tipo: 'empresario/profesional',
+      nombreORazonSocial: 'Francisco Herrera Morales',
+      NIF: '77665544F',
+      domicilio: {
+        calle: 'Calle Sierpes 123',
+        codigoPostal: '41004',
+        municipio: 'Sevilla',
+        provincia: 'Sevilla',
+        pais: 'España'
+      },
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Reparación de dirección asistida',
+        cantidad: 1,
+        precioUnitario: 450.00,
+        tipoIVA: 21,
+        baseLinea: 450.00,
+        cuotaIVA: 94.50,
+        cuotaRE: 0,
+        totalLinea: 544.50
+      },
+      {
+        id: 2,
+        descripcion: 'Mano de obra',
+        cantidad: 6,
+        precioUnitario: 50.00,
+        tipoIVA: 21,
+        baseLinea: 300.00,
+        cuotaIVA: 63.00,
+        cuotaRE: 0,
+        totalLinea: 363.00
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 750.00,
+          cuotaIVA: 157.50,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 750.00,
+      cuotaIVATotal: 157.50,
+      cuotaRETotal: 0,
+      totalFactura: 907.50
+    },
+    
+    formaPago: 'Transferencia bancaria',
+    medioPago: 'IBAN: ES12 3456 7890 1234 5678 9012',
+    fechaVencimiento: '2025-01-26',
+    notas: 'Reparación sistema dirección',
+    status: 'SENT',
+    createdAt: '2024-12-26T09:20:00Z',
+    updatedAt: '2024-12-26T09:20:00Z'
+  },
+  {
+    id: 18,
+    tipoFactura: 'simplificada',
+    numero: '00007',
+    fechaExpedicion: '2024-12-28',
+    
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      }
+    },
+    
+    cliente: {
+      tipo: 'particular',
+      nombreORazonSocial: 'Antonio Vega Ramos',
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Revisión pre-viaje',
+        cantidad: 1,
+        precioUnitario: 45.00,
+        tipoIVA: 21,
+        baseLinea: 45.00,
+        cuotaIVA: 9.45,
+        cuotaRE: 0,
+        totalLinea: 54.45
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 45.00,
+          cuotaIVA: 9.45,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 45.00,
+      cuotaIVATotal: 9.45,
+      cuotaRETotal: 0,
+      totalFactura: 54.45
+    },
+    
+    formaPago: 'Efectivo',
+    medioPago: 'Pago en efectivo',
+    fechaVencimiento: '2024-12-28',
+    notas: 'Revisión rápida pre-viaje',
+    status: 'PAID',
+    createdAt: '2024-12-28T14:10:00Z',
+    updatedAt: '2024-12-28T14:10:00Z'
+  },
+  {
+    id: 19,
+    tipoFactura: 'ordinaria',
+    serie: '2024-A',
+    numero: '00007',
+    fechaExpedicion: '2024-12-30',
+    lugarEmision: 'Madrid',
+    
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+    },
+    
+    cliente: {
+      tipo: 'empresario/profesional',
+      nombreORazonSocial: 'Elena Rodríguez Pérez',
+      NIF: '33445566G',
+      domicilio: {
+        calle: 'Calle Serrano 987',
+        codigoPostal: '28006',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Reparación de embrague',
+        cantidad: 1,
+        precioUnitario: 850.00,
+        tipoIVA: 21,
+        baseLinea: 850.00,
+        cuotaIVA: 178.50,
+        cuotaRE: 0,
+        totalLinea: 1028.50
+      },
+      {
+        id: 2,
+        descripcion: 'Mano de obra especializada',
+        cantidad: 12,
+        precioUnitario: 55.00,
+        tipoIVA: 21,
+        baseLinea: 660.00,
+        cuotaIVA: 138.60,
+        cuotaRE: 0,
+        totalLinea: 798.60
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 1510.00,
+          cuotaIVA: 317.10,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 1510.00,
+      cuotaIVATotal: 317.10,
+      cuotaRETotal: 0,
+      totalFactura: 1827.10
+    },
+    
+    formaPago: 'Transferencia bancaria',
+    medioPago: 'IBAN: ES34 5678 9012 3456 7890 1234',
+    fechaVencimiento: '2025-01-30',
+    notas: 'Reparación completa de embrague',
+    status: 'DRAFT',
+    createdAt: '2024-12-30T12:00:00Z',
+    updatedAt: '2024-12-30T12:00:00Z'
+  },
+  {
+    id: 20,
+    tipoFactura: 'simplificada',
+    numero: '00008',
+    fechaExpedicion: '2025-01-02',
+    
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      }
+    },
+    
+    cliente: {
+      tipo: 'particular',
+      nombreORazonSocial: 'Miguel Torres Sánchez',
+      pais: 'España'
+    },
+    
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Cambio de pastillas de freno',
+        cantidad: 1,
+        precioUnitario: 75.00,
+        tipoIVA: 21,
+        baseLinea: 75.00,
+        cuotaIVA: 15.75,
+        cuotaRE: 0,
+        totalLinea: 90.75
+      }
+    ],
+    
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 75.00,
+          cuotaIVA: 15.75,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 75.00,
+      cuotaIVATotal: 15.75,
+      cuotaRETotal: 0,
+      totalFactura: 90.75
+    },
+    
+    formaPago: 'Efectivo',
+    medioPago: 'Pago en efectivo',
+    fechaVencimiento: '2025-01-02',
+    notas: 'Cambio de pastillas delanteras',
+    status: 'PAID',
+    createdAt: '2025-01-02T10:45:00Z',
+    updatedAt: '2025-01-02T10:45:00Z'
   }
 ]
 
 // Mock service functions
 export class MockInvoiceService {
   private static invoices: Invoice[] = [...mockInvoices]
-  private static nextId = 9
+  private static nextId = 21
 
   static async getInvoices(params: {
     page?: number

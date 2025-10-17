@@ -427,7 +427,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
 
   return (
     <div className="bg-background px-4 py-6 lg:px-8">
-      <div className="mx-auto max-w-[1200px]">
+      <div className="w-full">
         <form
           onSubmit={handleSubmit}
           className="overflow-hidden rounded-2xl border border-border bg-card shadow-sm"
