@@ -11,19 +11,28 @@ export default function FacturacionPage() {
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('ALL')
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [totalResults, setTotalResults] = useState(0)
-  const [showFilters, setShowFilters] = useState(false)
-  const [filters, setFilters] = useState({
-    fechaDesde: '',
-    fechaHasta: '',
-    importeMinimo: '',
-    importeMaximo: '',
+  const [columnFilters, setColumnFilters] = useState({
+    factura: '',
+    fecha: '',
+    nif: '',
+    cliente: '',
+    baseImponible: '',
+    iva: '',
+    total: '',
+    direccion: '',
+    poblacion: '',
+    provincia: '',
+    codigoPostal: '',
     formaPago: '',
-    lugarEmision: ''
+    medioPago: '',
+    estado: ''
+  })
+  const [dateRange, setDateRange] = useState({
+    fechaDesde: '2025-08-25',
+    fechaHasta: '2025-09-24'
   })
 
   useEffect(() => {
@@ -32,19 +41,7 @@ export default function FacturacionPage() {
       return
     }
     loadInvoices()
-  }, [isAuthenticated, router, currentPage, statusFilter, searchTerm, filters])
-
-  // Debounced search effect
-  useEffect(() => {
-    if (!isAuthenticated) return
-    
-    const timeoutId = setTimeout(() => {
-      setCurrentPage(1)
-      loadInvoices()
-    }, 300) // 300ms delay for debouncing
-
-    return () => clearTimeout(timeoutId)
-  }, [searchTerm])
+  }, [isAuthenticated, router, currentPage, columnFilters, dateRange])
 
   const loadInvoices = async () => {
     try {
@@ -52,9 +49,11 @@ export default function FacturacionPage() {
       const data = await MockInvoiceService.getInvoices({
         page: currentPage,
         limit: 10,
-        status: statusFilter !== 'ALL' ? statusFilter : undefined,
-        search: searchTerm || undefined,
-        filters: filters
+        columnFilters: columnFilters,
+        filters: {
+          fechaDesde: dateRange.fechaDesde,
+          fechaHasta: dateRange.fechaHasta
+        }
       })
       
       setInvoices(data.invoices)
@@ -89,16 +88,7 @@ export default function FacturacionPage() {
     }
   }
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    setCurrentPage(1)
-    loadInvoices()
-  }
 
-  const handleStatusFilter = (status: string) => {
-    setStatusFilter(status)
-    setCurrentPage(1)
-  }
 
   const handleCreateInvoice = () => {
     router.push('/facturacion/nueva')
@@ -112,29 +102,24 @@ export default function FacturacionPage() {
     router.push(`/facturacion/ver/${id}`)
   }
 
-  const handleFilterChange = (filterName: string, value: string) => {
-    setFilters(prev => ({
+  const handleColumnFilterChange = (columnName: string, value: string) => {
+    setColumnFilters(prev => ({
       ...prev,
-      [filterName]: value
+      [columnName]: value
     }))
     setCurrentPage(1)
   }
 
-  const clearFilters = () => {
-    setFilters({
-      fechaDesde: '',
-      fechaHasta: '',
-      importeMinimo: '',
-      importeMaximo: '',
-      formaPago: '',
-      lugarEmision: ''
-    })
+  const handleDateRangeChange = (field: 'fechaDesde' | 'fechaHasta', value: string) => {
+    setDateRange(prev => ({
+      ...prev,
+      [field]: value
+    }))
     setCurrentPage(1)
   }
 
-  const applyFilters = () => {
-    setCurrentPage(1)
-    loadInvoices()
+  const formatDateForDisplay = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString('es-ES')
   }
 
   const formatDate = (dateString: string) => {
@@ -173,201 +158,90 @@ export default function FacturacionPage() {
           </div>
         </div>
 
-        {/* Filters and Search */}
-        <div className="bg-card rounded-lg shadow-sm border border-border p-4 sm:p-6 mb-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            {/* Search */}
-            <form onSubmit={handleSearch} className="flex-1">
-              <div className="flex gap-2">
-                <input
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar por número, cliente, fecha, importes, dirección, estado, tipo..."
-                  className="flex-1 px-3 py-2 border-2 border-input-border bg-input rounded-md focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-base text-foreground placeholder-muted-foreground"
-                />
-                <button
-                  type="submit"
-                  className="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 text-base font-medium"
-                >
-                  Buscar
-                </button>
-                {searchTerm && (
-                  <button
-                    type="button"
-                    onClick={() => setSearchTerm('')}
-                    className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 text-base font-medium"
-                    title="Limpiar búsqueda"
-                  >
-                    ✕
-                  </button>
-                )}
-                <button
-                  type="button"
-                  onClick={() => setShowFilters(!showFilters)}
-                  className={`px-4 py-2 rounded-md text-base font-medium ${
-                    showFilters 
-                      ? 'bg-accent text-accent-foreground' 
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                  }`}
-                  title="Filtros avanzados"
-                >
-                  🔍 Filtros
-                </button>
-              </div>
-            </form>
 
-            {/* Status Filter */}
-            <div className="flex gap-2">
-              {['ALL', 'DRAFT', 'SENT', 'PAID', 'OVERDUE', 'CANCELLED'].map((status) => (
-                <button
-                  key={status}
-                  onClick={() => handleStatusFilter(status)}
-                  className={`px-3 py-2 rounded-md text-sm font-medium ${
-                    statusFilter === status
-                      ? 'bg-accent text-accent-foreground'
-                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
-                  }`}
-                >
-                  {status === 'ALL' ? 'Todas' : getStatusText(status)}
-                </button>
-              ))}
+        {/* Toolbar */}
+        <div className="bg-card rounded-lg shadow-sm border border-border p-4 mb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            {/* Left Side - Action Buttons */}
+            <div className="flex items-center gap-3">
+              <button className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm font-medium">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                Imprimir
+              </button>
+              
+              <button className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm font-medium">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
+              
+              <button
+                onClick={handleCreateInvoice}
+                className="flex items-center gap-2 px-3 py-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-md text-sm font-medium"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Nuevo
+              </button>
+              
+              <button className="flex items-center gap-2 px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-sm font-medium">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Salir
+              </button>
+            </div>
+
+            {/* Center - Centro Dropdown */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm font-medium text-foreground">Centro</span>
+              <select className="px-3 py-2 border border-input-border bg-input rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent">
+                <option>MOTOS</option>
+              </select>
+            </div>
+
+            {/* Right Side - Date Range */}
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 px-3 py-2 border border-input-border bg-input rounded-md">
+                <input
+                  type="date"
+                  value={dateRange.fechaDesde}
+                  onChange={(e) => handleDateRangeChange('fechaDesde', e.target.value)}
+                  className="text-sm font-medium text-foreground bg-transparent border-none outline-none cursor-pointer"
+                />
+              </div>
+              <button className="p-2 text-muted-foreground hover:text-foreground">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 5l7 7-7 7M5 5l7 7-7 7" />
+                </svg>
+              </button>
+              <div className="flex items-center gap-2 px-3 py-2 border border-input-border bg-input rounded-md">
+                <input
+                  type="date"
+                  value={dateRange.fechaHasta}
+                  onChange={(e) => handleDateRangeChange('fechaHasta', e.target.value)}
+                  className="text-sm font-medium text-foreground bg-transparent border-none outline-none cursor-pointer"
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Advanced Filters Panel */}
-        {showFilters && (
-          <div className="bg-card rounded-lg shadow-sm border border-border p-4 sm:p-6 mb-6">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-card-foreground">Filtros Avanzados</h3>
-              <button
-                onClick={clearFilters}
-                className="text-sm text-muted-foreground hover:text-foreground"
-              >
-                Limpiar todos
-              </button>
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {/* Fecha Desde */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Fecha Desde
-                </label>
-                <input
-                  type="date"
-                  value={filters.fechaDesde}
-                  onChange={(e) => handleFilterChange('fechaDesde', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              {/* Fecha Hasta */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Fecha Hasta
-                </label>
-                <input
-                  type="date"
-                  value={filters.fechaHasta}
-                  onChange={(e) => handleFilterChange('fechaHasta', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-
-              {/* Importe Mínimo */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Importe Mínimo (€)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={filters.importeMinimo}
-                  onChange={(e) => handleFilterChange('importeMinimo', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="0.00"
-                />
-              </div>
-
-              {/* Importe Máximo */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Importe Máximo (€)
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={filters.importeMaximo}
-                  onChange={(e) => handleFilterChange('importeMaximo', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="999999.99"
-                />
-              </div>
-
-              {/* Forma de Pago */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Forma de Pago
-                </label>
-                <select
-                  value={filters.formaPago}
-                  onChange={(e) => handleFilterChange('formaPago', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="">Todas las formas</option>
-                  <option value="Transferencia bancaria">Transferencia bancaria</option>
-                  <option value="Efectivo">Efectivo</option>
-                  <option value="Tarjeta de crédito">Tarjeta de crédito</option>
-                  <option value="Cheque">Cheque</option>
-                </select>
-              </div>
-
-
-              {/* Lugar de Emisión */}
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Lugar de Emisión
-                </label>
-                <input
-                  type="text"
-                  value={filters.lugarEmision}
-                  onChange={(e) => handleFilterChange('lugarEmision', e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Madrid, Barcelona..."
-                />
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-2 mt-4">
-              <button
-                onClick={clearFilters}
-                className="px-4 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 text-sm font-medium"
-              >
-                Limpiar
-              </button>
-              <button
-                onClick={applyFilters}
-                className="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 text-sm font-medium"
-              >
-                Aplicar Filtros
-              </button>
-            </div>
-          </div>
-        )}
-
         {/* Search Results Info */}
-        {(searchTerm || Object.values(filters).some(filter => filter !== '')) && (
+        {(Object.values(columnFilters).some(filter => filter !== '') || dateRange.fechaDesde !== '2025-08-25' || dateRange.fechaHasta !== '2025-09-24') && (
           <div className="bg-blue-50 border border-blue-200 text-blue-800 px-4 py-3 rounded mb-4">
             <div className="flex items-center">
               <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
               <span className="font-medium">
-                {totalResults} resultado{totalResults !== 1 ? 's' : ''} encontrado{totalResults !== 1 ? 's' : ''}
-                {searchTerm && ` para "${searchTerm}"`}
-                {Object.values(filters).some(filter => filter !== '') && ' con filtros aplicados'}
+                {totalResults} resultado{totalResults !== 1 ? 's' : ''} encontrado{totalResults !== 1 ? 's' : ''} con filtros aplicados
+                {(dateRange.fechaDesde !== '2025-08-25' || dateRange.fechaHasta !== '2025-09-24') && 
+                  ` (${formatDateForDisplay(dateRange.fechaDesde)} - ${formatDateForDisplay(dateRange.fechaHasta)})`
+                }
               </span>
             </div>
           </div>
@@ -401,6 +275,139 @@ export default function FacturacionPage() {
               <div className="overflow-x-auto">
                 <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
+                    {/* Filter Row */}
+                    <tr className="border-b border-gray-200">
+                      <th className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={columnFilters.factura}
+                          onChange={(e) => handleColumnFilterChange('factura', e.target.value)}
+                          placeholder="Filtrar factura..."
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </th>
+                      <th className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={columnFilters.fecha}
+                          onChange={(e) => handleColumnFilterChange('fecha', e.target.value)}
+                          placeholder="Filtrar fecha..."
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </th>
+                      <th className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={columnFilters.nif}
+                          onChange={(e) => handleColumnFilterChange('nif', e.target.value)}
+                          placeholder="Filtrar NIF..."
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </th>
+                      <th className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={columnFilters.cliente}
+                          onChange={(e) => handleColumnFilterChange('cliente', e.target.value)}
+                          placeholder="Filtrar cliente..."
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </th>
+                      <th className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={columnFilters.baseImponible}
+                          onChange={(e) => handleColumnFilterChange('baseImponible', e.target.value)}
+                          placeholder="Filtrar base..."
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </th>
+                      <th className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={columnFilters.iva}
+                          onChange={(e) => handleColumnFilterChange('iva', e.target.value)}
+                          placeholder="Filtrar IVA..."
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </th>
+                      <th className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={columnFilters.total}
+                          onChange={(e) => handleColumnFilterChange('total', e.target.value)}
+                          placeholder="Filtrar total..."
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </th>
+                      <th className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={columnFilters.direccion}
+                          onChange={(e) => handleColumnFilterChange('direccion', e.target.value)}
+                          placeholder="Filtrar dirección..."
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </th>
+                      <th className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={columnFilters.poblacion}
+                          onChange={(e) => handleColumnFilterChange('poblacion', e.target.value)}
+                          placeholder="Filtrar población..."
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </th>
+                      <th className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={columnFilters.provincia}
+                          onChange={(e) => handleColumnFilterChange('provincia', e.target.value)}
+                          placeholder="Filtrar provincia..."
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </th>
+                      <th className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={columnFilters.codigoPostal}
+                          onChange={(e) => handleColumnFilterChange('codigoPostal', e.target.value)}
+                          placeholder="Filtrar C.P...."
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </th>
+                      <th className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={columnFilters.formaPago}
+                          onChange={(e) => handleColumnFilterChange('formaPago', e.target.value)}
+                          placeholder="Filtrar forma pago..."
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </th>
+                      <th className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={columnFilters.medioPago}
+                          onChange={(e) => handleColumnFilterChange('medioPago', e.target.value)}
+                          placeholder="Filtrar medio pago..."
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </th>
+                      <th className="px-3 py-2">
+                        <input
+                          type="text"
+                          value={columnFilters.estado}
+                          onChange={(e) => handleColumnFilterChange('estado', e.target.value)}
+                          placeholder="Filtrar estado..."
+                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        />
+                      </th>
+                      <th className="px-3 py-2">
+                        {/* No filter for actions column */}
+                      </th>
+                    </tr>
+                    {/* Header Row */}
                     <tr>
                       <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Factura

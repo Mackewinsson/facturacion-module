@@ -790,8 +790,24 @@ export class MockInvoiceService {
       formaPago?: string
       lugarEmision?: string
     }
+    columnFilters?: {
+      factura?: string
+      fecha?: string
+      nif?: string
+      cliente?: string
+      baseImponible?: string
+      iva?: string
+      total?: string
+      direccion?: string
+      poblacion?: string
+      provincia?: string
+      codigoPostal?: string
+      formaPago?: string
+      medioPago?: string
+      estado?: string
+    }
   } = {}): Promise<{ invoices: Invoice[], pagination: any }> {
-    const { page = 1, limit = 10, status, search, filters } = params
+    const { page = 1, limit = 10, status, search, filters, columnFilters } = params
     
     let filteredInvoices = [...this.invoices]
     
@@ -917,6 +933,125 @@ export class MockInvoiceService {
         if (filters.lugarEmision) {
           const lugarEmision = invoice.lugarEmision?.toLowerCase() || ''
           if (!lugarEmision.includes(filters.lugarEmision.toLowerCase())) {
+            return false
+          }
+        }
+        
+        return true
+      })
+    }
+    
+    // Apply column filters
+    if (columnFilters) {
+      filteredInvoices = filteredInvoices.filter(invoice => {
+        // Filter by factura (invoice number/type)
+        if (columnFilters.factura) {
+          const invoiceNumber = `${invoice.serie || ''}-${invoice.numero} (${invoice.tipoFactura})`.toLowerCase()
+          if (!invoiceNumber.includes(columnFilters.factura.toLowerCase())) {
+            return false
+          }
+        }
+        
+        // Filter by fecha (date)
+        if (columnFilters.fecha) {
+          const fechaExpedicion = new Date(invoice.fechaExpedicion).toLocaleDateString('es-ES').toLowerCase()
+          if (!fechaExpedicion.includes(columnFilters.fecha.toLowerCase())) {
+            return false
+          }
+        }
+        
+        // Filter by NIF
+        if (columnFilters.nif) {
+          const nif = invoice.cliente.NIF?.toLowerCase() || ''
+          if (!nif.includes(columnFilters.nif.toLowerCase())) {
+            return false
+          }
+        }
+        
+        // Filter by cliente (client name)
+        if (columnFilters.cliente) {
+          const clienteNombre = invoice.cliente.nombreORazonSocial.toLowerCase()
+          if (!clienteNombre.includes(columnFilters.cliente.toLowerCase())) {
+            return false
+          }
+        }
+        
+        // Filter by base imponible
+        if (columnFilters.baseImponible) {
+          const baseImponible = invoice.totales.baseImponibleTotal.toString()
+          if (!baseImponible.includes(columnFilters.baseImponible)) {
+            return false
+          }
+        }
+        
+        // Filter by IVA
+        if (columnFilters.iva) {
+          const cuotaIVA = invoice.totales.cuotaIVATotal.toString()
+          if (!cuotaIVA.includes(columnFilters.iva)) {
+            return false
+          }
+        }
+        
+        // Filter by total
+        if (columnFilters.total) {
+          const totalFactura = invoice.totales.totalFactura.toString()
+          if (!totalFactura.includes(columnFilters.total)) {
+            return false
+          }
+        }
+        
+        // Filter by dirección
+        if (columnFilters.direccion) {
+          const direccion = invoice.cliente.domicilio?.calle?.toLowerCase() || ''
+          if (!direccion.includes(columnFilters.direccion.toLowerCase())) {
+            return false
+          }
+        }
+        
+        // Filter by población
+        if (columnFilters.poblacion) {
+          const poblacion = invoice.cliente.domicilio?.municipio?.toLowerCase() || ''
+          if (!poblacion.includes(columnFilters.poblacion.toLowerCase())) {
+            return false
+          }
+        }
+        
+        // Filter by provincia
+        if (columnFilters.provincia) {
+          const provincia = invoice.cliente.domicilio?.provincia?.toLowerCase() || ''
+          if (!provincia.includes(columnFilters.provincia.toLowerCase())) {
+            return false
+          }
+        }
+        
+        // Filter by código postal
+        if (columnFilters.codigoPostal) {
+          const codigoPostal = invoice.cliente.domicilio?.codigoPostal?.toLowerCase() || ''
+          if (!codigoPostal.includes(columnFilters.codigoPostal.toLowerCase())) {
+            return false
+          }
+        }
+        
+        // Filter by forma de pago
+        if (columnFilters.formaPago) {
+          const formaPago = invoice.formaPago?.toLowerCase() || ''
+          if (!formaPago.includes(columnFilters.formaPago.toLowerCase())) {
+            return false
+          }
+        }
+        
+        // Filter by medio de pago
+        if (columnFilters.medioPago) {
+          const medioPago = invoice.medioPago?.toLowerCase() || ''
+          if (!medioPago.includes(columnFilters.medioPago.toLowerCase())) {
+            return false
+          }
+        }
+        
+        // Filter by estado
+        if (columnFilters.estado) {
+          const estado = invoice.status.toLowerCase()
+          if (!estado.includes(columnFilters.estado.toLowerCase())) {
             return false
           }
         }
