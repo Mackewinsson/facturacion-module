@@ -18,15 +18,43 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
   const [contactType, setContactType] = useState<ContactType>('empresa')
   const [activeTab, setActiveTab] = useState<TabType>('basico')
   const [formData, setFormData] = useState({
-    tipoEntidad: 'cliente' as TipoEntidad,
-    tipo: 'empresario/profesional' as TipoCliente,
-    nombreORazonSocial: suggestedName,
+    // Entity Identification
     NIF: '',
-    email: '',
+    razonSocial: suggestedName,
+    nombreComercial: '',
+    
+    // Dates
+    fechaAlta: new Date().toISOString().split('T')[0],
+    fechaBaja: '',
+    
+    // Type and Classification
+    personaFisica: false,
+    tipoIdentificador: 'NIF/CIF-IVA' as 'NIF/CIF-IVA' | 'NIE' | 'PASAPORTE' | 'OTRO',
+    paisOrigen: 'ESPAÑA',
+    extranjero: false,
+    operadorIntracomunitario: false,
+    importacionExportacion: false,
+    regimenCanario: false,
+    
+    // Entity Relationships
+    proveedor: false,
+    cliente: true,
+    vendedor: false,
+    operarioTaller: false,
+    aseguradora: false,
+    financiera: false,
+    agenciaTransporte: false,
+    banco: false,
+    rentacar: false,
+    
+    // Currency and Additional Info
+    monedaEntidad: 'Eur',
+    
+    // Contact Information
     telefono: '',
+    email: '',
     movil: '',
     website: '',
-    nombreComercial: '',
     identificacionVAT: '',
     tags: '',
     tipoContacto: 'Sin especificar',
@@ -37,6 +65,11 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
       provincia: '',
       pais: 'España'
     },
+    
+    // Legacy fields for compatibility
+    tipoEntidad: 'cliente' as TipoEntidad,
+    tipo: 'empresario/profesional' as TipoCliente,
+    nombreORazonSocial: suggestedName,
     pais: 'España'
   })
 
@@ -79,16 +112,16 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
   const validateForm = () => {
     const newErrors: string[] = []
     
-    if (!formData.nombreORazonSocial.trim()) {
-      newErrors.push('El nombre o razón social es obligatorio')
+    if (!formData.razonSocial.trim()) {
+      newErrors.push('La razón social es obligatoria')
     }
     
-    if (formData.tipo === 'empresario/profesional' && !formData.NIF.trim()) {
-      newErrors.push('El NIF es obligatorio para empresarios/profesionales')
+    if (!formData.NIF.trim()) {
+      newErrors.push('El NIF es obligatorio')
     }
     
-    if (formData.tipo === 'empresario/profesional' && !formData.domicilio.calle.trim()) {
-      newErrors.push('La dirección es obligatoria para empresarios/profesionales')
+    if (!formData.personaFisica && !formData.domicilio.calle.trim()) {
+      newErrors.push('La dirección es obligatoria para empresas')
     }
     
     setErrors(newErrors)
@@ -103,15 +136,43 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
       onClose()
       // Reset form
       setFormData({
-        tipoEntidad: 'cliente' as TipoEntidad,
-        tipo: 'empresario/profesional',
-        nombreORazonSocial: '',
+        // Entity Identification
         NIF: '',
-        email: '',
+        razonSocial: '',
+        nombreComercial: '',
+        
+        // Dates
+        fechaAlta: new Date().toISOString().split('T')[0],
+        fechaBaja: '',
+        
+        // Type and Classification
+        personaFisica: false,
+        tipoIdentificador: 'NIF/CIF-IVA',
+        paisOrigen: 'ESPAÑA',
+        extranjero: false,
+        operadorIntracomunitario: false,
+        importacionExportacion: false,
+        regimenCanario: false,
+        
+        // Entity Relationships
+        proveedor: false,
+        cliente: true,
+        vendedor: false,
+        operarioTaller: false,
+        aseguradora: false,
+        financiera: false,
+        agenciaTransporte: false,
+        banco: false,
+        rentacar: false,
+        
+        // Currency and Additional Info
+        monedaEntidad: 'Eur',
+        
+        // Contact Information
         telefono: '',
+        email: '',
         movil: '',
         website: '',
-        nombreComercial: '',
         identificacionVAT: '',
         tags: '',
         tipoContacto: 'Sin especificar',
@@ -122,6 +183,11 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
           provincia: '',
           pais: 'España'
         },
+        
+        // Legacy fields for compatibility
+        tipoEntidad: 'cliente' as TipoEntidad,
+        tipo: 'empresario/profesional',
+        nombreORazonSocial: '',
         pais: 'España'
       })
       setErrors([])
@@ -277,15 +343,145 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Column */}
                 <div className="space-y-4">
+                  {/* Entity Identification */}
                   <div>
-                    <label className="block text-sm font-medium text-card-foreground mb-2">Nombre</label>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">NIF</label>
                     <input
                       type="text"
-                      value={formData.nombreORazonSocial}
-                      onChange={(e) => handleInputChange('nombreORazonSocial', e.target.value)}
+                      value={formData.NIF}
+                      onChange={(e) => handleInputChange('NIF', e.target.value)}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
-                      placeholder="Nombre"
+                      placeholder="NIF"
                     />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Razón Social</label>
+                    <input
+                      type="text"
+                      value={formData.razonSocial}
+                      onChange={(e) => handleInputChange('razonSocial', e.target.value)}
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
+                      placeholder="Razón Social"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">N. Comercial</label>
+                    <input
+                      type="text"
+                      value={formData.nombreComercial}
+                      onChange={(e) => handleInputChange('nombreComercial', e.target.value)}
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
+                      placeholder="Nombre Comercial"
+                    />
+                  </div>
+                  
+                  {/* Dates */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-card-foreground mb-2">Alta</label>
+                      <input
+                        type="date"
+                        value={formData.fechaAlta}
+                        onChange={(e) => handleInputChange('fechaAlta', e.target.value)}
+                        className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-card-foreground mb-2">Baja</label>
+                      <input
+                        type="date"
+                        value={formData.fechaBaja}
+                        onChange={(e) => handleInputChange('fechaBaja', e.target.value)}
+                        className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
+                      />
+                    </div>
+                  </div>
+                  
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      checked={formData.personaFisica}
+                      onChange={(e) => handleInputChange('personaFisica', e.target.checked)}
+                      className="mr-2"
+                    />
+                    <label className="text-sm text-card-foreground">Persona física</label>
+                  </div>
+                  
+                  <button
+                    type="button"
+                    className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm"
+                  >
+                    Verificar datos con Hacienda
+                  </button>
+                  
+                  {/* Type and Classification */}
+                  <div>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Tipo Identificador</label>
+                    <select
+                      value={formData.tipoIdentificador}
+                      onChange={(e) => handleInputChange('tipoIdentificador', e.target.value)}
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
+                    >
+                      <option value="NIF/CIF-IVA">NIF/CIF-IVA</option>
+                      <option value="NIE">NIE</option>
+                      <option value="PASAPORTE">PASAPORTE</option>
+                      <option value="OTRO">OTRO</option>
+                    </select>
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">País de origen</label>
+                    <select
+                      value={formData.paisOrigen}
+                      onChange={(e) => handleInputChange('paisOrigen', e.target.value)}
+                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
+                    >
+                      <option value="ESPAÑA">ESPAÑA</option>
+                      <option value="FRANCIA">FRANCIA</option>
+                      <option value="PORTUGAL">PORTUGAL</option>
+                      <option value="ITALIA">ITALIA</option>
+                    </select>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.extranjero}
+                        onChange={(e) => handleInputChange('extranjero', e.target.checked)}
+                        className="mr-2"
+                      />
+                      <label className="text-sm text-card-foreground">Extranjero/a</label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.operadorIntracomunitario}
+                        onChange={(e) => handleInputChange('operadorIntracomunitario', e.target.checked)}
+                        className="mr-2"
+                      />
+                      <label className="text-sm text-card-foreground">Operador intracomunitario</label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.importacionExportacion}
+                        onChange={(e) => handleInputChange('importacionExportacion', e.target.checked)}
+                        className="mr-2"
+                      />
+                      <label className="text-sm text-card-foreground">Importación/Exportación</label>
+                    </div>
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={formData.regimenCanario}
+                        onChange={(e) => handleInputChange('regimenCanario', e.target.checked)}
+                        className="mr-2"
+                      />
+                      <label className="text-sm text-card-foreground">Régimen Canario</label>
+                    </div>
                   </div>
 
                   <div>
@@ -381,15 +577,114 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
 
                 {/* Right Column */}
                 <div className="space-y-4">
+                  {/* Modification Details */}
+                  <div className="bg-gray-50 p-3 rounded-md">
+                    <div className="text-sm text-gray-600 mb-1">Modificado por:</div>
+                    <div className="text-sm font-medium">USUARIO6, DEMO</div>
+                    <div className="text-sm text-gray-600 mb-1 mt-2">El día:</div>
+                    <div className="text-sm font-medium">03/12/2024 12:02:00</div>
+                  </div>
+                  
+                  {/* Currency */}
                   <div>
-                    <label className="block text-sm font-medium text-card-foreground mb-2">NIF del contacto</label>
-                    <input
-                      type="text"
-                      value={formData.NIF}
-                      onChange={(e) => handleInputChange('NIF', e.target.value)}
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Moneda de la entidad</label>
+                    <select
+                      value={formData.monedaEntidad}
+                      onChange={(e) => handleInputChange('monedaEntidad', e.target.value)}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
-                      placeholder="NIF del contacto"
-                    />
+                    >
+                      <option value="Eur">Eur</option>
+                      <option value="USD">USD</option>
+                      <option value="GBP">GBP</option>
+                    </select>
+                  </div>
+                  
+                  {/* Relationships */}
+                  <div>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Relaciones</label>
+                    <div className="space-y-2">
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.proveedor}
+                          onChange={(e) => handleInputChange('proveedor', e.target.checked)}
+                          className="mr-2"
+                        />
+                        <label className="text-sm text-card-foreground">Proveedor</label>
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.cliente}
+                          onChange={(e) => handleInputChange('cliente', e.target.checked)}
+                          className="mr-2"
+                        />
+                        <label className="text-sm text-card-foreground">Cliente</label>
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.vendedor}
+                          onChange={(e) => handleInputChange('vendedor', e.target.checked)}
+                          className="mr-2"
+                        />
+                        <label className="text-sm text-card-foreground">Vendedor</label>
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.operarioTaller}
+                          onChange={(e) => handleInputChange('operarioTaller', e.target.checked)}
+                          className="mr-2"
+                        />
+                        <label className="text-sm text-card-foreground">Operario de Taller</label>
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.aseguradora}
+                          onChange={(e) => handleInputChange('aseguradora', e.target.checked)}
+                          className="mr-2"
+                        />
+                        <label className="text-sm text-card-foreground">Aseguradora</label>
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.financiera}
+                          onChange={(e) => handleInputChange('financiera', e.target.checked)}
+                          className="mr-2"
+                        />
+                        <label className="text-sm text-card-foreground">Financiera</label>
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.agenciaTransporte}
+                          onChange={(e) => handleInputChange('agenciaTransporte', e.target.checked)}
+                          className="mr-2"
+                        />
+                        <label className="text-sm text-card-foreground">Agencia de Transporte</label>
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.banco}
+                          onChange={(e) => handleInputChange('banco', e.target.checked)}
+                          className="mr-2"
+                        />
+                        <label className="text-sm text-card-foreground">Banco</label>
+                      </div>
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={formData.rentacar}
+                          onChange={(e) => handleInputChange('rentacar', e.target.checked)}
+                          className="mr-2"
+                        />
+                        <label className="text-sm text-card-foreground">Rentacar</label>
+                      </div>
+                    </div>
                   </div>
 
                   <div>

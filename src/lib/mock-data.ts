@@ -23,13 +23,47 @@ export interface Emisor {
 
 export interface Entidad {
   id: number
-  tipoEntidad: TipoEntidad
-  tipo: TipoCliente
-  nombreORazonSocial: string
-  NIF?: string
+  // Entity Identification
+  NIF: string
+  razonSocial: string
+  nombreComercial?: string
+  
+  // Dates
+  fechaAlta: string
+  fechaBaja?: string
+  
+  // Type and Classification
+  personaFisica: boolean
+  tipoIdentificador: 'NIF/CIF-IVA' | 'NIE' | 'PASAPORTE' | 'OTRO'
+  paisOrigen: string
+  extranjero: boolean
+  operadorIntracomunitario: boolean
+  importacionExportacion: boolean
+  regimenCanario: boolean
+  
+  // Entity Relationships (checkboxes)
+  proveedor: boolean
+  cliente: boolean
+  vendedor: boolean
+  operarioTaller: boolean
+  aseguradora: boolean
+  financiera: boolean
+  agenciaTransporte: boolean
+  banco: boolean
+  rentacar: boolean
+  
+  // Currency and Additional Info
+  monedaEntidad: string
+  
+  // Contact Information
   telefono?: string
   email?: string
   domicilio?: Domicilio
+  
+  // Legacy fields for compatibility
+  tipoEntidad: TipoEntidad
+  tipo: TipoCliente
+  nombreORazonSocial: string
   pais: string
   createdAt: string
   updatedAt: string
@@ -2018,10 +2052,39 @@ export class MockInvoiceService {
 export const mockEntities: Entidad[] = [
   {
     id: 1,
-    tipoEntidad: 'cliente',
-    tipo: 'empresario/profesional',
-    nombreORazonSocial: '911 GARAJE, S.L.',
+    // Entity Identification
     NIF: 'B10563393',
+    razonSocial: '911 GARAJE, S.L.',
+    nombreComercial: '911 Garaje',
+    
+    // Dates
+    fechaAlta: '2024-01-15',
+    fechaBaja: undefined,
+    
+    // Type and Classification
+    personaFisica: false,
+    tipoIdentificador: 'NIF/CIF-IVA',
+    paisOrigen: 'ESPAÑA',
+    extranjero: false,
+    operadorIntracomunitario: false,
+    importacionExportacion: false,
+    regimenCanario: false,
+    
+    // Entity Relationships
+    proveedor: false,
+    cliente: true,
+    vendedor: false,
+    operarioTaller: false,
+    aseguradora: false,
+    financiera: false,
+    agenciaTransporte: false,
+    banco: false,
+    rentacar: false,
+    
+    // Currency and Additional Info
+    monedaEntidad: 'Eur',
+    
+    // Contact Information
     telefono: '952721339',
     email: 'info@911garaje.com',
     domicilio: {
@@ -2031,16 +2094,50 @@ export const mockEntities: Entidad[] = [
       provincia: 'Málaga',
       pais: 'España'
     },
+    
+    // Legacy fields for compatibility
+    tipoEntidad: 'cliente',
+    tipo: 'empresario/profesional',
+    nombreORazonSocial: '911 GARAJE, S.L.',
     pais: 'España',
     createdAt: '2024-01-15T10:00:00Z',
     updatedAt: '2024-01-15T10:00:00Z'
   },
   {
     id: 2,
-    tipoEntidad: 'proveedor',
-    tipo: 'empresario/profesional',
-    nombreORazonSocial: 'ACCORINVEST SPAIN S.A',
+    // Entity Identification
     NIF: 'A08371346',
+    razonSocial: 'ACCORINVEST SPAIN S.A',
+    nombreComercial: 'Accorinvest',
+    
+    // Dates
+    fechaAlta: '2024-01-20',
+    fechaBaja: undefined,
+    
+    // Type and Classification
+    personaFisica: false,
+    tipoIdentificador: 'NIF/CIF-IVA',
+    paisOrigen: 'ESPAÑA',
+    extranjero: false,
+    operadorIntracomunitario: false,
+    importacionExportacion: false,
+    regimenCanario: false,
+    
+    // Entity Relationships
+    proveedor: true,
+    cliente: false,
+    vendedor: false,
+    operarioTaller: false,
+    aseguradora: false,
+    financiera: false,
+    agenciaTransporte: false,
+    banco: false,
+    rentacar: false,
+    
+    // Currency and Additional Info
+    monedaEntidad: 'Eur',
+    
+    // Contact Information
     telefono: '944433310',
     email: 'contacto@accorinvest.es',
     domicilio: {
@@ -2050,16 +2147,50 @@ export const mockEntities: Entidad[] = [
       provincia: 'Vizcaya',
       pais: 'España'
     },
+    
+    // Legacy fields for compatibility
+    tipoEntidad: 'proveedor',
+    tipo: 'empresario/profesional',
+    nombreORazonSocial: 'ACCORINVEST SPAIN S.A',
     pais: 'España',
     createdAt: '2024-01-20T14:30:00Z',
     updatedAt: '2024-01-20T14:30:00Z'
   },
   {
     id: 3,
-    tipoEntidad: 'vendedor',
-    tipo: 'particular',
-    nombreORazonSocial: 'ACROID CONSULTORES.S.L.',
+    // Entity Identification
     NIF: 'B92686831',
+    razonSocial: 'ACROID CONSULTORES.S.L.',
+    nombreComercial: 'Acroid Consultores',
+    
+    // Dates
+    fechaAlta: '2024-02-01',
+    fechaBaja: undefined,
+    
+    // Type and Classification
+    personaFisica: false,
+    tipoIdentificador: 'NIF/CIF-IVA',
+    paisOrigen: 'ESPAÑA',
+    extranjero: false,
+    operadorIntracomunitario: false,
+    importacionExportacion: false,
+    regimenCanario: false,
+    
+    // Entity Relationships
+    proveedor: false,
+    cliente: false,
+    vendedor: true,
+    operarioTaller: false,
+    aseguradora: false,
+    financiera: false,
+    agenciaTransporte: false,
+    banco: false,
+    rentacar: false,
+    
+    // Currency and Additional Info
+    monedaEntidad: 'Eur',
+    
+    // Contact Information
     telefono: '951382866',
     email: 'ventas@acroid.com',
     domicilio: {
@@ -2069,16 +2200,50 @@ export const mockEntities: Entidad[] = [
       provincia: 'Sevilla',
       pais: 'España'
     },
+    
+    // Legacy fields for compatibility
+    tipoEntidad: 'vendedor',
+    tipo: 'particular',
+    nombreORazonSocial: 'ACROID CONSULTORES.S.L.',
     pais: 'España',
     createdAt: '2024-02-01T09:15:00Z',
     updatedAt: '2024-02-01T09:15:00Z'
   },
   {
     id: 4,
-    tipoEntidad: 'cliente',
-    tipo: 'empresario/profesional',
-    nombreORazonSocial: 'AGENCIA SERVICIOS MENSAJERIA, S.A.U., (ASM PAQUETERIA-TRANSPORTE)',
+    // Entity Identification
     NIF: 'A61441523',
+    razonSocial: 'AGENCIA SERVICIOS MENSAJERIA, S.A.U.',
+    nombreComercial: 'ASM Paquetería-Transporte',
+    
+    // Dates
+    fechaAlta: '2024-02-10',
+    fechaBaja: undefined,
+    
+    // Type and Classification
+    personaFisica: false,
+    tipoIdentificador: 'NIF/CIF-IVA',
+    paisOrigen: 'ESPAÑA',
+    extranjero: false,
+    operadorIntracomunitario: false,
+    importacionExportacion: false,
+    regimenCanario: false,
+    
+    // Entity Relationships
+    proveedor: false,
+    cliente: true,
+    vendedor: false,
+    operarioTaller: false,
+    aseguradora: false,
+    financiera: false,
+    agenciaTransporte: true,
+    banco: false,
+    rentacar: false,
+    
+    // Currency and Additional Info
+    monedaEntidad: 'Eur',
+    
+    // Contact Information
     telefono: '902113300',
     email: 'clientes@asm.es',
     domicilio: {
@@ -2088,16 +2253,50 @@ export const mockEntities: Entidad[] = [
       provincia: 'Madrid',
       pais: 'España'
     },
+    
+    // Legacy fields for compatibility
+    tipoEntidad: 'cliente',
+    tipo: 'empresario/profesional',
+    nombreORazonSocial: 'AGENCIA SERVICIOS MENSAJERIA, S.A.U., (ASM PAQUETERIA-TRANSPORTE)',
     pais: 'España',
     createdAt: '2024-02-10T11:45:00Z',
     updatedAt: '2024-02-10T11:45:00Z'
   },
   {
     id: 5,
-    tipoEntidad: 'proveedor',
-    tipo: 'empresario/profesional',
-    nombreORazonSocial: 'AGRIMOTO, S.L., (YAMAHA)',
+    // Entity Identification
     NIF: 'B50141365',
+    razonSocial: 'AGRIMOTO, S.L.',
+    nombreComercial: 'Yamaha Agrimoto',
+    
+    // Dates
+    fechaAlta: '2024-02-15',
+    fechaBaja: undefined,
+    
+    // Type and Classification
+    personaFisica: false,
+    tipoIdentificador: 'NIF/CIF-IVA',
+    paisOrigen: 'ESPAÑA',
+    extranjero: false,
+    operadorIntracomunitario: false,
+    importacionExportacion: false,
+    regimenCanario: false,
+    
+    // Entity Relationships
+    proveedor: true,
+    cliente: false,
+    vendedor: false,
+    operarioTaller: false,
+    aseguradora: false,
+    financiera: false,
+    agenciaTransporte: false,
+    banco: false,
+    rentacar: false,
+    
+    // Currency and Additional Info
+    monedaEntidad: 'Eur',
+    
+    // Contact Information
     telefono: '976274109',
     email: 'info@agrimoto.com',
     domicilio: {
@@ -2107,104 +2306,14 @@ export const mockEntities: Entidad[] = [
       provincia: 'Zaragoza',
       pais: 'España'
     },
+    
+    // Legacy fields for compatibility
+    tipoEntidad: 'proveedor',
+    tipo: 'empresario/profesional',
+    nombreORazonSocial: 'AGRIMOTO, S.L., (YAMAHA)',
     pais: 'España',
     createdAt: '2024-02-15T16:20:00Z',
     updatedAt: '2024-02-15T16:20:00Z'
-  },
-  {
-    id: 6,
-    tipoEntidad: 'vendedor',
-    tipo: 'particular',
-    nombreORazonSocial: 'AGUILAR BIRICOLTI, GIORGIO',
-    NIF: '74861782W',
-    telefono: '914683337',
-    email: 'giorgio.aguilar@email.com',
-    domicilio: {
-      calle: 'Calle de la Libertad 25',
-      codigoPostal: '28004',
-      municipio: 'Madrid',
-      provincia: 'Madrid',
-      pais: 'España'
-    },
-    pais: 'España',
-    createdAt: '2024-02-20T13:10:00Z',
-    updatedAt: '2024-02-20T13:10:00Z'
-  },
-  {
-    id: 7,
-    tipoEntidad: 'cliente',
-    tipo: 'empresario/profesional',
-    nombreORazonSocial: 'AGUILERA CONDE, FRANCISCO MANUEL',
-    NIF: '25332148V',
-    telefono: '916308239',
-    email: 'francisco.aguilera@empresa.com',
-    domicilio: {
-      calle: 'Avenida de Andalucía 67',
-      codigoPostal: '18014',
-      municipio: 'Granada',
-      provincia: 'Granada',
-      pais: 'España'
-    },
-    pais: 'España',
-    createdAt: '2024-03-01T08:30:00Z',
-    updatedAt: '2024-03-01T08:30:00Z'
-  },
-  {
-    id: 8,
-    tipoEntidad: 'proveedor',
-    tipo: 'empresario/profesional',
-    nombreORazonSocial: 'ALADRO SALINAS, EUGENIO, (VESPA ALADRO)',
-    NIF: '00804260L',
-    telefono: '955124414',
-    email: 'eugenio@vespaaladro.com',
-    domicilio: {
-      calle: 'Calle Real 123',
-      codigoPostal: '41001',
-      municipio: 'Sevilla',
-      provincia: 'Sevilla',
-      pais: 'España'
-    },
-    pais: 'España',
-    createdAt: '2024-03-05T12:00:00Z',
-    updatedAt: '2024-03-05T12:00:00Z'
-  },
-  {
-    id: 9,
-    tipoEntidad: 'vendedor',
-    tipo: 'empresario/profesional',
-    nombreORazonSocial: 'ALAVI MEDISPORT, S.L.',
-    NIF: 'B92574573',
-    telefono: '952315212',
-    email: 'ventas@alavimedisport.com',
-    domicilio: {
-      calle: 'Polígono Industrial Sur',
-      codigoPostal: '29006',
-      municipio: 'Málaga',
-      provincia: 'Málaga',
-      pais: 'España'
-    },
-    pais: 'España',
-    createdAt: '2024-03-10T15:45:00Z',
-    updatedAt: '2024-03-10T15:45:00Z'
-  },
-  {
-    id: 10,
-    tipoEntidad: 'cliente',
-    tipo: 'empresario/profesional',
-    nombreORazonSocial: 'ALBA LOGISTICA, S.A.',
-    NIF: 'A29656212',
-    telefono: '978730204',
-    email: 'info@albalogistica.com',
-    domicilio: {
-      calle: 'Zona Franca',
-      codigoPostal: '08040',
-      municipio: 'Barcelona',
-      provincia: 'Barcelona',
-      pais: 'España'
-    },
-    pais: 'España',
-    createdAt: '2024-03-15T10:15:00Z',
-    updatedAt: '2024-03-15T10:15:00Z'
   }
 ]
 
@@ -2241,7 +2350,7 @@ export class MockEntityService {
 
     if (columnFilters.nombre) {
       filteredEntities = filteredEntities.filter(entity =>
-        entity.nombreORazonSocial.toLowerCase().includes(columnFilters.nombre.toLowerCase())
+        entity.razonSocial.toLowerCase().includes(columnFilters.nombre.toLowerCase())
       )
     }
 

@@ -235,12 +235,12 @@ export default function EntidadesPage() {
                   <th className="px-6 py-3">
                     <input
                       type="text"
-                      placeholder="Filtrar Nombre..."
+                      placeholder="Filtrar Razón Social..."
                       value={columnFilters.nombre}
                       onChange={e => handleColumnFilterChange('nombre', e.target.value)}
                       className="w-full bg-transparent border-none outline-none text-xs"
                     />
-                    <div className="mt-1">Nombre</div>
+                    <div className="mt-1">Razón Social</div>
                   </th>
                   <th className="px-6 py-3">
                     <input
@@ -263,10 +263,10 @@ export default function EntidadesPage() {
                     className="hover:bg-muted/50 cursor-pointer transition-colors"
                   >
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                      {entity.NIF || '-'}
+                      {entity.NIF}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
-                      {entity.nombreORazonSocial}
+                      {entity.razonSocial}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-foreground">
                       {entity.telefono || '-'}

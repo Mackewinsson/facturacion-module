@@ -103,70 +103,231 @@ export default function EntityModal({
       maxWidth="4xl"
     >
 
-      {/* Top Section - Entity Details */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            {/* Left Column */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Entidad</label>
-                <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
-                  {getTipoEntidadLabel(entity.tipoEntidad)}
-                </div>
-              </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tipo de Cliente</label>
-                <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
-                  {getTipoClienteLabel(entity.tipo)}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">NIF</label>
-                <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
-                  {entity.NIF || 'No especificado'}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
-                <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
-                  {entity.telefono || 'No especificado'}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
-                  {entity.email || 'No especificado'}
-                </div>
+      {/* Entity Identification Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Left Column */}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">NIF</label>
+            <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+              {entity.NIF}
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Razón Social</label>
+            <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+              {entity.razonSocial}
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">N. Comercial</label>
+            <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+              {entity.nombreComercial || 'No especificado'}
+            </div>
+          </div>
+          
+          {/* Dates */}
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Alta</label>
+              <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+                {formatDate(entity.fechaAlta)}
               </div>
             </div>
-
-            {/* Right Column */}
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">País</label>
-                <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
-                  {entity.pais}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Fecha de Creación</label>
-                <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
-                  {formatDate(entity.createdAt)}
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Última Actualización</label>
-                <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
-                  {formatDate(entity.updatedAt)}
-                </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Baja</label>
+              <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+                {entity.fechaBaja ? formatDate(entity.fechaBaja) : 'No especificada'}
               </div>
             </div>
           </div>
+          
+          <div className="flex items-center">
+            <input
+              type="checkbox"
+              checked={entity.personaFisica}
+              readOnly
+              className="mr-2"
+            />
+            <label className="text-sm text-gray-700">Persona física</label>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Tipo Identificador</label>
+            <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+              {entity.tipoIdentificador}
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">País de origen</label>
+            <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+              {entity.paisOrigen}
+            </div>
+          </div>
+          
+          <div className="space-y-2">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={entity.extranjero}
+                readOnly
+                className="mr-2"
+              />
+              <label className="text-sm text-gray-700">Extranjero/a</label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={entity.operadorIntracomunitario}
+                readOnly
+                className="mr-2"
+              />
+              <label className="text-sm text-gray-700">Operador intracomunitario</label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={entity.importacionExportacion}
+                readOnly
+                className="mr-2"
+              />
+              <label className="text-sm text-gray-700">Importación/Exportación</label>
+            </div>
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={entity.regimenCanario}
+                readOnly
+                className="mr-2"
+              />
+              <label className="text-sm text-gray-700">Régimen Canario</label>
+            </div>
+          </div>
+        </div>
+
+        {/* Right Column */}
+        <div className="space-y-4">
+          {/* Modification Details */}
+          <div className="bg-gray-50 p-3 rounded-md">
+            <div className="text-sm text-gray-600 mb-1">Modificado por:</div>
+            <div className="text-sm font-medium">USUARIO6, DEMO</div>
+            <div className="text-sm text-gray-600 mb-1 mt-2">El día:</div>
+            <div className="text-sm font-medium">{formatDate(entity.updatedAt)}</div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Moneda de la entidad</label>
+            <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+              {entity.monedaEntidad}
+            </div>
+          </div>
+          
+          {/* Relationships */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Relaciones</label>
+            <div className="space-y-2">
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={entity.proveedor}
+                  readOnly
+                  className="mr-2"
+                />
+                <label className="text-sm text-gray-700">Proveedor</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={entity.cliente}
+                  readOnly
+                  className="mr-2"
+                />
+                <label className="text-sm text-gray-700">Cliente</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={entity.vendedor}
+                  readOnly
+                  className="mr-2"
+                />
+                <label className="text-sm text-gray-700">Vendedor</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={entity.operarioTaller}
+                  readOnly
+                  className="mr-2"
+                />
+                <label className="text-sm text-gray-700">Operario de Taller</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={entity.aseguradora}
+                  readOnly
+                  className="mr-2"
+                />
+                <label className="text-sm text-gray-700">Aseguradora</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={entity.financiera}
+                  readOnly
+                  className="mr-2"
+                />
+                <label className="text-sm text-gray-700">Financiera</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={entity.agenciaTransporte}
+                  readOnly
+                  className="mr-2"
+                />
+                <label className="text-sm text-gray-700">Agencia de Transporte</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={entity.banco}
+                  readOnly
+                  className="mr-2"
+                />
+                <label className="text-sm text-gray-700">Banco</label>
+              </div>
+              <div className="flex items-center">
+                <input
+                  type="checkbox"
+                  checked={entity.rentacar}
+                  readOnly
+                  className="mr-2"
+                />
+                <label className="text-sm text-gray-700">Rentacar</label>
+              </div>
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+            <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+              {entity.telefono || 'No especificado'}
+            </div>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+            <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
+              {entity.email || 'No especificado'}
+            </div>
+          </div>
+        </div>
+      </div>
 
           {/* Address Section */}
           {entity.domicilio && (
