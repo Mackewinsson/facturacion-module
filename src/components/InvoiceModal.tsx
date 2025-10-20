@@ -1,6 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { Invoice } from '@/lib/mock-data'
+import BaseModal from './BaseModal'
+import ModalToolbarButton from './ModalToolbarButton'
 
 interface InvoiceModalProps {
   invoice: Invoice | null
@@ -52,54 +54,52 @@ export default function InvoiceModal({
     }
   }
 
-  return (
-    <div 
-      className="fixed inset-0 flex items-center justify-center z-50"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+  const toolbar = (
+    <>
+      <ModalToolbarButton
+        onClick={() => onPrint?.(invoice.id)}
+        icon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+          </svg>
+        }
+        label="Imprimir"
+      />
+      
+      <ModalToolbarButton
+        onClick={() => onView?.(invoice.id)}
+        icon={
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+          </svg>
+        }
+        label="Ver"
+      />
+    </>
+  )
+
+  const footer = (
+    <button
+      onClick={onClose}
+      className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
     >
-      <div className="bg-card rounded-lg shadow-xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-card-foreground">Factura</h2>
-            <button
-              onClick={onClose}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+      Cerrar
+    </button>
+  )
 
-          {/* Toolbar */}
-          <div className="bg-gray-100 px-4 py-3 flex items-center gap-4 border-b rounded-lg mb-6">
-          
-          <button
-            onClick={() => onPrint?.(invoice.id)}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm font-medium"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-            </svg>
-            Imprimir
-          </button>
-          
-          <button
-            onClick={() => onView?.(invoice.id)}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm font-medium"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-            </svg>
-            Ver
-          </button>
-          
-        </div>
+  return (
+    <BaseModal
+      isOpen={isOpen}
+      onClose={onClose}
+      title="Factura"
+      subtitle={`${invoice.serie}${invoice.numero} - ${invoice.cliente.nombreORazonSocial}`}
+      toolbar={toolbar}
+      footer={footer}
+      maxWidth="6xl"
+    >
 
-          {/* Content */}
-          <div className="overflow-y-auto">
-          {/* Top Section - Invoice Details */}
+      {/* Top Section - Invoice Details */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* Left Column */}
             <div className="space-y-4">
@@ -435,18 +435,6 @@ export default function InvoiceModal({
             </div>
           </div>
         </div>
-
-          {/* Footer */}
-          <div className="bg-gray-100 px-4 py-3 flex justify-end gap-3 border-t rounded-lg mt-6">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
-            >
-              Cerrar
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    </BaseModal>
   )
 }

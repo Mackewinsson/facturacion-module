@@ -2,6 +2,7 @@
 
 export type TipoFactura = 'ordinaria' | 'simplificada' | 'rectificativa' | 'emitida' | 'recibida'
 export type TipoCliente = 'particular' | 'empresario/profesional'
+export type TipoEntidad = 'cliente' | 'proveedor' | 'vendedor'
 export type TipoIVA = 0 | 4 | 10 | 21
 export type MotivoExencion = 'art20.1.26' | 'art20.1.27' | 'art20.1.28' | 'art25' | 'exportacion' | 'otro'
 export type CausaRectificacion = 'error' | 'devolucion' | 'descuento' | 'otro'
@@ -18,6 +19,20 @@ export interface Emisor {
   nombreORazonSocial: string
   NIF: string
   domicilio: Domicilio
+}
+
+export interface Entidad {
+  id: number
+  tipoEntidad: TipoEntidad
+  tipo: TipoCliente
+  nombreORazonSocial: string
+  NIF?: string
+  telefono?: string
+  email?: string
+  domicilio?: Domicilio
+  pais: string
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Cliente {
@@ -1996,5 +2011,287 @@ export class MockInvoiceService {
 
   static async updateInvoiceStatus(id: number, status: string): Promise<Invoice | null> {
     return this.updateInvoice(id, { status })
+  }
+}
+
+// Mock entity data - Clientes, Proveedores, Vendedores
+export const mockEntities: Entidad[] = [
+  {
+    id: 1,
+    tipoEntidad: 'cliente',
+    tipo: 'empresario/profesional',
+    nombreORazonSocial: '911 GARAJE, S.L.',
+    NIF: 'B10563393',
+    telefono: '952721339',
+    email: 'info@911garaje.com',
+    domicilio: {
+      calle: 'Calle Mayor 15',
+      codigoPostal: '29001',
+      municipio: 'Málaga',
+      provincia: 'Málaga',
+      pais: 'España'
+    },
+    pais: 'España',
+    createdAt: '2024-01-15T10:00:00Z',
+    updatedAt: '2024-01-15T10:00:00Z'
+  },
+  {
+    id: 2,
+    tipoEntidad: 'proveedor',
+    tipo: 'empresario/profesional',
+    nombreORazonSocial: 'ACCORINVEST SPAIN S.A',
+    NIF: 'A08371346',
+    telefono: '944433310',
+    email: 'contacto@accorinvest.es',
+    domicilio: {
+      calle: 'Avenida de la Paz 42',
+      codigoPostal: '48015',
+      municipio: 'Bilbao',
+      provincia: 'Vizcaya',
+      pais: 'España'
+    },
+    pais: 'España',
+    createdAt: '2024-01-20T14:30:00Z',
+    updatedAt: '2024-01-20T14:30:00Z'
+  },
+  {
+    id: 3,
+    tipoEntidad: 'vendedor',
+    tipo: 'particular',
+    nombreORazonSocial: 'ACROID CONSULTORES.S.L.',
+    NIF: 'B92686831',
+    telefono: '951382866',
+    email: 'ventas@acroid.com',
+    domicilio: {
+      calle: 'Plaza de España 8',
+      codigoPostal: '41013',
+      municipio: 'Sevilla',
+      provincia: 'Sevilla',
+      pais: 'España'
+    },
+    pais: 'España',
+    createdAt: '2024-02-01T09:15:00Z',
+    updatedAt: '2024-02-01T09:15:00Z'
+  },
+  {
+    id: 4,
+    tipoEntidad: 'cliente',
+    tipo: 'empresario/profesional',
+    nombreORazonSocial: 'AGENCIA SERVICIOS MENSAJERIA, S.A.U., (ASM PAQUETERIA-TRANSPORTE)',
+    NIF: 'A61441523',
+    telefono: '902113300',
+    email: 'clientes@asm.es',
+    domicilio: {
+      calle: 'Polígono Industrial Norte',
+      codigoPostal: '28050',
+      municipio: 'Madrid',
+      provincia: 'Madrid',
+      pais: 'España'
+    },
+    pais: 'España',
+    createdAt: '2024-02-10T11:45:00Z',
+    updatedAt: '2024-02-10T11:45:00Z'
+  },
+  {
+    id: 5,
+    tipoEntidad: 'proveedor',
+    tipo: 'empresario/profesional',
+    nombreORazonSocial: 'AGRIMOTO, S.L., (YAMAHA)',
+    NIF: 'B50141365',
+    telefono: '976274109',
+    email: 'info@agrimoto.com',
+    domicilio: {
+      calle: 'Carretera Nacional 232',
+      codigoPostal: '50012',
+      municipio: 'Zaragoza',
+      provincia: 'Zaragoza',
+      pais: 'España'
+    },
+    pais: 'España',
+    createdAt: '2024-02-15T16:20:00Z',
+    updatedAt: '2024-02-15T16:20:00Z'
+  },
+  {
+    id: 6,
+    tipoEntidad: 'vendedor',
+    tipo: 'particular',
+    nombreORazonSocial: 'AGUILAR BIRICOLTI, GIORGIO',
+    NIF: '74861782W',
+    telefono: '914683337',
+    email: 'giorgio.aguilar@email.com',
+    domicilio: {
+      calle: 'Calle de la Libertad 25',
+      codigoPostal: '28004',
+      municipio: 'Madrid',
+      provincia: 'Madrid',
+      pais: 'España'
+    },
+    pais: 'España',
+    createdAt: '2024-02-20T13:10:00Z',
+    updatedAt: '2024-02-20T13:10:00Z'
+  },
+  {
+    id: 7,
+    tipoEntidad: 'cliente',
+    tipo: 'empresario/profesional',
+    nombreORazonSocial: 'AGUILERA CONDE, FRANCISCO MANUEL',
+    NIF: '25332148V',
+    telefono: '916308239',
+    email: 'francisco.aguilera@empresa.com',
+    domicilio: {
+      calle: 'Avenida de Andalucía 67',
+      codigoPostal: '18014',
+      municipio: 'Granada',
+      provincia: 'Granada',
+      pais: 'España'
+    },
+    pais: 'España',
+    createdAt: '2024-03-01T08:30:00Z',
+    updatedAt: '2024-03-01T08:30:00Z'
+  },
+  {
+    id: 8,
+    tipoEntidad: 'proveedor',
+    tipo: 'empresario/profesional',
+    nombreORazonSocial: 'ALADRO SALINAS, EUGENIO, (VESPA ALADRO)',
+    NIF: '00804260L',
+    telefono: '955124414',
+    email: 'eugenio@vespaaladro.com',
+    domicilio: {
+      calle: 'Calle Real 123',
+      codigoPostal: '41001',
+      municipio: 'Sevilla',
+      provincia: 'Sevilla',
+      pais: 'España'
+    },
+    pais: 'España',
+    createdAt: '2024-03-05T12:00:00Z',
+    updatedAt: '2024-03-05T12:00:00Z'
+  },
+  {
+    id: 9,
+    tipoEntidad: 'vendedor',
+    tipo: 'empresario/profesional',
+    nombreORazonSocial: 'ALAVI MEDISPORT, S.L.',
+    NIF: 'B92574573',
+    telefono: '952315212',
+    email: 'ventas@alavimedisport.com',
+    domicilio: {
+      calle: 'Polígono Industrial Sur',
+      codigoPostal: '29006',
+      municipio: 'Málaga',
+      provincia: 'Málaga',
+      pais: 'España'
+    },
+    pais: 'España',
+    createdAt: '2024-03-10T15:45:00Z',
+    updatedAt: '2024-03-10T15:45:00Z'
+  },
+  {
+    id: 10,
+    tipoEntidad: 'cliente',
+    tipo: 'empresario/profesional',
+    nombreORazonSocial: 'ALBA LOGISTICA, S.A.',
+    NIF: 'A29656212',
+    telefono: '978730204',
+    email: 'info@albalogistica.com',
+    domicilio: {
+      calle: 'Zona Franca',
+      codigoPostal: '08040',
+      municipio: 'Barcelona',
+      provincia: 'Barcelona',
+      pais: 'España'
+    },
+    pais: 'España',
+    createdAt: '2024-03-15T10:15:00Z',
+    updatedAt: '2024-03-15T10:15:00Z'
+  }
+]
+
+// Mock Entity Service
+export class MockEntityService {
+  private static nextId = 11
+  private static entities = [...mockEntities]
+
+  static async getEntities(filters: {
+    page?: number
+    limit?: number
+    columnFilters?: Record<string, string>
+    tipoEntidadFilter?: 'ALL' | 'cliente' | 'proveedor' | 'vendedor'
+  } = {}): Promise<{
+    entities: Entidad[]
+    total: number
+    pages: number
+  }> {
+    const { page = 1, limit = 1000, columnFilters = {}, tipoEntidadFilter = 'ALL' } = filters
+
+    let filteredEntities = [...this.entities]
+
+    // Filter by entity type
+    if (tipoEntidadFilter !== 'ALL') {
+      filteredEntities = filteredEntities.filter(entity => entity.tipoEntidad === tipoEntidadFilter)
+    }
+
+    // Apply column filters
+    if (columnFilters.nif) {
+      filteredEntities = filteredEntities.filter(entity =>
+        entity.NIF?.toLowerCase().includes(columnFilters.nif.toLowerCase())
+      )
+    }
+
+    if (columnFilters.nombre) {
+      filteredEntities = filteredEntities.filter(entity =>
+        entity.nombreORazonSocial.toLowerCase().includes(columnFilters.nombre.toLowerCase())
+      )
+    }
+
+    if (columnFilters.telefono) {
+      filteredEntities = filteredEntities.filter(entity =>
+        entity.telefono?.toLowerCase().includes(columnFilters.telefono.toLowerCase())
+      )
+    }
+
+    return {
+      entities: filteredEntities,
+      total: filteredEntities.length,
+      pages: Math.ceil(filteredEntities.length / limit)
+    }
+  }
+
+  static async getEntity(id: number): Promise<Entidad | null> {
+    return this.entities.find(entity => entity.id === id) || null
+  }
+
+  static async createEntity(entityData: Omit<Entidad, 'id' | 'createdAt' | 'updatedAt'>): Promise<Entidad> {
+    const newEntity: Entidad = {
+      id: this.nextId++,
+      ...entityData,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+    
+    this.entities.unshift(newEntity)
+    return newEntity
+  }
+
+  static async updateEntity(id: number, updateData: Partial<Entidad>): Promise<Entidad | null> {
+    const index = this.entities.findIndex(entity => entity.id === id)
+    if (index === -1) return null
+    
+    this.entities[index] = {
+      ...this.entities[index],
+      ...updateData,
+      updatedAt: new Date().toISOString()
+    }
+    
+    return this.entities[index]
+  }
+
+  static async deleteEntity(id: number): Promise<boolean> {
+    const index = this.entities.findIndex(entity => entity.id === id)
+    if (index === -1) return false
+    
+    this.entities.splice(index, 1)
+    return true
   }
 }

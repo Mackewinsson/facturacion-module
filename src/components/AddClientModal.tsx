@@ -1,21 +1,24 @@
 'use client'
 import { useState } from 'react'
-import { Cliente, TipoCliente } from '@/lib/mock-data'
+import { Cliente, TipoCliente, Entidad, TipoEntidad } from '@/lib/mock-data'
+import BaseModal from './BaseModal'
 
 interface AddClientModalProps {
   isOpen: boolean
   onClose: () => void
-  onClientAdded: (client: Cliente) => void
+  onClientAdded: (client: Cliente | Entidad) => void
   suggestedName?: string
+  isEntityModal?: boolean
 }
 
 type ContactType = 'empresa' | 'persona'
 type TabType = 'basico' | 'cuentas' | 'preferencias' | 'contabilidad'
 
-export default function AddClientModal({ isOpen, onClose, onClientAdded, suggestedName = '' }: AddClientModalProps) {
+export default function AddClientModal({ isOpen, onClose, onClientAdded, suggestedName = '', isEntityModal = false }: AddClientModalProps) {
   const [contactType, setContactType] = useState<ContactType>('empresa')
   const [activeTab, setActiveTab] = useState<TabType>('basico')
   const [formData, setFormData] = useState({
+    tipoEntidad: 'cliente' as TipoEntidad,
     tipo: 'empresario/profesional' as TipoCliente,
     nombreORazonSocial: suggestedName,
     NIF: '',
@@ -100,6 +103,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
       onClose()
       // Reset form
       setFormData({
+        tipoEntidad: 'cliente' as TipoEntidad,
         tipo: 'empresario/profesional',
         nombreORazonSocial: '',
         NIF: '',
@@ -138,24 +142,75 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
 
   if (!isOpen) return null
 
+  const footer = (
+    <>
+      <button
+        type="button"
+        onClick={handleClose}
+        className="px-4 py-2 text-secondary-foreground bg-secondary rounded-md hover:bg-secondary/80 font-medium"
+      >
+        Cancelar
+      </button>
+      <button
+        type="submit"
+        form="entity-form"
+        className="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 font-medium"
+      >
+        Crear
+      </button>
+    </>
+  )
+
   return (
-    <div 
-      className="fixed inset-0 flex items-center justify-center z-50"
-      style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
+    <BaseModal
+      isOpen={isOpen}
+      onClose={handleClose}
+      title={isEntityModal ? 'Nueva Entidad' : 'Nuevo contacto'}
+      footer={footer}
+      maxWidth="4xl"
     >
-      <div className="bg-card rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <div className="p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold text-card-foreground">Nuevo contacto</h2>
-            <button
-              onClick={handleClose}
-              className="text-muted-foreground hover:text-foreground"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
+
+          {/* Entity Type Selection (only for entity modal) */}
+          {isEntityModal && (
+            <div className="mb-6">
+              <label className="block text-sm font-medium text-card-foreground mb-3">Tipo de Entidad</label>
+              <div className="flex space-x-2">
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('tipoEntidad', 'cliente')}
+                  className={`px-4 py-2 rounded-md font-medium ${
+                    formData.tipoEntidad === 'cliente'
+                      ? 'bg-accent text-accent-foreground'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  Cliente
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('tipoEntidad', 'proveedor')}
+                  className={`px-4 py-2 rounded-md font-medium ${
+                    formData.tipoEntidad === 'proveedor'
+                      ? 'bg-accent text-accent-foreground'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  Proveedor
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleInputChange('tipoEntidad', 'vendedor')}
+                  className={`px-4 py-2 rounded-md font-medium ${
+                    formData.tipoEntidad === 'vendedor'
+                      ? 'bg-accent text-accent-foreground'
+                      : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
+                  }`}
+                >
+                  Vendedor
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Contact Type Toggle */}
           <div className="mb-6">
@@ -217,7 +272,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
             </div>
           )}
 
-          <form onSubmit={handleSubmit}>
+          <form id="entity-form" onSubmit={handleSubmit}>
             {activeTab === 'basico' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Column */}
@@ -428,24 +483,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
               </div>
             )} */}
 
-            <div className="flex justify-end gap-3 pt-6 mt-6 border-t border-border">
-              <button
-                type="button"
-                onClick={handleClose}
-                className="px-4 py-2 text-secondary-foreground bg-secondary rounded-md hover:bg-secondary/80 font-medium"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 bg-accent text-accent-foreground rounded-md hover:bg-accent/90 font-medium"
-              >
-                Crear
-              </button>
-            </div>
           </form>
-        </div>
-      </div>
-    </div>
+    </BaseModal>
   )
 }
