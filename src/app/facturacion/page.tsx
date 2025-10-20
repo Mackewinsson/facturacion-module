@@ -137,12 +137,8 @@ export default function FacturacionPage() {
     router.push('/facturacion/nueva')
   }
 
-  const handleEditInvoice = (id: number) => {
-    router.push(`/facturacion/editar/${id}`)
-  }
-
   const handleViewInvoice = (id: number) => {
-    router.push(`/facturacion/ver/${id}`)
+    router.push(`/facturacion/editar/${id}`)
   }
 
   const handleRowClick = (invoice: Invoice) => {
@@ -155,10 +151,6 @@ export default function FacturacionPage() {
     setSelectedInvoice(null)
   }
 
-  const handleModalEdit = (id: number) => {
-    handleCloseModal()
-    handleEditInvoice(id)
-  }
 
   const handleModalView = (id: number) => {
     handleCloseModal()
@@ -170,10 +162,6 @@ export default function FacturacionPage() {
     console.log('Print invoice:', id)
   }
 
-  const handleModalConfirm = (id: number) => {
-    // TODO: Implement confirm functionality
-    console.log('Confirm invoice:', id)
-  }
 
   const handleColumnFilterChange = (columnName: string, value: string) => {
     setColumnFilters(prev => ({
@@ -581,15 +569,6 @@ export default function FacturacionPage() {
                             >
                               Ver
                             </button>
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleEditInvoice(invoice.id)
-                              }}
-                              className="text-green-600 hover:text-green-900"
-                            >
-                              Editar
-                            </button>
                           </div>
                         </td>
                       </tr>
@@ -611,10 +590,8 @@ export default function FacturacionPage() {
         invoice={selectedInvoice}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-        onEdit={handleModalEdit}
         onPrint={handleModalPrint}
         onView={handleModalView}
-        onConfirm={handleModalConfirm}
       />
     </LayoutWithSidebar>
   )

@@ -6,20 +6,16 @@ interface InvoiceModalProps {
   invoice: Invoice | null
   isOpen: boolean
   onClose: () => void
-  onEdit?: (id: number) => void
   onPrint?: (id: number) => void
   onView?: (id: number) => void
-  onConfirm?: (id: number) => void
 }
 
 export default function InvoiceModal({
   invoice,
   isOpen,
   onClose,
-  onEdit,
   onPrint,
-  onView,
-  onConfirm
+  onView
 }: InvoiceModalProps) {
   if (!isOpen || !invoice) return null
 
@@ -77,15 +73,6 @@ export default function InvoiceModal({
 
           {/* Toolbar */}
           <div className="bg-gray-100 px-4 py-3 flex items-center gap-4 border-b rounded-lg mb-6">
-          <button
-            onClick={() => onEdit?.(invoice.id)}
-            className="flex items-center gap-2 px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-md text-sm font-medium"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-            </svg>
-            Editar
-          </button>
           
           <button
             onClick={() => onPrint?.(invoice.id)}
@@ -108,15 +95,6 @@ export default function InvoiceModal({
             Ver
           </button>
           
-          <button
-            onClick={() => onConfirm?.(invoice.id)}
-            className="flex items-center gap-2 px-3 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium"
-          >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-            </svg>
-            Confirmar
-          </button>
         </div>
 
           {/* Content */}
@@ -465,12 +443,6 @@ export default function InvoiceModal({
               className="px-4 py-2 text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
             >
               Cerrar
-            </button>
-            <button
-              onClick={() => onEdit?.(invoice.id)}
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Editar Factura
             </button>
           </div>
         </div>

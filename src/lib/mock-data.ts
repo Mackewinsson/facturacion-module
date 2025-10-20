@@ -73,6 +73,7 @@ export interface Invoice {
   numero: string
   fechaExpedicion: string
   lugarEmision?: string
+  departamento?: string
   
   // Emisor y Cliente
   emisor: Emisor
@@ -89,6 +90,17 @@ export interface Invoice {
   medioPago?: string
   fechaVencimiento?: string
   notas?: string
+  
+  // Campos adicionales del formulario
+  imputacion?: string
+  mantenimientoCliente?: string
+  exportacionImportacion?: boolean
+  ctaIngreso?: string
+  aplicarRetencion?: boolean
+  ctaRetencion?: string
+  baseRetencion?: number
+  porcentajeRetencion?: number
+  importeRetencion?: number
   
   // Campos específicos por tipo
   esRectificativa?: boolean
