@@ -23,7 +23,7 @@ export default function NuevaFacturaPage() {
   return (
     <LayoutWithSidebar>
       <div className="bg-background">
-        <SpanishInvoiceForm />
+        <SpanishInvoiceForm hideISP hideRecargoEquivalencia allowedVATRates={[21]} />
       </div>
     </LayoutWithSidebar>
   )

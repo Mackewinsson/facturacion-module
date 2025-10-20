@@ -1,18 +1,20 @@
 'use client'
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import Image from 'next/image'
+import LayoutWithSidebar from '@/components/LayoutWithSidebar'
+import { useCompanyName } from '@/hooks/useCompanyName'
+
+const APP_LOGO_SRC = '/file.svg'
 
 export default function Home() {
-  const router = useRouter()
-
-  useEffect(() => {
-    // Skip login and go directly to facturacion
-    router.push('/facturacion')
-  }, [router])
-
+  const companyName = useCompanyName()
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
-    </div>
+    <LayoutWithSidebar>
+      <div className="w-full h-full flex items-center justify-center">
+        <div className="flex flex-col items-center">
+          <Image src={APP_LOGO_SRC} alt="Nibisoft" width={128} height={128} priority />
+          <h1 className="mt-4 text-2xl font-semibold text-foreground">{companyName}</h1>
+        </div>
+      </div>
+    </LayoutWithSidebar>
   )
 }

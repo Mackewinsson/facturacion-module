@@ -32,6 +32,9 @@ interface SpanishInvoiceFormProps {
   initialData?: Partial<Invoice>
   invoiceId?: number
   isEdit?: boolean
+  hideISP?: boolean
+  hideRecargoEquivalencia?: boolean
+  allowedVATRates?: number[]
 }
 
 const getEmisorData = () => {
@@ -60,7 +63,7 @@ const DOCUMENT_OPTION_ITEMS: Array<{ key: DocumentOptionKey; label: string; badg
 // Payment providers constant commented out
 // const PAYMENT_PROVIDERS = ['Stripe', 'PayPal', 'Square', 'GoCardless']
 
-export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = false }: SpanishInvoiceFormProps) {
+export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = false, hideISP = false, hideRecargoEquivalencia = false, allowedVATRates }: SpanishInvoiceFormProps) {
   const router = useRouter()
 
   const [formData, setFormData] = useState<Partial<Invoice>>({
@@ -151,6 +154,22 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
       }))
     }
   }, [initialData])
+
+  // Normalize line VAT to first allowed rate if restrictions are provided
+  useEffect(() => {
+    if (!allowedVATRates || !allowedVATRates.length) return
+    setFormData(prev => {
+      const currentLines = prev.lineas || []
+      const normalized = currentLines.map(linea => {
+        const currentRate = (linea.tipoIVA as number) || 0
+        if (!allowedVATRates.includes(currentRate)) {
+          return { ...linea, tipoIVA: allowedVATRates[0] as unknown as TipoIVA }
+        }
+        return linea
+      })
+      return { ...prev, lineas: normalized }
+    })
+  }, [allowedVATRates])
 
   useEffect(() => {
     if (!formData.lineas) return
@@ -731,18 +750,20 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                                   onChange={e =>
                                     handleLineChange(index, 'tipoIVA', Number(e.target.value) as TipoIVA)
                                   }
-                                  disabled={linea.exenta || linea.inversionSujetoPasivo}
+                                  disabled={linea.exenta || (!hideISP && linea.inversionSujetoPasivo)}
                                   className={`${baseInputClasses} bg-white ${
-                                    linea.exenta || linea.inversionSujetoPasivo
+                                    linea.exenta || (!hideISP && linea.inversionSujetoPasivo)
                                       ? 'cursor-not-allowed text-muted-foreground'
                                       : ''
                                   }`}
                                 >
-                                  {Object.entries(VAT_RATES).map(([rate, value]) => (
-                                    <option key={rate} value={rate}>
-                                      IVA {value}%
-                                    </option>
-                                  ))}
+                                  {Object.entries(VAT_RATES)
+                                    .filter(([rate]) => !allowedVATRates || allowedVATRates.includes(Number(rate)))
+                                    .map(([rate, value]) => (
+                                      <option key={rate} value={rate}>
+                                        IVA {value}%
+                                      </option>
+                                    ))}
                                 </select>
                                 <div className="flex flex-wrap gap-3 text-xs text-muted-foreground">
                                   <label className="flex items-center gap-2">
@@ -751,28 +772,32 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                                       checked={linea.exenta || false}
                                       onChange={e => {
                                         handleLineChange(index, 'exenta', e.target.checked)
-                                        if (e.target.checked) {
-                                          handleLineChange(index, 'inversionSujetoPasivo', false)
+                                        if (!hideISP) {
+                                          if (e.target.checked) {
+                                            handleLineChange(index, 'inversionSujetoPasivo', false)
+                                          }
                                         }
                                       }}
                                       className="rounded border-input-border text-accent focus:ring-accent"
                                     />
                                     Exenta
                                   </label>
-                                  <label className="flex items-center gap-2">
-                                    <input
-                                      type="checkbox"
-                                      checked={linea.inversionSujetoPasivo || false}
-                                      onChange={e => {
-                                        handleLineChange(index, 'inversionSujetoPasivo', e.target.checked)
-                                        if (e.target.checked) {
-                                          handleLineChange(index, 'exenta', false)
-                                        }
-                                      }}
-                                      className="rounded border-input-border text-accent focus:ring-accent"
-                                    />
-                                    ISP
-                                  </label>
+                                  {!hideISP && (
+                                    <label className="flex items-center gap-2">
+                                      <input
+                                        type="checkbox"
+                                        checked={linea.inversionSujetoPasivo || false}
+                                        onChange={e => {
+                                          handleLineChange(index, 'inversionSujetoPasivo', e.target.checked)
+                                          if (e.target.checked) {
+                                            handleLineChange(index, 'exenta', false)
+                                          }
+                                        }}
+                                        className="rounded border-input-border text-accent focus:ring-accent"
+                                      />
+                                      ISP
+                                    </label>
+                                  )}
                                 </div>
                                 {linea.exenta && (
                                   <select
@@ -794,7 +819,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, isEdit = fa
                                     ))}
                                   </select>
                                 )}
-                                {!linea.exenta && !linea.inversionSujetoPasivo && (
+                                {!hideRecargoEquivalencia && !linea.exenta && !(!hideISP && linea.inversionSujetoPasivo) && (
                                   <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                     <span>Recargo equivalencia (%)</span>
                                     <input

@@ -1,6 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { MockInvoiceService, Invoice } from '@/lib/mock-data'
 import LayoutWithSidebar from '@/components/LayoutWithSidebar'
@@ -8,11 +8,14 @@ import InvoiceModal from '@/components/InvoiceModal'
 
 export default function FacturacionPage() {
   const router = useRouter()
+  const pathname = usePathname()
+  const searchParams = useSearchParams()
   const { isAuthenticated } = useAuthStore()
   const [invoices, setInvoices] = useState<Invoice[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [totalResults, setTotalResults] = useState(0)
+  const [tipoFilter, setTipoFilter] = useState<'ALL' | 'emitida' | 'recibida'>('ALL')
   const [columnFilters, setColumnFilters] = useState({
     factura: '',
     fecha: '',
@@ -43,7 +46,41 @@ export default function FacturacionPage() {
     //   return
     // }
     loadInvoices()
-  }, [isAuthenticated, router, columnFilters, dateRange])
+  }, [isAuthenticated, router, columnFilters, dateRange, tipoFilter])
+
+  // Initialize tipoFilter from URL or localStorage
+  useEffect(() => {
+    const urlTipo = searchParams.get('tipo')
+    const validTipos = ['ALL', 'emitida', 'recibida']
+    if (urlTipo && validTipos.includes(urlTipo)) {
+      setTipoFilter(urlTipo as 'ALL' | 'emitida' | 'recibida')
+      return
+    }
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('facturacion.tipoFilter') : null
+    if (saved && validTipos.includes(saved)) {
+      setTipoFilter(saved as 'ALL' | 'emitida' | 'recibida')
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Persist tipoFilter to URL and localStorage
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem('facturacion.tipoFilter', tipoFilter)
+      } catch {}
+    }
+    // Sync query param without losing other params
+    const params = new URLSearchParams(searchParams.toString())
+    if (tipoFilter === 'ALL') {
+      params.delete('tipo')
+    } else {
+      params.set('tipo', tipoFilter)
+    }
+    const queryString = params.toString()
+    const href = queryString ? `${pathname}?${queryString}` : pathname
+    router.replace(href)
+  }, [tipoFilter, pathname, router, searchParams])
 
   const loadInvoices = async () => {
     try {
@@ -57,9 +94,14 @@ export default function FacturacionPage() {
           fechaHasta: dateRange.fechaHasta
         }
       })
-      
-      setInvoices(data.invoices)
-      setTotalResults(data.pagination.total)
+
+      // Apply client-side filter for tipo de factura (emitida/recibida)
+      const filteredByTipo = tipoFilter === 'ALL'
+        ? data.invoices
+        : data.invoices.filter(inv => inv.tipoFactura === tipoFilter)
+
+      setInvoices(filteredByTipo)
+      setTotalResults(filteredByTipo.length)
     } catch (err) {
       setError('Error al cargar las facturas')
     } finally {
@@ -178,12 +220,6 @@ export default function FacturacionPage() {
               <h1 className="text-xl sm:text-2xl font-bold text-foreground">Facturación</h1>
               <p className="text-sm sm:text-base text-muted-foreground">Gestiona tus facturas y clientes</p>
             </div>
-            <button
-              onClick={handleCreateInvoice}
-              className="mt-4 sm:mt-0 bg-accent hover:bg-accent/90 text-accent-foreground px-4 py-2 rounded-md text-sm font-medium"
-            >
-              + Nueva Factura
-            </button>
           </div>
         </div>
 
@@ -193,18 +229,7 @@ export default function FacturacionPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             {/* Left Side - Action Buttons */}
             <div className="flex items-center gap-3">
-              <button className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm font-medium">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
-                </svg>
-                Imprimir
-              </button>
               
-              <button className="flex items-center gap-2 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-md text-sm font-medium">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </button>
               
               <button
                 onClick={handleCreateInvoice}
@@ -213,15 +238,23 @@ export default function FacturacionPage() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                Nuevo
+                Nueva Factura
               </button>
-              
-              <button className="flex items-center gap-2 px-3 py-2 bg-red-100 hover:bg-red-200 text-red-700 rounded-md text-sm font-medium">
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Salir
-              </button>
+
+              {/* Dropdown: Filtrar por tipo de factura */}
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-muted-foreground">Tipo</span>
+                <select
+                  value={tipoFilter}
+                  onChange={(e) => setTipoFilter(e.target.value as 'ALL' | 'emitida' | 'recibida')}
+                  className="px-3 py-2 border border-input-border bg-input rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-accent focus:border-accent text-foreground"
+                  title="Filtrar por tipo de factura"
+                >
+                  <option value="ALL">Todas</option>
+                  <option value="emitida">Emitidas</option>
+                  <option value="recibida">Recibidas</option>
+                </select>
+              </div>
             </div>
 
             {/* Center - Centro Dropdown */}
