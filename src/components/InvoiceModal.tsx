@@ -434,7 +434,6 @@ export default function InvoiceModal({
               </div>
             </div>
           </div>
-        </div>
     </BaseModal>
   )
 }

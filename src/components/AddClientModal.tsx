@@ -77,24 +77,24 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
 
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => {
-      const newData = { ...prev }
+      const newData = { ...prev } as any
       const keys = field.split('.')
       
       if (keys.length === 1) {
-        newData[keys[0] as keyof typeof newData] = value
+        newData[keys[0]] = value
       } else if (keys.length === 2) {
-        if (!newData[keys[0] as keyof typeof newData]) {
-          newData[keys[0] as keyof typeof newData] = {} as any
+        if (!newData[keys[0]]) {
+          newData[keys[0]] = {}
         }
-        (newData[keys[0] as keyof typeof newData] as any)[keys[1]] = value
+        newData[keys[0]][keys[1]] = value
       } else if (keys.length === 3) {
-        if (!newData[keys[0] as keyof typeof newData]) {
-          newData[keys[0] as keyof typeof newData] = {} as any
+        if (!newData[keys[0]]) {
+          newData[keys[0]] = {}
         }
-        if (!(newData[keys[0] as keyof typeof newData] as any)[keys[1]]) {
-          (newData[keys[0] as keyof typeof newData] as any)[keys[1]] = {}
+        if (!newData[keys[0]][keys[1]]) {
+          newData[keys[0]][keys[1]] = {}
         }
-        (newData[keys[0] as keyof typeof newData] as any)[keys[1]][keys[2]] = value
+        newData[keys[0]][keys[1]][keys[2]] = value
       }
       
       return newData

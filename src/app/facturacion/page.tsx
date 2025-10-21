@@ -1,12 +1,12 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { MockInvoiceService, Invoice } from '@/lib/mock-data'
 import LayoutWithSidebar from '@/components/LayoutWithSidebar'
 import InvoiceModal from '@/components/InvoiceModal'
 
-export default function FacturacionPage() {
+function FacturacionPageContent() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -594,6 +594,14 @@ export default function FacturacionPage() {
         onView={handleModalView}
       />
     </LayoutWithSidebar>
+  )
+}
+
+export default function FacturacionPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <FacturacionPageContent />
+    </Suspense>
   )
 }
 

@@ -15,6 +15,15 @@ export interface Domicilio {
   pais: string
 }
 
+export interface Direccion {
+  id: number
+  centro: string
+  direccion: string
+  telefono: string
+  telefonoMovil: string
+  email: string
+}
+
 export interface Emisor {
   nombreORazonSocial: string
   NIF: string
@@ -59,6 +68,7 @@ export interface Entidad {
   telefono?: string
   email?: string
   domicilio?: Domicilio
+  direcciones?: Direccion[]
   
   // Legacy fields for compatibility
   tipoEntidad: TipoEntidad
@@ -2094,6 +2104,24 @@ export const mockEntities: Entidad[] = [
       provincia: 'Málaga',
       pais: 'España'
     },
+    direcciones: [
+      {
+        id: 1,
+        centro: 'PRINCIPAL',
+        direccion: 'Calle Mayor 15, 29001 Málaga',
+        telefono: '952721339',
+        telefonoMovil: '666123456',
+        email: 'info@911garaje.com'
+      },
+      {
+        id: 2,
+        centro: 'SUCURSAL',
+        direccion: 'Avenida Andalucía 25, 29006 Málaga',
+        telefono: '952722340',
+        telefonoMovil: '666123457',
+        email: 'sucursal@911garaje.com'
+      }
+    ],
     
     // Legacy fields for compatibility
     tipoEntidad: 'cliente',

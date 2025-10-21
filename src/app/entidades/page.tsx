@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Suspense } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { MockEntityService, Entidad } from '@/lib/mock-data'
@@ -7,7 +7,7 @@ import LayoutWithSidebar from '@/components/LayoutWithSidebar'
 import EntityModal from '@/components/EntityModal'
 import AddClientModal from '@/components/AddClientModal'
 
-export default function EntidadesPage() {
+function EntidadesPageContent() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -311,5 +311,13 @@ export default function EntidadesPage() {
         isEntityModal={true}
       />
     </LayoutWithSidebar>
+  )
+}
+
+export default function EntidadesPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <EntidadesPageContent />
+    </Suspense>
   )
 }
