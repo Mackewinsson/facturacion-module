@@ -184,7 +184,7 @@ export interface Invoice {
 export const mockInvoices: Invoice[] = [
   {
     id: 1,
-    tipoFactura: 'ordinaria',
+    tipoFactura: 'emitida',
     serie: '2024-A',
     numero: '00001',
     fechaExpedicion: '2024-12-15',
@@ -277,7 +277,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 2,
-    tipoFactura: 'simplificada',
+    tipoFactura: 'emitida',
     numero: '00002',
     fechaExpedicion: '2024-12-14',
     
@@ -359,7 +359,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 3,
-    tipoFactura: 'ordinaria',
+    tipoFactura: 'emitida',
     serie: '2024-A',
     numero: '00003',
     fechaExpedicion: '2024-12-13',
@@ -451,7 +451,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 4,
-    tipoFactura: 'rectificativa',
+    tipoFactura: 'emitida',
     serie: '2024-A',
     numero: 'R00001',
     fechaExpedicion: '2024-12-12',
@@ -535,7 +535,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 5,
-    tipoFactura: 'ordinaria',
+    tipoFactura: 'emitida',
     serie: '2024-A',
     numero: '00004',
     fechaExpedicion: '2024-12-11',
@@ -769,7 +769,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 8,
-    tipoFactura: 'ordinaria',
+    tipoFactura: 'emitida',
     serie: '2024-TEST',
     numero: '00001',
     fechaExpedicion: '2024-12-08',
@@ -851,7 +851,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 9,
-    tipoFactura: 'ordinaria',
+    tipoFactura: 'emitida',
     serie: '2024-B',
     numero: '00001',
     fechaExpedicion: '2024-12-10',
@@ -922,7 +922,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 10,
-    tipoFactura: 'simplificada',
+    tipoFactura: 'emitida',
     numero: '00003',
     fechaExpedicion: '2024-12-12',
     
@@ -983,7 +983,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 11,
-    tipoFactura: 'ordinaria',
+    tipoFactura: 'emitida',
     serie: '2024-A',
     numero: '00005',
     fechaExpedicion: '2024-12-14',
@@ -1065,7 +1065,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 12,
-    tipoFactura: 'simplificada',
+    tipoFactura: 'emitida',
     numero: '00004',
     fechaExpedicion: '2024-12-16',
     
@@ -1126,7 +1126,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 13,
-    tipoFactura: 'ordinaria',
+    tipoFactura: 'emitida',
     serie: '2024-B',
     numero: '00002',
     fechaExpedicion: '2024-12-18',
@@ -1208,7 +1208,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 14,
-    tipoFactura: 'simplificada',
+    tipoFactura: 'emitida',
     numero: '00005',
     fechaExpedicion: '2024-12-20',
     
@@ -1269,7 +1269,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 15,
-    tipoFactura: 'ordinaria',
+    tipoFactura: 'emitida',
     serie: '2024-A',
     numero: '00006',
     fechaExpedicion: '2024-12-22',
@@ -1351,7 +1351,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 16,
-    tipoFactura: 'simplificada',
+    tipoFactura: 'emitida',
     numero: '00006',
     fechaExpedicion: '2024-12-24',
     
@@ -1412,7 +1412,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 17,
-    tipoFactura: 'ordinaria',
+    tipoFactura: 'emitida',
     serie: '2024-B',
     numero: '00003',
     fechaExpedicion: '2024-12-26',
@@ -1494,7 +1494,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 18,
-    tipoFactura: 'simplificada',
+    tipoFactura: 'emitida',
     numero: '00007',
     fechaExpedicion: '2024-12-28',
     
@@ -1555,7 +1555,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 19,
-    tipoFactura: 'ordinaria',
+    tipoFactura: 'emitida',
     serie: '2024-A',
     numero: '00007',
     fechaExpedicion: '2024-12-30',
@@ -1637,7 +1637,7 @@ export const mockInvoices: Invoice[] = [
   },
   {
     id: 20,
-    tipoFactura: 'simplificada',
+    tipoFactura: 'emitida',
     numero: '00008',
     fechaExpedicion: '2025-01-02',
     
@@ -1695,13 +1695,365 @@ export const mockInvoices: Invoice[] = [
     status: 'PAID',
     createdAt: '2025-01-02T10:45:00Z',
     updatedAt: '2025-01-02T10:45:00Z'
+  },
+  // More issued invoices
+  {
+    id: 21,
+    tipoFactura: 'emitida',
+    serie: '2025-A',
+    numero: '00021',
+    fechaExpedicion: '2025-01-10',
+    lugarEmision: 'Madrid',
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      }
+    },
+    cliente: {
+      tipo: 'empresario/profesional',
+      nombreORazonSocial: 'María López Ruiz',
+      NIF: '87654321B',
+      domicilio: {
+        calle: 'Avenida de la Paz 67',
+        codigoPostal: '28028',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+      pais: 'España'
+    },
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Mantenimiento completo - 20.000 km',
+        cantidad: 1,
+        precioUnitario: 350.00,
+        tipoIVA: 21,
+        baseLinea: 350.00,
+        cuotaIVA: 73.50,
+        cuotaRE: 0,
+        totalLinea: 423.50
+      }
+    ],
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 350.00,
+          cuotaIVA: 73.50,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 350.00,
+      cuotaIVATotal: 73.50,
+      cuotaRETotal: 0,
+      totalFactura: 423.50
+    },
+    formaPago: 'Contado',
+    medioPago: 'Efectivo',
+    fechaVencimiento: '2025-01-10',
+    notas: 'Mantenimiento programado',
+    status: 'PAID',
+    createdAt: '2025-01-10T09:15:00Z',
+    updatedAt: '2025-01-10T09:15:00Z'
+  },
+  {
+    id: 22,
+    tipoFactura: 'emitida',
+    serie: '2025-A',
+    numero: '00022',
+    fechaExpedicion: '2025-01-12',
+    lugarEmision: 'Madrid',
+    emisor: {
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      }
+    },
+    cliente: {
+      tipo: 'particular',
+      nombreORazonSocial: 'Carlos Martín Sánchez',
+      NIF: '11223344C',
+      domicilio: {
+        calle: 'Calle del Sol 89',
+        codigoPostal: '28015',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+      pais: 'España'
+    },
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Reparación de embrague',
+        cantidad: 1,
+        precioUnitario: 800.00,
+        tipoIVA: 21,
+        baseLinea: 800.00,
+        cuotaIVA: 168.00,
+        cuotaRE: 0,
+        totalLinea: 968.00
+      }
+    ],
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 800.00,
+          cuotaIVA: 168.00,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 800.00,
+      cuotaIVATotal: 168.00,
+      cuotaRETotal: 0,
+      totalFactura: 968.00
+    },
+    formaPago: 'Crédito 30 días',
+    medioPago: 'Transferencia bancaria',
+    fechaVencimiento: '2025-02-11',
+    notas: 'Reparación mayor de embrague',
+    status: 'SENT',
+    createdAt: '2025-01-12T14:30:00Z',
+    updatedAt: '2025-01-12T14:30:00Z'
+  },
+  // Received invoices
+  {
+    id: 23,
+    tipoFactura: 'recibida',
+    serie: 'FAC-2025',
+    numero: '00001',
+    fechaExpedicion: '2025-01-08',
+    lugarEmision: 'Barcelona',
+    emisor: {
+      nombreORazonSocial: 'CIAL. NAVARRO HERMANOS, S.A.',
+      NIF: 'A12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 12',
+        codigoPostal: '08001',
+        municipio: 'Barcelona',
+        provincia: 'Barcelona',
+        pais: 'España'
+      }
+    },
+    cliente: {
+      tipo: 'empresario/profesional',
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+      pais: 'España'
+    },
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Repuestos para motocicletas - Filtros de aceite',
+        cantidad: 50,
+        precioUnitario: 12.50,
+        tipoIVA: 21,
+        baseLinea: 625.00,
+        cuotaIVA: 131.25,
+        cuotaRE: 0,
+        totalLinea: 756.25
+      }
+    ],
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 625.00,
+          cuotaIVA: 131.25,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 625.00,
+      cuotaIVATotal: 131.25,
+      cuotaRETotal: 0,
+      totalFactura: 756.25
+    },
+    formaPago: 'Crédito 30 días',
+    medioPago: 'Transferencia bancaria',
+    fechaVencimiento: '2025-02-07',
+    notas: 'Compra de repuestos para stock',
+    ctaIngreso: '6000 000 0000',
+    imputacion: 'Compra de mercaderías',
+    departamento: 'Administración',
+    status: 'DRAFT',
+    createdAt: '2025-01-08T11:20:00Z',
+    updatedAt: '2025-01-08T11:20:00Z'
+  },
+  {
+    id: 24,
+    tipoFactura: 'recibida',
+    serie: 'FAC-2025',
+    numero: '00002',
+    fechaExpedicion: '2025-01-09',
+    lugarEmision: 'Valencia',
+    emisor: {
+      nombreORazonSocial: 'HERRAMIENTAS TÉCNICAS VALENCIA, S.L.',
+      NIF: 'B87654321',
+      domicilio: {
+        calle: 'Polígono Industrial Norte 45',
+        codigoPostal: '46015',
+        municipio: 'Valencia',
+        provincia: 'Valencia',
+        pais: 'España'
+      }
+    },
+    cliente: {
+      tipo: 'empresario/profesional',
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+      pais: 'España'
+    },
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Herramientas especializadas - Juego de llaves torx',
+        cantidad: 1,
+        precioUnitario: 180.00,
+        tipoIVA: 21,
+        baseLinea: 180.00,
+        cuotaIVA: 37.80,
+        cuotaRE: 0,
+        totalLinea: 217.80
+      },
+      {
+        id: 2,
+        descripcion: 'Herramientas especializadas - Destornilladores de precisión',
+        cantidad: 1,
+        precioUnitario: 95.00,
+        tipoIVA: 21,
+        baseLinea: 95.00,
+        cuotaIVA: 19.95,
+        cuotaRE: 0,
+        totalLinea: 114.95
+      }
+    ],
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 275.00,
+          cuotaIVA: 57.75,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 275.00,
+      cuotaIVATotal: 57.75,
+      cuotaRETotal: 0,
+      totalFactura: 332.75
+    },
+    formaPago: 'Contado',
+    medioPago: 'Transferencia bancaria',
+    fechaVencimiento: '2025-01-09',
+    notas: 'Compra de herramientas para taller',
+    ctaIngreso: '6000 000 0000',
+    imputacion: 'Compra de herramientas',
+    departamento: 'Administración',
+    status: 'PAID',
+    createdAt: '2025-01-09T16:45:00Z',
+    updatedAt: '2025-01-09T16:45:00Z'
+  },
+  {
+    id: 25,
+    tipoFactura: 'recibida',
+    serie: 'FAC-2025',
+    numero: '00003',
+    fechaExpedicion: '2025-01-11',
+    lugarEmision: 'Sevilla',
+    emisor: {
+      nombreORazonSocial: 'SERVICIOS INFORMÁTICOS ANDALUCÍA, S.L.',
+      NIF: 'A98765432',
+      domicilio: {
+        calle: 'Calle de la Tecnología 78',
+        codigoPostal: '41001',
+        municipio: 'Sevilla',
+        provincia: 'Sevilla',
+        pais: 'España'
+      }
+    },
+    cliente: {
+      tipo: 'empresario/profesional',
+      nombreORazonSocial: 'Taller Mecánico García S.L.',
+      NIF: 'B12345678',
+      domicilio: {
+        calle: 'Calle de la Industria 45',
+        codigoPostal: '28045',
+        municipio: 'Madrid',
+        provincia: 'Madrid',
+        pais: 'España'
+      },
+      pais: 'España'
+    },
+    lineas: [
+      {
+        id: 1,
+        descripcion: 'Mantenimiento de software de gestión',
+        cantidad: 1,
+        precioUnitario: 300.00,
+        tipoIVA: 21,
+        baseLinea: 300.00,
+        cuotaIVA: 63.00,
+        cuotaRE: 0,
+        totalLinea: 363.00
+      }
+    ],
+    totales: {
+      basesPorTipo: [
+        {
+          tipoIVA: 21,
+          base: 300.00,
+          cuotaIVA: 63.00,
+          recargoEquivalencia: 0
+        }
+      ],
+      baseImponibleTotal: 300.00,
+      cuotaIVATotal: 63.00,
+      cuotaRETotal: 0,
+      totalFactura: 363.00
+    },
+    formaPago: 'Crédito 15 días',
+    medioPago: 'Transferencia bancaria',
+    fechaVencimiento: '2025-01-26',
+    notas: 'Mantenimiento mensual del software',
+    ctaIngreso: '6000 000 0000',
+    imputacion: 'Servicios informáticos',
+    departamento: 'Administración',
+    status: 'SENT',
+    createdAt: '2025-01-11T10:15:00Z',
+    updatedAt: '2025-01-11T10:15:00Z'
   }
 ]
 
 // Mock service functions
 export class MockInvoiceService {
   private static invoices: Invoice[] = [...mockInvoices]
-  private static nextId = 21
+  private static nextId = 26
 
   static async getInvoices(params: {
     page?: number

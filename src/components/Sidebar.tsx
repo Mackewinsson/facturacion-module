@@ -62,7 +62,19 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
       name: 'Facturas',
       href: '/facturacion',
       icon: InvoiceIcon,
-      active: pathname.startsWith('/facturacion')
+      active: pathname.startsWith('/facturacion'),
+      submenu: [
+        {
+          name: 'Emitidas',
+          href: '/facturacion',
+          active: pathname === '/facturacion' || pathname.startsWith('/facturacion/nueva')
+        },
+        {
+          name: 'Recibidas',
+          href: '/facturacion/recibidas',
+          active: pathname.startsWith('/facturacion/recibidas')
+        }
+      ]
     },
     {
       name: 'Entidades',
@@ -137,6 +149,25 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                     <span className="ml-3 font-medium">{item.name}</span>
                   )}
                 </Link>
+                {/* Submenu */}
+                {!isCollapsed && item.submenu && (
+                  <ul className="ml-8 mt-2 space-y-1">
+                    {item.submenu.map((subItem) => (
+                      <li key={subItem.name}>
+                        <Link
+                          href={subItem.href}
+                          className={`block px-3 py-2 text-sm rounded-md ${
+                            subItem.active
+                              ? 'bg-sidebar-accent/50 text-sidebar-accent-foreground'
+                              : 'text-sidebar-foreground/70 hover:bg-sidebar-accent/30 hover:text-sidebar-foreground'
+                          }`}
+                        >
+                          {subItem.name}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </li>
             )
           })}

@@ -34,6 +34,7 @@ interface SpanishInvoiceFormProps {
   hideISP?: boolean
   hideRecargoEquivalencia?: boolean
   allowedVATRates?: number[]
+  isReceivedInvoice?: boolean
 }
 
 const getEmisorData = () => {
@@ -62,13 +63,13 @@ const DOCUMENT_OPTION_ITEMS: Array<{ key: DocumentOptionKey; label: string; badg
 // Payment providers constant commented out
 // const PAYMENT_PROVIDERS = ['Stripe', 'PayPal', 'Square', 'GoCardless']
 
-export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = false, hideRecargoEquivalencia = false, allowedVATRates }: SpanishInvoiceFormProps) {
+export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = false, hideRecargoEquivalencia = false, allowedVATRates, isReceivedInvoice = false }: SpanishInvoiceFormProps) {
   const router = useRouter()
 
   const [formData, setFormData] = useState<Partial<Invoice>>({
-    tipoFactura: 'ordinaria',
-    serie: 'X7',
-    numero: '001134',
+    tipoFactura: isReceivedInvoice ? 'recibida' : 'ordinaria',
+    serie: isReceivedInvoice ? '' : 'X7',
+    numero: isReceivedInvoice ? '' : '001134',
     fechaExpedicion: new Date().toISOString().split('T')[0],
     fechaContable: new Date().toISOString().split('T')[0],
     lugarEmision: '',
@@ -87,7 +88,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
       pais: 'España'
     },
     imputacion: '',
-    mantenimientoCliente: 'Mantenimiento - Cliente',
+    mantenimientoCliente: isReceivedInvoice ? 'Compra - Proveedor' : 'Mantenimiento - Cliente',
     exportacionImportacion: false,
     lineas: [
       {
@@ -499,10 +500,13 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-border px-6 py-5">
             <div>
               <h1 className="text-2xl font-semibold text-card-foreground">
-                Nueva factura
+                {isReceivedInvoice ? 'Nueva factura recibida' : 'Nueva factura'}
               </h1>
               <p className="text-sm text-muted-foreground">
-                Organiza la información de tu factura antes de compartirla con el cliente.
+                {isReceivedInvoice 
+                  ? 'Registra la información de la factura recibida de un proveedor.'
+                  : 'Organiza la información de tu factura antes de compartirla con el cliente.'
+                }
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -538,26 +542,48 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
 
           <div className="space-y-6 px-6 py-6">
             {/* Header Section - Row 1: Dpto, Factura, Fecha */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-              {/* Dpto. */}
-              <div>
-                <label className="block text-sm font-medium text-card-foreground mb-2">Dpto.</label>
-                <select
-                  value={formData.departamento || 'Administración'}
-                  onChange={e => handleInputChange('departamento', e.target.value)}
-                  className={`${baseInputClasses}`}
-                >
-                  <option value="Administración">Administración</option>
-                  <option value="Ventas">Ventas</option>
-                  <option value="Producción">Producción</option>
-                </select>
-              </div>
+            <div className={`grid grid-cols-1 gap-6 mb-6 ${isReceivedInvoice ? 'md:grid-cols-4' : 'md:grid-cols-3'}`}>
+              {/* Dpto. - Only for received invoices */}
+              {isReceivedInvoice && (
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">Dpto.</label>
+                  <select
+                    value={formData.departamento || 'Administración'}
+                    onChange={e => handleInputChange('departamento', e.target.value)}
+                    className={`${baseInputClasses}`}
+                  >
+                    <option value="Administración">Administración</option>
+                    <option value="Ventas">Ventas</option>
+                    <option value="Producción">Producción</option>
+                  </select>
+                </div>
+              )}
               {/* Factura X7001134 */}
               <div>
                 <label className="block text-sm font-medium text-card-foreground mb-2">Factura</label>
+                {isReceivedInvoice ? (
+                  <input
+                    type="text"
+                    value={`${formData.serie || ''}${formData.numero || ''}`}
+                    onChange={e => {
+                      const value = e.target.value
+                      // Simple parsing - could be improved
+                      const match = value.match(/^([A-Za-z0-9]*)(.*)$/)
+                      if (match) {
+                        const serie = match[1] || ''
+                        const numero = match[2] || ''
+                        handleInputChange('serie', serie)
+                        handleInputChange('numero', numero)
+                      }
+                    }}
+                    placeholder="Número de factura del proveedor"
+                    className={`${baseInputClasses}`}
+                  />
+                ) : (
                 <div className="text-lg font-semibold text-card-foreground">
                   {formData.serie}{formData.numero}
                 </div>
+                )}
               </div>
               {/* de fecha */}
               <div>
@@ -585,21 +611,24 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Left Column: Imputation & Reference */}
               <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium text-card-foreground mb-2">Imputación</label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      value={formData.imputacion || ''}
-                      onChange={e => handleInputChange('imputacion', e.target.value)}
-                      placeholder="Buscar imputación..."
-                      className={`${baseInputClasses} pr-10`}
-                    />
-                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
+                {/* Imputación - Only for received invoices */}
+                {isReceivedInvoice && (
+                  <div>
+                    <label className="block text-sm font-medium text-card-foreground mb-2">Imputación</label>
+                    <div className="relative">
+                      <input
+                        type="text"
+                        value={formData.imputacion || ''}
+                        onChange={e => handleInputChange('imputacion', e.target.value)}
+                        placeholder="Buscar imputación..."
+                        className={`${baseInputClasses} pr-10`}
+                      />
+                      <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    </div>
                   </div>
-                </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium text-card-foreground mb-2">Mantenimiento - Cliente</label>
                   <select
@@ -658,7 +687,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                     <input
                       type="text"
                       value={selectedClient?.domicilio ? 
-                        `${selectedClient.domicilio.calle}, ${selectedClient.domicilio.municipio}` : 
+                      `${selectedClient.domicilio.calle}, ${selectedClient.domicilio.municipio}` : 
                         '(952223930 / 952221315)'
                       }
                       readOnly
@@ -672,17 +701,17 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                 <div>
                   <label className="block text-sm font-medium text-card-foreground mb-2">Forma pago</label>
                   <div className="relative">
-                    <select
+                  <select
                       value={formData.formaPago || 'Crédito 30 días'}
-                      onChange={e => handleInputChange('formaPago', e.target.value)}
+                    onChange={e => handleInputChange('formaPago', e.target.value)}
                       className={`${baseInputClasses} pr-10`}
-                    >
+                  >
                       <option value="Crédito 30 días">Crédito 30 días</option>
-                      <option value="Contado">Contado</option>
-                      <option value="Transferencia bancaria">Transferencia bancaria</option>
-                      <option value="Tarjeta">Tarjeta</option>
-                      <option value="Cheque">Cheque</option>
-                    </select>
+                    <option value="Contado">Contado</option>
+                    <option value="Transferencia bancaria">Transferencia bancaria</option>
+                    <option value="Tarjeta">Tarjeta</option>
+                    <option value="Cheque">Cheque</option>
+                  </select>
                     <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                     </svg>
@@ -931,9 +960,9 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                         <label className="block text-sm font-medium text-card-foreground mb-2">Base</label>
                         <div className="text-lg font-semibold text-card-foreground">
                           {formatCurrency(formData.totales?.baseImponibleTotal || 0)}
-                        </div>
                       </div>
-                      
+                    </div>
+
                       <div className="text-center">
                         <label className="block text-sm font-medium text-card-foreground mb-2">IVA</label>
                         <div className="space-y-1">
@@ -950,15 +979,15 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                             <option value={4}>4%</option>
                             <option value={0}>0%</option>
                           </select>
+                          </div>
                         </div>
-                      </div>
                       
                       <div className="text-center">
                         <label className="block text-sm font-medium text-card-foreground mb-2">Cuota IVA</label>
                         <div className="space-y-1">
                           <div className="text-sm text-muted-foreground">
-                            {formatCurrency(formData.totales?.cuotaIVATotal || 0)}
-                          </div>
+                          {formatCurrency(formData.totales?.cuotaIVATotal || 0)}
+                        </div>
                           <select
                             value={formData.lineas?.[0]?.recargoEquivalenciaPct || 5}
                             onChange={e => handleLineChange(0, 'recargoEquivalenciaPct', Number(e.target.value))}
@@ -975,62 +1004,85 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                       <div className="text-center">
                         <label className="block text-sm font-medium text-card-foreground mb-2">Rec.</label>
                         <div className="text-lg font-semibold text-card-foreground">
-                          {formatCurrency(formData.totales?.cuotaRETotal || 0)}
+                            {formatCurrency(formData.totales?.cuotaRETotal || 0)}
+                          </div>
                         </div>
-                      </div>
                       
                       <div className="text-center">
                         <label className="block text-sm font-medium text-card-foreground mb-2">Total</label>
                         <div className="text-lg font-semibold text-card-foreground">
                           {formatCurrency(formData.totales?.totalFactura || 0)}
-                        </div>
+                      </div>
                       </div>
                     </div>
 
                     {/* Retention Section */}
                     <div className="space-y-3">
-                      <div className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={formData.aplicarRetencion || false}
-                          onChange={e => handleInputChange('aplicarRetencion', e.target.checked)}
-                          className="rounded border-input-border text-accent focus:ring-accent"
-                        />
-                        <label className="text-sm font-medium text-card-foreground">Aplicar retención</label>
-                      </div>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.aplicarRetencion || false}
+                        onChange={e => handleInputChange('aplicarRetencion', e.target.checked)}
+                        className="rounded border-input-border text-accent focus:ring-accent"
+                      />
+                      <label className="text-sm font-medium text-card-foreground">Aplicar retención</label>
+                    </div>
 
-                      {formData.aplicarRetencion && (
+                    {formData.aplicarRetencion && (
                         <div className="grid grid-cols-4 gap-4 pl-6">
+                        <div>
+                          <label className="block text-sm font-medium text-card-foreground mb-2">Cta. Ret.</label>
+                          <input
+                            type="text"
+                              value={formData.ctaRetencion || ''}
+                            onChange={e => handleInputChange('ctaRetencion', e.target.value)}
+                              className={`${baseInputClasses} text-sm`}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-card-foreground mb-2">Base</label>
+                            <div className="text-sm font-medium text-card-foreground bg-muted px-3 py-2 rounded-md">
+                            {formatCurrency(formData.baseRetencion || 0)}
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-card-foreground mb-2">%</label>
+                            <div className="text-sm font-medium text-card-foreground bg-muted px-3 py-2 rounded-md">
+                            {formData.porcentajeRetencion || 0}%
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-card-foreground mb-2">Importe</label>
+                            <div className="text-sm font-medium text-card-foreground bg-muted px-3 py-2 rounded-md">
+                            {formatCurrency(formData.importeRetencion || 0)}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    </div>
+
+                    {/* Income Account - Only for received invoices */}
+                    {isReceivedInvoice && (
+                      <div className="space-y-3">
+                        <div className="grid grid-cols-2 gap-4">
                           <div>
-                            <label className="block text-sm font-medium text-card-foreground mb-2">Cta. Ret.</label>
+                            <label className="block text-sm font-medium text-card-foreground mb-2">Cta.Ingr.</label>
                             <input
                               type="text"
-                              value={formData.ctaRetencion || ''}
-                              onChange={e => handleInputChange('ctaRetencion', e.target.value)}
+                              value={formData.ctaIngreso || '6000 000 0000'}
+                              onChange={e => handleInputChange('ctaIngreso', e.target.value)}
                               className={`${baseInputClasses} text-sm`}
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-card-foreground mb-2">Base</label>
-                            <div className="text-sm font-medium text-card-foreground bg-muted px-3 py-2 rounded-md">
-                              {formatCurrency(formData.baseRetencion || 0)}
-                            </div>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-card-foreground mb-2">%</label>
-                            <div className="text-sm font-medium text-card-foreground bg-muted px-3 py-2 rounded-md">
-                              {formData.porcentajeRetencion || 0}%
-                            </div>
-                          </div>
-                          <div>
                             <label className="block text-sm font-medium text-card-foreground mb-2">Importe</label>
                             <div className="text-sm font-medium text-card-foreground bg-muted px-3 py-2 rounded-md">
-                              {formatCurrency(formData.importeRetencion || 0)}
+                              {formatCurrency(formData.totales?.totalFactura || 0)}
                             </div>
                           </div>
                         </div>
-                      )}
-                    </div>
+                      </div>
+                    )}
 
                     {/* Associated Expense Accounts */}
                     <div className="space-y-3">

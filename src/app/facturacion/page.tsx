@@ -54,32 +54,38 @@ function FacturacionPageContent() {
     const validTipos = ['ALL', 'emitida', 'recibida']
     if (urlTipo && validTipos.includes(urlTipo)) {
       setTipoFilter(urlTipo as 'ALL' | 'emitida' | 'recibida')
-      return
+    } else {
+      const saved = typeof window !== 'undefined' ? localStorage.getItem('facturacion.tipoFilter') : null
+      if (saved && validTipos.includes(saved)) {
+        setTipoFilter(saved as 'ALL' | 'emitida' | 'recibida')
+      }
     }
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('facturacion.tipoFilter') : null
-    if (saved && validTipos.includes(saved)) {
-      setTipoFilter(saved as 'ALL' | 'emitida' | 'recibida')
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [searchParams])
 
-  // Persist tipoFilter to URL and localStorage
+  // Persist tipoFilter to URL and localStorage (only when it changes, not on initial load)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       try {
         localStorage.setItem('facturacion.tipoFilter', tipoFilter)
       } catch {}
     }
-    // Sync query param without losing other params
-    const params = new URLSearchParams(searchParams.toString())
-    if (tipoFilter === 'ALL') {
-      params.delete('tipo')
-    } else {
-      params.set('tipo', tipoFilter)
+    
+    // Only update URL if the current URL doesn't match the filter
+    const currentTipo = searchParams.get('tipo')
+    const shouldUpdateUrl = (tipoFilter === 'ALL' && currentTipo !== null) || 
+                           (tipoFilter !== 'ALL' && currentTipo !== tipoFilter)
+    
+    if (shouldUpdateUrl) {
+      const params = new URLSearchParams(searchParams.toString())
+      if (tipoFilter === 'ALL') {
+        params.delete('tipo')
+      } else {
+        params.set('tipo', tipoFilter)
+      }
+      const queryString = params.toString()
+      const href = queryString ? `${pathname}?${queryString}` : pathname
+      router.replace(href)
     }
-    const queryString = params.toString()
-    const href = queryString ? `${pathname}?${queryString}` : pathname
-    router.replace(href)
   }, [tipoFilter, pathname, router, searchParams])
 
   const loadInvoices = async () => {
@@ -134,7 +140,11 @@ function FacturacionPageContent() {
 
 
   const handleCreateInvoice = () => {
-    router.push('/facturacion/nueva')
+    if (tipoFilter === 'recibida') {
+      router.push('/facturacion/recibidas/nueva')
+    } else {
+      router.push('/facturacion/nueva')
+    }
   }
 
   const handleViewInvoice = (id: number) => {
@@ -226,7 +236,7 @@ function FacturacionPageContent() {
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
                 </svg>
-                Nueva Factura
+                {tipoFilter === 'recibida' ? 'Nueva Factura Recibida' : 'Nueva Factura'}
               </button>
 
               {/* Dropdown: Filtrar por tipo de factura */}
