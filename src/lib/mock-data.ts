@@ -131,6 +131,7 @@ export interface Invoice {
   serie?: string
   numero: string
   fechaExpedicion: string
+  fechaContable?: string
   lugarEmision?: string
   departamento?: string
   
@@ -150,6 +151,9 @@ export interface Invoice {
   fechaVencimiento?: string
   notas?: string
   
+  // Estado de la factura
+  estado?: 'borrador' | 'enviada' | 'aceptada' | 'rechazada'
+  
   // Campos adicionales del formulario
   imputacion?: string
   mantenimientoCliente?: string
@@ -160,6 +164,10 @@ export interface Invoice {
   baseRetencion?: number
   porcentajeRetencion?: number
   importeRetencion?: number
+  ctaGastosAsoc1?: string
+  importeGastosAsoc1?: number
+  ctaGastosAsoc2?: string
+  importeGastosAsoc2?: number
   
   // Campos específicos por tipo
   esRectificativa?: boolean

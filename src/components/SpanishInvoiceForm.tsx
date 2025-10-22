@@ -70,6 +70,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
     serie: 'X7',
     numero: '001134',
     fechaExpedicion: new Date().toISOString().split('T')[0],
+    fechaContable: new Date().toISOString().split('T')[0],
     lugarEmision: '',
     departamento: 'Administración',
     cliente: {
@@ -110,16 +111,20 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
       cuotaRETotal: 0,
       totalFactura: 0
     },
-    formaPago: 'Contado',
+    formaPago: 'Crédito 30 días',
     medioPago: 'Sin Pagar',
     fechaVencimiento: '',
     notas: '',
     ctaIngreso: '',
     aplicarRetencion: false,
-    ctaRetencion: '0000 000 0000',
+    ctaRetencion: '',
     baseRetencion: 0,
     porcentajeRetencion: 0,
     importeRetencion: 0,
+    ctaGastosAsoc1: '',
+    importeGastosAsoc1: 0,
+    ctaGastosAsoc2: '',
+    importeGastosAsoc2: 0,
     esRectificativa: false,
     causaRectificacion: 'error',
     referenciasFacturasRectificadas: [],
@@ -138,6 +143,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
     finalMessage: false,
     portalQR: false
   })
+  const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
   // Categorization state commented out
   // const [categorization, setCategorization] = useState({
   //   account: '70000000 Ventas de mercaderías',
@@ -353,6 +359,45 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
     }
   }
 
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedIndex(index)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+  }
+
+  const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+    e.preventDefault()
+    
+    if (draggedIndex === null || draggedIndex === dropIndex) {
+      setDraggedIndex(null)
+      return
+    }
+
+    const currentLineas = [...(formData.lineas || [])]
+    const draggedItem = currentLineas[draggedIndex]
+    
+    // Remove the dragged item
+    currentLineas.splice(draggedIndex, 1)
+    
+    // Insert it at the new position
+    currentLineas.splice(dropIndex, 0, draggedItem)
+    
+    setFormData(prev => ({
+      ...prev,
+      lineas: currentLineas
+    }))
+    
+    setDraggedIndex(null)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedIndex(null)
+  }
+
   const submitInvoice = async (nextStatus: 'DRAFT' | 'APPROVED') => {
     setLoading(true)
     setError('')
@@ -402,7 +447,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
         payload as unknown as Omit<Invoice, 'id' | 'numero' | 'createdAt' | 'updatedAt'>
       )
       if (newInvoice) {
-        router.push('/facturacion')
+        router.push(`/facturacion/preview/${newInvoice.id}`)
       } else {
         setError('Error al crear la factura')
       }
@@ -493,7 +538,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
 
           <div className="space-y-6 px-6 py-6">
             {/* Header Section - Row 1: Dpto, Factura, Fecha */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
               {/* Dpto. */}
               <div>
                 <label className="block text-sm font-medium text-card-foreground mb-2">Dpto.</label>
@@ -521,6 +566,16 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                   type="date"
                   value={formData.fechaExpedicion || ''}
                   onChange={e => handleInputChange('fechaExpedicion', e.target.value)}
+                  className={`${baseInputClasses}`}
+                />
+              </div>
+              {/* F. Contable */}
+              <div>
+                <label className="block text-sm font-medium text-card-foreground mb-2">F. Contable</label>
+                <input
+                  type="date"
+                  value={formData.fechaContable || formData.fechaExpedicion || ''}
+                  onChange={e => handleInputChange('fechaContable', e.target.value)}
                   className={`${baseInputClasses}`}
                 />
               </div>
@@ -586,50 +641,61 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                 </div>
               </div>
 
-              {/* Right Column: Client & Payment */}
+              {/* Right Column: Supplier & Payment */}
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-card-foreground mb-2">Cliente</label>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">Proveedor</label>
                   <ClientSearch
                     onClientSelect={handleClientSelect}
                     selectedClient={selectedClient}
-                    placeholder="MOTORCYCLE RACING, S.L., (DUCATI GRANA)"
+                    placeholder="CIAL. NAVARRO HERMANOS, S.A."
                     onAddNewClient={handleAddNewClient}
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-card-foreground mb-2">Dirección</label>
-                  <div className="text-sm text-muted-foreground">
-                    {selectedClient?.domicilio ? 
-                      `${selectedClient.domicilio.calle}, ${selectedClient.domicilio.municipio}` : 
-                      'PRINCIPAL (958572298 / 656932965)'
-                    }
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={selectedClient?.domicilio ? 
+                        `${selectedClient.domicilio.calle}, ${selectedClient.domicilio.municipio}` : 
+                        '(952223930 / 952221315)'
+                      }
+                      readOnly
+                      className={`${baseInputClasses} pr-10`}
+                    />
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
                   </div>
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-card-foreground mb-2">Forma pago</label>
-                  <select
-                    value={formData.formaPago || 'Contado'}
-                    onChange={e => handleInputChange('formaPago', e.target.value)}
-                    className={`${baseInputClasses}`}
-                  >
-                    <option value="Contado">Contado</option>
-                    <option value="Transferencia bancaria">Transferencia bancaria</option>
-                    <option value="Tarjeta">Tarjeta</option>
-                    <option value="Cheque">Cheque</option>
-                  </select>
+                  <div className="relative">
+                    <select
+                      value={formData.formaPago || 'Crédito 30 días'}
+                      onChange={e => handleInputChange('formaPago', e.target.value)}
+                      className={`${baseInputClasses} pr-10`}
+                    >
+                      <option value="Crédito 30 días">Crédito 30 días</option>
+                      <option value="Contado">Contado</option>
+                      <option value="Transferencia bancaria">Transferencia bancaria</option>
+                      <option value="Tarjeta">Tarjeta</option>
+                      <option value="Cheque">Cheque</option>
+                    </select>
+                    <svg className="absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-card-foreground mb-2">M. pago</label>
-                  <select
-                    value={formData.medioPago || 'Sin Pagar'}
-                    onChange={e => handleInputChange('medioPago', e.target.value)}
-                    className={`${baseInputClasses}`}
-                  >
-                    <option value="Sin Pagar">Sin Pagar</option>
-                    <option value="Pagado">Pagado</option>
-                    <option value="Parcial">Parcial</option>
-                  </select>
+                  <label className="block text-sm font-medium text-card-foreground mb-2">Notas</label>
+                  <textarea
+                    value={formData.notas || ''}
+                    onChange={e => handleInputChange('notas', e.target.value)}
+                    rows={3}
+                    className={`${baseInputClasses} resize-none`}
+                  />
                 </div>
               </div>
             </div>
@@ -696,26 +762,161 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
               </section>
             )}
 
-            {/* Concept Section */}
+            {/* Invoice Lines Section */}
             <section>
               <div className="overflow-hidden rounded-2xl border border-border bg-card">
                 <div className="border-b border-border px-5 py-4">
-                  <h2 className="text-lg font-semibold text-card-foreground">Concepto</h2>
+                  <h2 className="text-lg font-semibold text-card-foreground">Líneas de Factura</h2>
                 </div>
                 
                 <div className="p-5">
-                  <textarea
-                    value={formData.lineas?.[0]?.descripcion || ''}
-                    onChange={e => handleLineChange(0, 'descripcion', e.target.value)}
-                    placeholder="Mantenimiento trimestral Motorwin / Cantidad: 4"
-                    rows={6}
-                    className={`${baseInputClasses} w-full resize-none`}
-                  />
+                  {/* Table Header */}
+                  <div className="grid grid-cols-13 gap-4 mb-4 pb-2 border-b border-border">
+                    <div className="col-span-1 text-sm font-medium text-muted-foreground"></div>
+                    <div className="col-span-3 text-sm font-medium text-muted-foreground">Concepto</div>
+                    <div className="col-span-3 text-sm font-medium text-muted-foreground">Descripción</div>
+                    <div className="col-span-1 text-sm font-medium text-muted-foreground text-center">Cantidad</div>
+                    <div className="col-span-1 text-sm font-medium text-muted-foreground text-center">Precio</div>
+                    <div className="col-span-2 text-sm font-medium text-muted-foreground text-center">Impuestos</div>
+                    <div className="col-span-1 text-sm font-medium text-muted-foreground text-center">Total</div>
+                    <div className="col-span-1 text-sm font-medium text-muted-foreground text-center"></div>
+                  </div>
+                  
+                  {/* Table Rows */}
+                  <div className="space-y-2">
+                    {formData.lineas?.map((linea, index) => (
+                      <div 
+                        key={linea.id} 
+                        className={`grid grid-cols-13 gap-4 items-center py-2 rounded-lg transition-colors ${
+                          draggedIndex === index ? 'bg-blue-50 border-2 border-blue-200' : 'hover:bg-muted/20'
+                        }`}
+                        onDragOver={handleDragOver}
+                        onDrop={(e) => handleDrop(e, index)}
+                      >
+                        {/* Drag Handle */}
+                        <div className="col-span-1 flex justify-center">
+                          <div 
+                            className="w-4 h-4 text-muted-foreground cursor-move hover:text-card-foreground"
+                            draggable
+                            onDragStart={(e) => handleDragStart(e, index)}
+                            onDragEnd={handleDragEnd}
+                            title="Arrastrar para reordenar"
+                          >
+                            <svg fill="currentColor" viewBox="0 0 20 20">
+                              <path d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 10a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM3 16a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z"/>
+                            </svg>
+                          </div>
+                        </div>
+                        
+                        {/* Concepto */}
+                        <div className="col-span-3">
+                          <input
+                            type="text"
+                            value={linea.descripcion || ''}
+                            onChange={e => handleLineChange(index, 'descripcion', e.target.value)}
+                            placeholder="Escribe el concepto o usa @ para buscar"
+                            className={`${baseInputClasses} text-sm`}
+                          />
+                        </div>
+                        
+                        {/* Descripción */}
+                        <div className="col-span-3">
+                          <div className="relative">
+                            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                            <input
+                              type="text"
+                              placeholder="Desc"
+                              className={`${baseInputClasses} text-sm pl-10`}
+                            />
+                          </div>
+                        </div>
+                        
+                        {/* Cantidad */}
+                        <div className="col-span-1">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={linea.cantidad || 1}
+                            onChange={e => handleLineChange(index, 'cantidad', Number(e.target.value))}
+                            className={`${baseInputClasses} text-sm text-center`}
+                          />
+                        </div>
+                        
+                        {/* Precio */}
+                        <div className="col-span-1">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={linea.precioUnitario || 0}
+                            onChange={e => handleLineChange(index, 'precioUnitario', Number(e.target.value))}
+                            className={`${baseInputClasses} text-sm text-center`}
+                          />
+                        </div>
+                        
+                        {/* Impuestos */}
+                        <div className="col-span-2">
+                          <div className="flex items-center justify-center">
+                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                              X IVA {linea.tipoIVA || 21}%
+                              <button
+                                type="button"
+                                className="ml-1 text-blue-600 hover:text-blue-800"
+                                onClick={() => handleLineChange(index, 'tipoIVA', 0 as TipoIVA)}
+                              >
+                                ×
+                              </button>
+                            </span>
+                          </div>
+                        </div>
+                        
+                        {/* Total */}
+                        <div className="col-span-1 text-center">
+                          <span className="text-sm font-medium text-card-foreground">
+                            {formatCurrency(linea.totalLinea || 0)}
+                          </span>
+                        </div>
+                        
+                        {/* Delete Button */}
+                        <div className="col-span-1 flex justify-center">
+                          {formData.lineas && formData.lineas.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => removeLine(index)}
+                              className="text-red-600 hover:text-red-800 p-1"
+                              title="Eliminar línea"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                              </svg>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {/* Add Line Button */}
+                  <div className="mt-4">
+                    <button
+                      type="button"
+                      onClick={addLine}
+                      className="flex items-center gap-2 text-sm text-muted-foreground hover:text-card-foreground"
+                    >
+                      <span>Añadir línea</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             </section>
 
-            {/* Totals and Tax Section - Table Format */}
+            {/* Detailed Totals Section */}
             <section>
               <div className="overflow-hidden rounded-2xl border border-border bg-card">
                 <div className="border-b border-border px-5 py-4">
@@ -723,123 +924,160 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                 </div>
                 
                 <div className="p-5">
-                  {/* Table-like layout matching the reference image */}
                   <div className="space-y-4">
-                    {/* Row 1: Cta.Ingr. and Base */}
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-card-foreground mb-2">Cta.Ingr.</label>
-                        <input
-                          type="text"
-                          value={formData.ctaIngreso || ''}
-                          onChange={e => handleInputChange('ctaIngreso', e.target.value)}
-                          className={`${baseInputClasses}`}
-                        />
-                      </div>
-                      <div>
+                    {/* Tax Breakdown Table */}
+                    <div className="grid grid-cols-5 gap-4">
+                      <div className="text-center">
                         <label className="block text-sm font-medium text-card-foreground mb-2">Base</label>
                         <div className="text-lg font-semibold text-card-foreground">
                           {formatCurrency(formData.totales?.baseImponibleTotal || 0)}
                         </div>
                       </div>
-                    </div>
-
-                    {/* Row 2: IVA and Cuota IVA */}
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
+                      
+                      <div className="text-center">
                         <label className="block text-sm font-medium text-card-foreground mb-2">IVA</label>
-                        <div className="flex items-center gap-2">
+                        <div className="space-y-1">
+                          <div className="text-sm text-muted-foreground">
+                            {formatCurrency(formData.totales?.cuotaIVATotal || 0)}
+                          </div>
                           <select
                             value={formData.lineas?.[0]?.tipoIVA || 21}
                             onChange={e => handleLineChange(0, 'tipoIVA', Number(e.target.value) as TipoIVA)}
-                            className={`${baseInputClasses} flex-1`}
+                            className={`${baseInputClasses} text-sm`}
                           >
                             <option value={21}>21%</option>
                             <option value={10}>10%</option>
                             <option value={4}>4%</option>
                             <option value={0}>0%</option>
                           </select>
-                          <div className="text-sm font-medium text-card-foreground">
+                        </div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <label className="block text-sm font-medium text-card-foreground mb-2">Cuota IVA</label>
+                        <div className="space-y-1">
+                          <div className="text-sm text-muted-foreground">
                             {formatCurrency(formData.totales?.cuotaIVATotal || 0)}
                           </div>
-                        </div>
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-card-foreground mb-2">Cuota IVA</label>
-                        <div className="text-lg font-semibold text-card-foreground">
-                          {formatCurrency(formData.totales?.cuotaIVATotal || 0)}
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Row 3: Rec. (Surcharge) */}
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-card-foreground mb-2">Rec.</label>
-                        <div className="flex items-center gap-2">
                           <select
                             value={formData.lineas?.[0]?.recargoEquivalenciaPct || 5}
                             onChange={e => handleLineChange(0, 'recargoEquivalenciaPct', Number(e.target.value))}
-                            className={`${baseInputClasses} flex-1`}
+                            className={`${baseInputClasses} text-sm`}
                           >
                             <option value={0}>0%</option>
                             <option value={5}>5%</option>
                             <option value={1.4}>1.4%</option>
                             <option value={0.5}>0.5%</option>
                           </select>
-                          <div className="text-sm font-medium text-card-foreground">
-                            {formatCurrency(formData.totales?.cuotaRETotal || 0)}
+                        </div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <label className="block text-sm font-medium text-card-foreground mb-2">Rec.</label>
+                        <div className="text-lg font-semibold text-card-foreground">
+                          {formatCurrency(formData.totales?.cuotaRETotal || 0)}
+                        </div>
+                      </div>
+                      
+                      <div className="text-center">
+                        <label className="block text-sm font-medium text-card-foreground mb-2">Total</label>
+                        <div className="text-lg font-semibold text-card-foreground">
+                          {formatCurrency(formData.totales?.totalFactura || 0)}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Retention Section */}
+                    <div className="space-y-3">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={formData.aplicarRetencion || false}
+                          onChange={e => handleInputChange('aplicarRetencion', e.target.checked)}
+                          className="rounded border-input-border text-accent focus:ring-accent"
+                        />
+                        <label className="text-sm font-medium text-card-foreground">Aplicar retención</label>
+                      </div>
+
+                      {formData.aplicarRetencion && (
+                        <div className="grid grid-cols-4 gap-4 pl-6">
+                          <div>
+                            <label className="block text-sm font-medium text-card-foreground mb-2">Cta. Ret.</label>
+                            <input
+                              type="text"
+                              value={formData.ctaRetencion || ''}
+                              onChange={e => handleInputChange('ctaRetencion', e.target.value)}
+                              className={`${baseInputClasses} text-sm`}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-card-foreground mb-2">Base</label>
+                            <div className="text-sm font-medium text-card-foreground bg-muted px-3 py-2 rounded-md">
+                              {formatCurrency(formData.baseRetencion || 0)}
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-card-foreground mb-2">%</label>
+                            <div className="text-sm font-medium text-card-foreground bg-muted px-3 py-2 rounded-md">
+                              {formData.porcentajeRetencion || 0}%
+                            </div>
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-card-foreground mb-2">Importe</label>
+                            <div className="text-sm font-medium text-card-foreground bg-muted px-3 py-2 rounded-md">
+                              {formatCurrency(formData.importeRetencion || 0)}
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Associated Expense Accounts */}
+                    <div className="space-y-3">
+                      <label className="block text-sm font-medium text-card-foreground">
+                        Conceptos adjuntos en factura que no sean computables impositivamente
+                      </label>
+                      
+                      <div className="space-y-2">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-card-foreground mb-2">Cta. Gastos Asoc.</label>
+                            <input
+                              type="text"
+                              value={formData.ctaGastosAsoc1 || ''}
+                              onChange={e => handleInputChange('ctaGastosAsoc1', e.target.value)}
+                              className={`${baseInputClasses} text-sm`}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-card-foreground mb-2">Importe</label>
+                            <div className="text-sm font-medium text-card-foreground bg-muted px-3 py-2 rounded-md">
+                              {formatCurrency(formData.importeGastosAsoc1 || 0)}
+                            </div>
+                          </div>
+                        </div>
+                        
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <label className="block text-sm font-medium text-card-foreground mb-2">Cta. Gastos Asoc.</label>
+                            <input
+                              type="text"
+                              value={formData.ctaGastosAsoc2 || ''}
+                              onChange={e => handleInputChange('ctaGastosAsoc2', e.target.value)}
+                              className={`${baseInputClasses} text-sm`}
+                            />
+                          </div>
+                          <div>
+                            <label className="block text-sm font-medium text-card-foreground mb-2">Importe</label>
+                            <div className="text-sm font-medium text-card-foreground bg-muted px-3 py-2 rounded-md">
+                              {formatCurrency(formData.importeGastosAsoc2 || 0)}
+                            </div>
                           </div>
                         </div>
                       </div>
-                      <div></div>
                     </div>
 
-                    {/* Row 4: Aplicar retención checkbox */}
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={formData.aplicarRetencion || false}
-                        onChange={e => handleInputChange('aplicarRetencion', e.target.checked)}
-                        className="rounded border-input-border text-accent focus:ring-accent"
-                      />
-                      <label className="text-sm font-medium text-card-foreground">Aplicar retención</label>
-                    </div>
-
-                    {/* Row 5: Withholding fields (when checkbox is checked) */}
-                    {formData.aplicarRetencion && (
-                      <div className="grid grid-cols-4 gap-4">
-                        <div>
-                          <label className="block text-sm font-medium text-card-foreground mb-2">Cta. Ret.</label>
-                          <input
-                            type="text"
-                            value={formData.ctaRetencion || '0000 000 0000'}
-                            onChange={e => handleInputChange('ctaRetencion', e.target.value)}
-                            className={`${baseInputClasses}`}
-                          />
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-card-foreground mb-2">Base</label>
-                          <div className="text-sm font-medium text-card-foreground">
-                            {formatCurrency(formData.baseRetencion || 0)}
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-card-foreground mb-2">%</label>
-                          <div className="text-sm font-medium text-card-foreground">
-                            {formData.porcentajeRetencion || 0}%
-                          </div>
-                        </div>
-                        <div>
-                          <label className="block text-sm font-medium text-card-foreground mb-2">Importe</label>
-                          <div className="text-sm font-medium text-card-foreground">
-                            {formatCurrency(formData.importeRetencion || 0)}
-                          </div>
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Row 6: Total factura */}
+                    {/* Final Total */}
                     <div className="flex justify-between items-center pt-4 border-t border-border">
                       <label className="text-lg font-medium text-card-foreground">Total factura</label>
                       <div className="text-2xl font-bold text-card-foreground">

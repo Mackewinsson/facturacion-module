@@ -23,7 +23,7 @@ export default function LayoutWithSidebar({ children }: LayoutWithSidebarProps) 
   return (
     <div className="flex h-screen bg-background">
       <Sidebar isCollapsed={isCollapsed} onToggle={toggleSidebar} />
-      <main className="flex-1 h-screen overflow-hidden">
+      <main className="flex-1 h-screen overflow-auto">
         {children}
       </main>
     </div>
