@@ -19,7 +19,7 @@ docker cp "MotosMunozDatos 15-09-2025" sql1:/var/opt/mssql/backup/
 
 # Restore database
 echo "🔄 Restoring database..."
-docker exec sql1 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P sa2006Strong! -C -Q "RESTORE DATABASE MotosMunozDatos FROM DISK = '/var/opt/mssql/backup/MotosMunozDatos 15-09-2025' WITH MOVE 'SecoemurDatos' TO '/var/opt/mssql/data/MotosMunozDatos.mdf', MOVE 'SecoemurDatos_log' TO '/var/opt/mssql/data/MotosMunozDatos_log.ldf'"
+docker exec sql1 /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'sa2006Strong!' -C -Q "RESTORE DATABASE MotosMunozDatos FROM DISK = '/var/opt/mssql/backup/MotosMunozDatos 15-09-2025' WITH MOVE 'SecoemurDatos' TO '/var/opt/mssql/data/MotosMunozDatos.mdf', MOVE 'SecoemurDatos_log' TO '/var/opt/mssql/data/MotosMunozDatos_log.ldf'"
 
 echo "✅ Database restored successfully!"
 echo "🔗 You can now connect to MotosMunozDatos database"

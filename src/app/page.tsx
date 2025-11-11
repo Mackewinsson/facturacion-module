@@ -1,20 +1,23 @@
 'use client'
-import Image from 'next/image'
-import LayoutWithSidebar from '@/components/LayoutWithSidebar'
-import { useCompanyName } from '@/hooks/useCompanyName'
-
-const APP_LOGO_SRC = '/file.svg'
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuthStore } from '@/store/auth'
 
 export default function Home() {
-  const companyName = useCompanyName()
+  const router = useRouter()
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.push('/facturacion')
+    } else {
+      router.push('/login')
+    }
+  }, [isAuthenticated, router])
+
   return (
-    <LayoutWithSidebar>
-      <div className="w-full h-full flex items-center justify-center">
-        <div className="flex flex-col items-center">
-          <Image src={APP_LOGO_SRC} alt="Nibisoft" width={128} height={128} priority />
-          <h1 className="mt-4 text-2xl font-semibold text-foreground">{companyName}</h1>
-        </div>
-      </div>
-    </LayoutWithSidebar>
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+    </div>
   )
 }

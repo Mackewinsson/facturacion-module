@@ -15,7 +15,7 @@ services:
       - ./MotosMunozDatos 15-09-2025:/var/opt/mssql/backup/MotosMunozDatos 15-09-2025:ro
     restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P sa2006Strong! -C -Q 'SELECT 1' || exit 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 'sa2006Strong!' -C -Q 'SELECT 1' || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5

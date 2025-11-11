@@ -88,10 +88,10 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="max-w-md w-full space-y-8">
+    <div className="min-h-screen bg-gray-50 px-4 py-8 flex items-center justify-center">
+      <div className="max-w-md w-full space-y-6 rounded-2xl bg-white p-6 shadow-sm sm:space-y-8 sm:p-8">
         <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+          <h2 className="mt-2 text-center text-2xl font-extrabold text-gray-900 sm:mt-6 sm:text-3xl">
             Iniciar Sesión
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
@@ -149,7 +149,7 @@ export default function Login() {
             <button
               type="submit"
               disabled={loading || loadingUsers}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+              className="group relative flex w-full justify-center rounded-md border border-transparent bg-indigo-600 px-4 py-2.5 text-sm font-medium text-white transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50"
             >
               {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </button>
