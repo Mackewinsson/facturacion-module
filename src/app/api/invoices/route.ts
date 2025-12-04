@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MockInvoiceService, Invoice } from '@/lib/mock-data'
+import { InvoiceDbService } from '@/lib/invoice-db-service'
 
 type InvoiceFilters = {
   fechaDesde?: string
@@ -65,7 +65,6 @@ export async function GET(request: NextRequest) {
 
     const page = parseNumber(searchParams.get('page'), 1)
     const limit = parseNumber(searchParams.get('limit'), 10)
-    const status = searchParams.get('status') || undefined
     const search = searchParams.get('search') || undefined
 
     const filters = filterKeys.reduce<InvoiceFilters>((acc, key) => {
@@ -80,10 +79,9 @@ export async function GET(request: NextRequest) {
       return acc
     }, {})
 
-    const data = await MockInvoiceService.getInvoices({
+    const data = await InvoiceDbService.getInvoices({
       page,
       limit,
-      status,
       search,
       filters: Object.keys(filters).length ? filters : undefined,
       columnFilters: Object.keys(columnFilters).length ? columnFilters : undefined
@@ -107,26 +105,13 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const payload = (await request.json()) as Omit<Invoice, 'id' | 'numero' | 'createdAt' | 'updatedAt'>
-
-    if (!payload?.tipoFactura || !payload?.cliente || !payload?.lineas?.length) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Datos de factura incompletos'
-        },
-        { status: 400 }
-      )
-    }
-
-    const newInvoice = await MockInvoiceService.createInvoice(payload)
-
+    await request.json()
     return NextResponse.json(
       {
-        success: true,
-        data: newInvoice
+        success: false,
+        error: 'Creación de facturas en base de datos aún no está implementada'
       },
-      { status: 201 }
+      { status: 501 }
     )
   } catch (error) {
     console.error('Error creating invoice:', error)

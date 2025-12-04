@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MockInvoiceService, Invoice } from '@/lib/mock-data'
+import { InvoiceDbService } from '@/lib/invoice-db-service'
 
 type RouteParams = {
   params: {
@@ -18,7 +18,7 @@ const getInvoiceId = (params: RouteParams['params']) => {
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const id = getInvoiceId(params)
-    const invoice = await MockInvoiceService.getInvoice(id)
+    const invoice = await InvoiceDbService.getInvoice(id)
 
     if (!invoice) {
       return NextResponse.json(
@@ -50,24 +50,14 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const id = getInvoiceId(params)
-    const updateData = (await request.json()) as Partial<Invoice>
-
-    const updated = await MockInvoiceService.updateInvoice(id, updateData)
-
-    if (!updated) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Factura no encontrada'
-        },
-        { status: 404 }
-      )
-    }
-
-    return NextResponse.json({
-      success: true,
-      data: updated
-    })
+    await request.json()
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Actualización de facturas en base de datos aún no está implementada'
+      },
+      { status: 501 }
+    )
   } catch (error) {
     console.error('Error updating invoice:', error)
     const status = error instanceof Error && error.message.includes('inválido') ? 400 : 500
@@ -84,21 +74,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
     const id = getInvoiceId(params)
-    const deleted = await MockInvoiceService.deleteInvoice(id)
-
-    if (!deleted) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Factura no encontrada'
-        },
-        { status: 404 }
-      )
-    }
-
-    return NextResponse.json({
-      success: true
-    })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Eliminación de facturas en base de datos aún no está implementada'
+      },
+      { status: 501 }
+    )
   } catch (error) {
     console.error('Error deleting invoice:', error)
     const status = error instanceof Error && error.message.includes('inválido') ? 400 : 500

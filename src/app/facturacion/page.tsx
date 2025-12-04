@@ -2,7 +2,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
-import { MockInvoiceService, Invoice } from '@/lib/mock-data'
+import { InvoiceFromDb } from '@/lib/invoice-db-service'
 import LayoutWithSidebar from '@/components/LayoutWithSidebar'
 import InvoiceModal from '@/components/InvoiceModal'
 
@@ -11,7 +11,7 @@ function FacturacionPageContent() {
   const pathname = usePathname()
   const searchParams = useSearchParams()
   const { isAuthenticated } = useAuthStore()
-  const [invoices, setInvoices] = useState<Invoice[]>([])
+  const [invoices, setInvoices] = useState<InvoiceFromDb[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [totalResults, setTotalResults] = useState(0)
@@ -36,7 +36,7 @@ function FacturacionPageContent() {
     fechaDesde: '2024-01-01',
     fechaHasta: '2025-12-31'
   })
-  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null)
+  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceFromDb | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
 
   useEffect(() => {
@@ -91,23 +91,25 @@ function FacturacionPageContent() {
   const loadInvoices = async () => {
     try {
       setLoading(true)
-      const data = await MockInvoiceService.getInvoices({
-        page: 1,
-        limit: 1000, // Load all invoices
-        columnFilters: columnFilters,
-        filters: {
-          fechaDesde: dateRange.fechaDesde,
-          fechaHasta: dateRange.fechaHasta
-        }
+      const params = new URLSearchParams()
+      params.set('page', '1')
+      params.set('limit', '1000')
+      params.set('fechaDesde', dateRange.fechaDesde)
+      params.set('fechaHasta', dateRange.fechaHasta)
+
+      Object.entries(columnFilters).forEach(([key, value]) => {
+        if (value) params.set(`column_${key}`, value)
       })
 
-      // Apply client-side filter for tipo de factura (emitida/recibida)
-      const filteredByTipo = tipoFilter === 'ALL'
-        ? data.invoices
-        : data.invoices.filter(inv => inv.tipoFactura === tipoFilter)
+      const response = await fetch(`/api/invoices?${params.toString()}`, { cache: 'no-store' })
+      if (!response.ok) throw new Error('API error')
+      const data = await response.json()
 
-      setInvoices(filteredByTipo)
-      setTotalResults(filteredByTipo.length)
+      const fetched: InvoiceFromDb[] = data?.invoices ?? []
+
+      // The DB does not expose tipoFactura; keep all for now
+      setInvoices(fetched)
+      setTotalResults(fetched.length)
     } catch (err) {
       setError('Error al cargar las facturas')
     } finally {
@@ -151,7 +153,7 @@ function FacturacionPageContent() {
     router.push(`/facturacion/editar/${id}`)
   }
 
-  const handleRowClick = (invoice: Invoice) => {
+  const handleRowClick = (invoice: InvoiceFromDb) => {
     setSelectedInvoice(invoice)
     setIsModalOpen(true)
   }
@@ -185,10 +187,6 @@ function FacturacionPageContent() {
       ...prev,
       [field]: value
     }))
-  }
-
-  const formatDateForDisplay = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES')
   }
 
   const formatDate = (dateString: string) => {
@@ -525,47 +523,47 @@ function FacturacionPageContent() {
                         onClick={() => handleRowClick(invoice)}
                       >
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {invoice.serie ? `${invoice.serie}-${invoice.numero}` : invoice.numero} ({invoice.tipoFactura})
+                          {invoice.numero}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatDate(invoice.fechaExpedicion)}
+                          {formatDate(invoice.fecha)}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {invoice.cliente.NIF || '-'}
+                          {invoice.clienteNif || '-'}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {invoice.cliente.nombreORazonSocial}
+                          {invoice.clienteNombre}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatCurrency(invoice.totales.baseImponibleTotal)}
+                          {formatCurrency(invoice.totales.baseImponible)}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {formatCurrency(invoice.totales.cuotaIVATotal)}
+                          {formatCurrency(invoice.totales.iva)}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                          {formatCurrency(invoice.totales.totalFactura)}
+                          {formatCurrency(invoice.totales.total)}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {invoice.cliente.domicilio?.calle || '-'}
+                          {invoice.direccion?.direccion || '-'}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {invoice.cliente.domicilio?.municipio || '-'}
+                          {invoice.direccion?.poblacion || '-'}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {invoice.cliente.domicilio?.provincia || '-'}
+                          {invoice.direccion?.provincia || '-'}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {invoice.cliente.domicilio?.codigoPostal || '-'}
+                          {invoice.direccion?.codigoPostal || '-'}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {invoice.formaPago || '-'}
+                          {'-'}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {invoice.medioPago || '-'}
+                          {'-'}
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(invoice.status)}`}>
-                            {getStatusText(invoice.status)}
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor('PAID')}`}>
+                            {getStatusText('PAID')}
                           </span>
                         </td>
                         <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
@@ -614,4 +612,3 @@ export default function FacturacionPage() {
     </Suspense>
   )
 }
-
