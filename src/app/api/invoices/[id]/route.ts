@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { InvoiceDbService } from '@/lib/invoice-db-service'
+import { InvoicesRepository } from '@/lib/repositories/invoices'
 
 type RouteParams = {
   params: {
@@ -18,7 +18,7 @@ const getInvoiceId = (params: RouteParams['params']) => {
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const id = getInvoiceId(params)
-    const invoice = await InvoiceDbService.getInvoice(id)
+    const invoice = await InvoicesRepository.findById(id)
 
     if (!invoice) {
       return NextResponse.json(
@@ -50,13 +50,12 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const id = getInvoiceId(params)
-    await request.json()
     return NextResponse.json(
       {
         success: false,
-        error: 'Actualización de facturas en base de datos aún no está implementada'
+        error: 'Actualización de facturas requiere mapa de IDs (clienteId, piezaId)'
       },
-      { status: 501 }
+      { status: 400 }
     )
   } catch (error) {
     console.error('Error updating invoice:', error)

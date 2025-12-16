@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MockEntityService, Entidad } from '@/lib/mock-data'
+import { EntitiesRepository } from '@/lib/repositories/entities'
 
 type RouteParams = {
   params: {
@@ -18,7 +18,7 @@ const getEntityId = (params: RouteParams['params']) => {
 export async function GET(_request: NextRequest, { params }: RouteParams) {
   try {
     const id = getEntityId(params)
-    const entity = await MockEntityService.getEntity(id)
+    const entity = await EntitiesRepository.findById(id)
 
     if (!entity) {
       return NextResponse.json(
@@ -50,20 +50,8 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     const id = getEntityId(params)
-    const updateData = (await request.json()) as Partial<Entidad>
-
-    const updated = await MockEntityService.updateEntity(id, updateData)
-
-    if (!updated) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Entidad no encontrada'
-        },
-        { status: 404 }
-      )
-    }
-
+    const payload = await request.json()
+    const updated = await EntitiesRepository.update(id, payload)
     return NextResponse.json({
       success: true,
       data: updated
@@ -84,21 +72,13 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(_request: NextRequest, { params }: RouteParams) {
   try {
     const id = getEntityId(params)
-    const deleted = await MockEntityService.deleteEntity(id)
-
-    if (!deleted) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Entidad no encontrada'
-        },
-        { status: 404 }
-      )
-    }
-
-    return NextResponse.json({
-      success: true
-    })
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Eliminación de entidades en base de datos no está disponible en este entorno'
+      },
+      { status: 501 }
+    )
   } catch (error) {
     console.error('Error deleting entity:', error)
     const status = error instanceof Error && error.message.includes('inválido') ? 400 : 500

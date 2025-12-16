@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { InvoiceDbService } from '@/lib/invoice-db-service'
+import { InvoicesRepository } from '@/lib/repositories/invoices'
 
 type InvoiceFilters = {
   fechaDesde?: string
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
       return acc
     }, {})
 
-    const data = await InvoiceDbService.getInvoices({
+    const data = await InvoicesRepository.list({
       page,
       limit,
       search,
@@ -105,13 +105,12 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    await request.json()
     return NextResponse.json(
       {
         success: false,
-        error: 'Creación de facturas en base de datos aún no está implementada'
+        error: 'Creación de facturas requiere clienteId y piezaId; pendiente de mapa de IDs'
       },
-      { status: 501 }
+      { status: 400 }
     )
   } catch (error) {
     console.error('Error creating invoice:', error)

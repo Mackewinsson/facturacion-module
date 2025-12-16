@@ -107,3 +107,5 @@ Conectar el backend de facturación para que el frontend deje de usar mocks (`Mo
 3. Probar flujos de: crear entidad, listar entidades filtrando por NIF/nombre/teléfono; crear factura con líneas y totales.
 
 
+
+

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { MockEntityService, Entidad, TipoEntidad } from '@/lib/mock-data'
+import { EntitiesRepository } from '@/lib/repositories/entities'
+import { TipoEntidad } from '@/lib/mock-data'
 
 type ColumnFilters = {
   nif?: string
@@ -28,7 +29,7 @@ export async function GET(request: NextRequest) {
       return acc
     }, {})
 
-    const data = await MockEntityService.getEntities({
+    const data = await EntitiesRepository.list({
       page,
       limit,
       columnFilters: Object.keys(columnFilters).length ? columnFilters : undefined,
@@ -41,10 +42,14 @@ export async function GET(request: NextRequest) {
     })
   } catch (error) {
     console.error('Error fetching entities:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
     return NextResponse.json(
       {
         success: false,
-        error: 'No se pudieron obtener las entidades'
+        error: 'No se pudieron obtener las entidades',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+        stack: process.env.NODE_ENV === 'development' ? errorStack : undefined
       },
       { status: 500 }
     )
@@ -53,20 +58,8 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
-    const payload = (await request.json()) as Omit<Entidad, 'id' | 'createdAt' | 'updatedAt'>
-
-    if (!payload?.NIF || !payload?.razonSocial) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'NIF y razón social son obligatorios'
-        },
-        { status: 400 }
-      )
-    }
-
-    const entity = await MockEntityService.createEntity(payload)
-
+    const payload = await request.json()
+    const entity = await EntitiesRepository.create(payload)
     return NextResponse.json(
       {
         success: true,
@@ -76,10 +69,14 @@ export async function POST(request: NextRequest) {
     )
   } catch (error) {
     console.error('Error creating entity:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
     return NextResponse.json(
       {
         success: false,
-        error: 'No se pudo crear la entidad'
+        error: 'No se pudo crear la entidad',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+        stack: process.env.NODE_ENV === 'development' ? errorStack : undefined
       },
       { status: 500 }
     )
