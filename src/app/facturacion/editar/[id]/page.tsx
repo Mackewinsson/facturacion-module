@@ -1,12 +1,14 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { InvoiceFromDb } from '@/lib/invoice-db-service'
 import LayoutWithSidebar from '@/components/LayoutWithSidebar'
 
-export default function VerFacturaPage({ params }: { params: { id: string } }) {
+export default function VerFacturaPage() {
   const router = useRouter()
+  const params = useParams()
+  const invoiceId = params.id as string
   const { isAuthenticated, token } = useAuthStore()
   const [invoiceData, setInvoiceData] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
@@ -19,7 +21,7 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
     //   return
     // }
     loadInvoice()
-  }, [isAuthenticated, router, params.id])
+  }, [isAuthenticated, router, invoiceId])
 
   const loadInvoice = async () => {
     try {
@@ -27,7 +29,7 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
       if (token) {
         headers['Authorization'] = `Bearer ${token}`
       }
-      const response = await fetch(`/api/invoices/${params.id}`, {
+      const response = await fetch(`/api/invoices/${invoiceId}`, {
         cache: 'no-store',
         headers
       })

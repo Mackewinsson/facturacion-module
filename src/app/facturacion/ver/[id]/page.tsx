@@ -1,12 +1,14 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { InvoiceFromDb } from '@/lib/invoice-db-service'
 import LayoutWithSidebar from '@/components/LayoutWithSidebar'
 
-export default function VerFacturaPage({ params }: { params: { id: string } }) {
+export default function VerFacturaPage() {
   const router = useRouter()
+  const params = useParams()
+  const invoiceId = params.id as string
   const { isAuthenticated, token } = useAuthStore()
   const [invoice, setInvoice] = useState<InvoiceFromDb | null>(null)
   const [loading, setLoading] = useState(true)
@@ -19,7 +21,7 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
     //   return
     // }
     loadInvoice()
-  }, [isAuthenticated, router, params.id])
+  }, [isAuthenticated, router, invoiceId])
 
   const loadInvoice = async () => {
     try {
@@ -27,7 +29,7 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
       if (token) {
         headers['Authorization'] = `Bearer ${token}`
       }
-      const response = await fetch(`/api/invoices/${params.id}`, {
+      const response = await fetch(`/api/invoices/${invoiceId}`, {
         cache: 'no-store',
         headers
       })
@@ -53,7 +55,7 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
     new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount)
 
   const handlePrint = () => window.print()
-  const handleEdit = () => router.push(`/facturacion/editar/${params.id}`)
+  const handleEdit = () => router.push(`/facturacion/editar/${invoiceId}`)
 
   if (loading) {
     return (
