@@ -7,7 +7,7 @@ import LayoutWithSidebar from '@/components/LayoutWithSidebar'
 
 export default function VerFacturaPage({ params }: { params: { id: string } }) {
   const router = useRouter()
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, token } = useAuthStore()
   const [invoiceData, setInvoiceData] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -23,7 +23,14 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
 
   const loadInvoice = async () => {
     try {
-      const response = await fetch(`/api/invoices/${params.id}`, { cache: 'no-store' })
+      const headers: HeadersInit = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      const response = await fetch(`/api/invoices/${params.id}`, {
+        cache: 'no-store',
+        headers
+      })
       if (!response.ok) {
         setError('Error al cargar la factura')
         return

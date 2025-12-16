@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { EntitiesRepository } from '@/lib/repositories/entities'
+import { requireAuth, createUnauthorizedResponse } from '@/lib/auth-utils'
 
 type RouteParams = {
   params: {
@@ -15,8 +16,9 @@ const getEntityId = (params: RouteParams['params']) => {
   return id
 }
 
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    await requireAuth(request)
     const id = getEntityId(params)
     const entity = await EntitiesRepository.findById(id)
 
@@ -35,6 +37,9 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       data: entity
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Missing') || error.message.includes('Invalid') || error.message.includes('expired'))) {
+      return createUnauthorizedResponse(error.message)
+    }
     console.error('Error fetching entity:', error)
     const status = error instanceof Error && error.message.includes('inválido') ? 400 : 500
     return NextResponse.json(
@@ -49,6 +54,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    await requireAuth(request)
     const id = getEntityId(params)
     const payload = await request.json()
     const updated = await EntitiesRepository.update(id, payload)
@@ -57,6 +63,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       data: updated
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Missing') || error.message.includes('Invalid') || error.message.includes('expired'))) {
+      return createUnauthorizedResponse(error.message)
+    }
     console.error('Error updating entity:', error)
     const status = error instanceof Error && error.message.includes('inválido') ? 400 : 500
     return NextResponse.json(
@@ -69,8 +78,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    await requireAuth(request)
     const id = getEntityId(params)
     return NextResponse.json(
       {
@@ -80,6 +90,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       { status: 501 }
     )
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Missing') || error.message.includes('Invalid') || error.message.includes('expired'))) {
+      return createUnauthorizedResponse(error.message)
+    }
     console.error('Error deleting entity:', error)
     const status = error instanceof Error && error.message.includes('inválido') ? 400 : 500
     return NextResponse.json(

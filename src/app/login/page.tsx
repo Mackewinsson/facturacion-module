@@ -73,8 +73,13 @@ export default function Login() {
       })
 
       if (response.ok) {
-        const user = await response.json()
-        login(user)
+        const data = await response.json()
+        const { user, token } = data
+        if (!user || !token) {
+          setError('Respuesta de login inválida')
+          return
+        }
+        login(user, token)
         router.push('/facturacion')
       } else {
         const errorData = await response.json()

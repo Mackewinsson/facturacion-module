@@ -11,7 +11,7 @@ function EntidadesPageContent() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, token, logout } = useAuthStore()
   const [entities, setEntities] = useState<Entidad[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -89,7 +89,20 @@ function EntidadesPageContent() {
         params.set('telefono', columnFilters.telefono)
       }
 
-      const response = await fetch(`/api/entities?${params.toString()}`, { cache: 'no-store' })
+      const headers: HeadersInit = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      const response = await fetch(`/api/entities?${params.toString()}`, {
+        cache: 'no-store',
+        headers
+      })
+      if (response.status === 401) {
+        // Token expired or invalid, redirect to login
+        logout()
+        router.push('/login')
+        return
+      }
       if (!response.ok) {
         throw new Error('API error')
       }
@@ -140,9 +153,14 @@ function EntidadesPageContent() {
   const handleModalDelete = async (id: number) => {
     if (confirm('¿Estás seguro de que quieres eliminar esta entidad?')) {
       try {
+        const headers: HeadersInit = {}
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`
+        }
         const response = await fetch(`/api/entities/${id}`, {
           method: 'DELETE',
-          cache: 'no-store'
+          cache: 'no-store',
+          headers
         })
         if (!response.ok) {
           const data = await response.json()
@@ -159,11 +177,15 @@ function EntidadesPageContent() {
 
   const handleEntityAdded = async (entityData: any) => {
     try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
       const response = await fetch('/api/entities', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers,
         body: JSON.stringify(entityData),
         cache: 'no-store'
       })

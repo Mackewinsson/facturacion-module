@@ -3,6 +3,7 @@ import React, { useState, useEffect } from 'react'
 import { Entidad, Direccion } from '@/lib/mock-data'
 import BaseModal from './BaseModal'
 import ModalToolbarButton from './ModalToolbarButton'
+import { useAuthStore } from '@/store/auth'
 
 interface EntityModalProps {
   entity: Entidad | null
@@ -29,6 +30,7 @@ export default function EntityModal({
   const [showClienteModal, setShowClienteModal] = useState(false)
   const [showProveedorModal, setShowProveedorModal] = useState(false)
   const [showVendedorModal, setShowVendedorModal] = useState(false)
+  const token = useAuthStore((state) => state.token)
 
   // Update form data when entity changes
   useEffect(() => {
@@ -63,11 +65,15 @@ export default function EntityModal({
 
   const handleSave = async () => {
     try {
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
       const response = await fetch(`/api/entities/${entity.id}`, {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json'
-        },
+        headers,
         body: JSON.stringify(formData),
         cache: 'no-store'
       })

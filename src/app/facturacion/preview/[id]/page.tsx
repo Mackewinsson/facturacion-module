@@ -3,11 +3,13 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { InvoiceFromDb } from '@/lib/invoice-db-service'
 import LayoutWithSidebar from '@/components/LayoutWithSidebar'
+import { useAuthStore } from '@/store/auth'
 
 export default function InvoicePreviewPage() {
   const router = useRouter()
   const params = useParams()
   const invoiceId = parseInt(params.id as string)
+  const token = useAuthStore((state) => state.token)
 
   const [invoice, setInvoice] = useState<InvoiceFromDb | null>(null)
   const [loading, setLoading] = useState(true)
@@ -18,7 +20,14 @@ export default function InvoicePreviewPage() {
 
   const loadInvoice = async () => {
     try {
-      const response = await fetch(`/api/invoices/${invoiceId}`, { cache: 'no-store' })
+      const headers: HeadersInit = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      const response = await fetch(`/api/invoices/${invoiceId}`, {
+        cache: 'no-store',
+        headers
+      })
       const data = await response.json()
       if (data?.success && data?.data) {
         setInvoice(data.data as InvoiceFromDb)

@@ -10,7 +10,7 @@ function FacturacionPageContent() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const { isAuthenticated } = useAuthStore()
+  const { isAuthenticated, token, logout } = useAuthStore()
   const [invoices, setInvoices] = useState<InvoiceFromDb[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -106,7 +106,20 @@ function FacturacionPageContent() {
         if (value) params.set(`column_${key}`, value)
       })
 
-      const response = await fetch(`/api/invoices?${params.toString()}`, { cache: 'no-store' })
+      const headers: HeadersInit = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      const response = await fetch(`/api/invoices?${params.toString()}`, {
+        cache: 'no-store',
+        headers
+      })
+      if (response.status === 401) {
+        // Token expired or invalid, redirect to login
+        logout()
+        router.push('/login')
+        return
+      }
       if (!response.ok) throw new Error('API error')
       const data = await response.json()
 

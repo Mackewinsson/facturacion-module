@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { InvoicesRepository } from '@/lib/repositories/invoices'
+import { requireAuth, createUnauthorizedResponse } from '@/lib/auth-utils'
 
 type InvoiceFilters = {
   fechaDesde?: string
@@ -63,6 +64,7 @@ const parseNumber = (value: string | null, fallback: number) => {
 
 export async function GET(request: NextRequest) {
   try {
+    await requireAuth(request)
     const { searchParams } = new URL(request.url)
 
     const page = parseNumber(searchParams.get('page'), 1)
@@ -94,6 +96,9 @@ export async function GET(request: NextRequest) {
       ...data
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Missing') || error.message.includes('Invalid') || error.message.includes('expired'))) {
+      return createUnauthorizedResponse(error.message)
+    }
     console.error('Error fetching invoices:', error)
     return NextResponse.json(
       {
@@ -107,6 +112,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    await requireAuth(request)
     return NextResponse.json(
       {
         success: false,
@@ -115,6 +121,9 @@ export async function POST(request: NextRequest) {
       { status: 400 }
     )
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Missing') || error.message.includes('Invalid') || error.message.includes('expired'))) {
+      return createUnauthorizedResponse(error.message)
+    }
     console.error('Error creating invoice:', error)
     return NextResponse.json(
       {

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { EntitiesRepository } from '@/lib/repositories/entities'
 import { TipoEntidad } from '@/lib/mock-data'
+import { requireAuth, createUnauthorizedResponse } from '@/lib/auth-utils'
 
 type ColumnFilters = {
   nif?: string
@@ -18,6 +19,7 @@ const parseNumber = (value: string | null, fallback: number) => {
 
 export async function GET(request: NextRequest) {
   try {
+    await requireAuth(request)
     const { searchParams } = new URL(request.url)
     const page = parseNumber(searchParams.get('page'), 1)
     const limit = parseNumber(searchParams.get('limit'), 1000)
@@ -41,6 +43,9 @@ export async function GET(request: NextRequest) {
       ...data
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Missing') || error.message.includes('Invalid') || error.message.includes('expired'))) {
+      return createUnauthorizedResponse(error.message)
+    }
     console.error('Error fetching entities:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     const errorStack = error instanceof Error ? error.stack : undefined
@@ -58,6 +63,7 @@ export async function GET(request: NextRequest) {
 
 export async function POST(request: NextRequest) {
   try {
+    await requireAuth(request)
     const payload = await request.json()
     const entity = await EntitiesRepository.create(payload)
     return NextResponse.json(
@@ -68,6 +74,9 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     )
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Missing') || error.message.includes('Invalid') || error.message.includes('expired'))) {
+      return createUnauthorizedResponse(error.message)
+    }
     console.error('Error creating entity:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     const errorStack = error instanceof Error ? error.stack : undefined

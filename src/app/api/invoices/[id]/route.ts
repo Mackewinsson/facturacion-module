@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { InvoicesRepository } from '@/lib/repositories/invoices'
+import { requireAuth, createUnauthorizedResponse } from '@/lib/auth-utils'
 
 type RouteParams = {
   params: {
@@ -15,8 +16,9 @@ const getInvoiceId = (params: RouteParams['params']) => {
   return id
 }
 
-export async function GET(_request: NextRequest, { params }: RouteParams) {
+export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
+    await requireAuth(request)
     const id = getInvoiceId(params)
     const invoice = await InvoicesRepository.findById(id)
 
@@ -35,6 +37,9 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
       data: invoice
     })
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Missing') || error.message.includes('Invalid') || error.message.includes('expired'))) {
+      return createUnauthorizedResponse(error.message)
+    }
     console.error('Error fetching invoice:', error)
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
     const errorStack = error instanceof Error ? error.stack : undefined
@@ -53,6 +58,7 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
+    await requireAuth(request)
     const id = getInvoiceId(params)
     return NextResponse.json(
       {
@@ -62,6 +68,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
       { status: 400 }
     )
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Missing') || error.message.includes('Invalid') || error.message.includes('expired'))) {
+      return createUnauthorizedResponse(error.message)
+    }
     console.error('Error updating invoice:', error)
     const status = error instanceof Error && error.message.includes('inválido') ? 400 : 500
     return NextResponse.json(
@@ -74,8 +83,9 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
   }
 }
 
-export async function DELETE(_request: NextRequest, { params }: RouteParams) {
+export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
+    await requireAuth(request)
     const id = getInvoiceId(params)
     return NextResponse.json(
       {
@@ -85,6 +95,9 @@ export async function DELETE(_request: NextRequest, { params }: RouteParams) {
       { status: 501 }
     )
   } catch (error) {
+    if (error instanceof Error && (error.message.includes('Missing') || error.message.includes('Invalid') || error.message.includes('expired'))) {
+      return createUnauthorizedResponse(error.message)
+    }
     console.error('Error deleting invoice:', error)
     const status = error instanceof Error && error.message.includes('inválido') ? 400 : 500
     return NextResponse.json(

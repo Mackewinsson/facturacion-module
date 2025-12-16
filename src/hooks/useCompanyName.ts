@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useAuthStore } from '@/store/auth'
 
 interface CompanyResponse {
   success: boolean
@@ -14,11 +15,17 @@ interface CompanyResponse {
  */
 export function useCompanyName(): string {
   const [companyName, setCompanyName] = useState<string>('Empresa')
+  const token = useAuthStore((state) => state.token)
 
   useEffect(() => {
     const fetchCompanyName = async () => {
+      if (!token) return // Don't fetch if not authenticated
       try {
-        const response = await fetch('/api/company')
+        const response = await fetch('/api/company', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
         
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`)
@@ -38,7 +45,7 @@ export function useCompanyName(): string {
     }
 
     fetchCompanyName()
-  }, [])
+  }, [token])
 
   return companyName
 }

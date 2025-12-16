@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { verificarClave } from '@/lib/encryption'
+import { signToken } from '@/lib/jwt'
 
 export async function POST(request: NextRequest) {
   try {
@@ -91,7 +92,17 @@ export async function POST(request: NextRequest) {
       createdAt: user.createdAt
     }
 
-    return NextResponse.json(userInfo)
+    // Generate JWT token
+    const token = signToken({
+      userId: user.userId,
+      accessLevel: user.accessLevel,
+      adminLevel: user.adminLevel
+    })
+
+    return NextResponse.json({
+      user: userInfo,
+      token
+    })
   } catch (error) {
     console.error('Login error:', error)
     return NextResponse.json(
