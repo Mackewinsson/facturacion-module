@@ -8,6 +8,9 @@ const mapLine = (line: any): LineaFactura => {
   const base = safeNumber(line.IPTLAB)
   const ivaPct = safeNumber(line.IVALAB)
   const rePct = safeNumber(line.REQLAB)
+  const dt1 = safeNumber(line.DT1LAB)
+  const dt2 = safeNumber(line.DT2LAB)
+  const descuentoTotal = dt1 + dt2 // Suma de ambos descuentos según DBA: "LAB.DT1LAB Y LAB.DT2LAB"
   const cuotaIVA = +(base * (ivaPct / 100)).toFixed(2)
   const cuotaRE = +(base * (rePct / 100)).toFixed(2)
   return {
@@ -15,7 +18,7 @@ const mapLine = (line: any): LineaFactura => {
     descripcion: line.Piezas?.DenominacionPieza ?? line.NPELAB ?? 'Línea sin descripción',
     cantidad: safeNumber(line.SERLAB),
     precioUnitario: safeNumber(line.NETLAB),
-    descuentoPct: safeNumber(line.DT1LAB) || undefined,
+    descuentoPct: descuentoTotal > 0 ? descuentoTotal : undefined,
     tipoIVA: (line.IVALAB as number) ?? 0,
     recargoEquivalenciaPct: rePct || undefined,
     baseLinea: base,
@@ -106,11 +109,13 @@ export class InvoicesRepository {
       const bi1 = safeNumber(record.BI1CFA)
       const bi2 = safeNumber(record.BI2CFA)
       const bi3 = safeNumber(record.BI3CFA)
+      const bip = safeNumber(record.BIPCFA)
       const ci1 = safeNumber(record.CI1CFA)
       const ci2 = safeNumber(record.CI2CFA)
       const ci3 = safeNumber(record.CI3CFA)
-      const baseImponible = bi1 + bi2 + bi3
-      const iva = ci1 + ci2 + ci3
+      const cip = safeNumber(record.CIPCFA)
+      const baseImponible = bi1 + bi2 + bi3 + bip
+      const iva = ci1 + ci2 + ci3 + cip
       return {
         id: record.IDECFA,
         numero: record.NUMCFA || '',
@@ -180,15 +185,21 @@ export class InvoicesRepository {
     // Vencimientos de crédito
     const credit = await prisma.cRT.findFirst({
       where: { DOCCRT: record.NUMCFA },
-      orderBy: { FEVCRT: 'asc' }
+      orderBy: { FVTCRT: 'asc' }
     })
 
     const bi1 = safeNumber(record.BI1CFA)
     const bi2 = safeNumber(record.BI2CFA)
     const bi3 = safeNumber(record.BI3CFA)
+    const bip = safeNumber(record.BIPCFA)
     const ci1 = safeNumber(record.CI1CFA)
     const ci2 = safeNumber(record.CI2CFA)
     const ci3 = safeNumber(record.CI3CFA)
+    const cip = safeNumber(record.CIPCFA)
+    const cr1 = safeNumber(record.CR1CFA)
+    const cr2 = safeNumber(record.CR2CFA)
+    const cr3 = safeNumber(record.CR3CFA)
+    const crp = safeNumber(record.CRPCFA)
 
     return {
       id,
@@ -226,14 +237,14 @@ export class InvoicesRepository {
       lineas,
       totales: {
         basesPorTipo: [],
-        baseImponibleTotal: bi1 + bi2 + bi3,
-        cuotaIVATotal: ci1 + ci2 + ci3,
-        cuotaRETotal: safeNumber(record.CRPCFA),
+        baseImponibleTotal: bi1 + bi2 + bi3 + bip,
+        cuotaIVATotal: ci1 + ci2 + ci3 + cip,
+        cuotaRETotal: cr1 + cr2 + cr3 + crp,
         totalFactura: safeNumber(record.TOTCFA)
       },
       formaPago: record.FPACFA ?? '',
       medioPago: record.MPACFA ?? '',
-      fechaVencimiento: credit?.FEVCRT?.toISOString(),
+      fechaVencimiento: credit?.FVTCRT?.toISOString(),
       notas: record.NUTCFA ?? '',
       status: safeNumber(record.TOTCFA) < 0 ? 'OVERDUE' : 'SENT',
       esRectificativa: safeNumber(record.TOTCFA) < 0,

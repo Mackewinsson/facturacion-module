@@ -36,11 +36,15 @@ export async function GET(_request: NextRequest, { params }: RouteParams) {
     })
   } catch (error) {
     console.error('Error fetching invoice:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : undefined
     const status = error instanceof Error && error.message.includes('inválido') ? 400 : 500
     return NextResponse.json(
       {
         success: false,
-        error: status === 400 ? error?.message : 'No se pudo obtener la factura'
+        error: status === 400 ? error?.message : 'No se pudo obtener la factura',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
+        stack: process.env.NODE_ENV === 'development' ? errorStack : undefined
       },
       { status }
     )
