@@ -8,7 +8,7 @@ import LayoutWithSidebar from '@/components/LayoutWithSidebar'
 export default function VerFacturaPage({ params }: { params: { id: string } }) {
   const router = useRouter()
   const { isAuthenticated } = useAuthStore()
-  const [invoiceData, setInvoiceData] = useState<InvoiceFromDb | null>(null)
+  const [invoiceData, setInvoiceData] = useState<any | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -30,7 +30,7 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
       }
       const data = await response.json()
       if (data?.success && data?.data) {
-        setInvoiceData(data.data as InvoiceFromDb)
+        setInvoiceData(data.data)
       } else {
         setError('Factura no encontrada')
       }
@@ -106,13 +106,13 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
                 <div>
                   <p className="text-sm text-muted-foreground">Fecha</p>
                   <p className="text-lg font-semibold text-card-foreground">
-                    {invoiceData.fecha ? new Date(invoiceData.fecha).toLocaleDateString('es-ES') : '-'}
+                    {invoiceData.fechaExpedicion ? new Date(invoiceData.fechaExpedicion).toLocaleDateString('es-ES') : '-'}
                   </p>
                 </div>
                 <div>
                   <p className="text-sm text-muted-foreground">Cliente</p>
-                  <p className="text-lg font-semibold text-card-foreground">{invoiceData.clienteNombre}</p>
-                  <p className="text-sm text-muted-foreground">NIF: {invoiceData.clienteNif || '-'}</p>
+                  <p className="text-lg font-semibold text-card-foreground">{invoiceData.cliente?.nombreORazonSocial || '-'}</p>
+                  <p className="text-sm text-muted-foreground">NIF: {invoiceData.cliente?.NIF || '-'}</p>
                 </div>
               </div>
 
@@ -120,13 +120,13 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
                 <div className="space-y-2">
                   <p className="text-sm font-medium text-card-foreground">Dirección</p>
                   <div className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-md">
-                    {invoiceData.direccion?.direccion || '-'}
+                    {invoiceData.cliente?.domicilio?.calle || '-'}
                   </div>
                   <div className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-md">
-                    {invoiceData.direccion?.poblacion || '-'} {invoiceData.direccion?.provincia ? `(${invoiceData.direccion?.provincia})` : ''}
+                    {invoiceData.cliente?.domicilio?.municipio || '-'} {invoiceData.cliente?.domicilio?.provincia ? `(${invoiceData.cliente.domicilio.provincia})` : ''}
                   </div>
                   <div className="text-sm text-muted-foreground bg-muted px-3 py-2 rounded-md">
-                    {invoiceData.direccion?.codigoPostal || '-'}
+                    {invoiceData.cliente?.domicilio?.codigoPostal || '-'}
                   </div>
                 </div>
 
@@ -136,19 +136,19 @@ export default function VerFacturaPage({ params }: { params: { id: string } }) {
                     <div>
                       <p className="text-sm text-muted-foreground">Base Imponible</p>
                       <p className="text-xl font-semibold text-card-foreground">
-                        {formatCurrency(invoiceData.totales.baseImponible)}
+                        {formatCurrency(invoiceData.totales?.baseImponibleTotal ?? 0)}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">IVA</p>
                       <p className="text-xl font-semibold text-card-foreground">
-                        {formatCurrency(invoiceData.totales.iva)}
+                        {formatCurrency(invoiceData.totales?.cuotaIVATotal ?? 0)}
                       </p>
                     </div>
                     <div>
                       <p className="text-sm text-muted-foreground">Total</p>
                       <p className="text-xl font-semibold text-card-foreground">
-                        {formatCurrency(invoiceData.totales.total)}
+                        {formatCurrency(invoiceData.totales?.totalFactura ?? 0)}
                       </p>
                     </div>
                   </div>

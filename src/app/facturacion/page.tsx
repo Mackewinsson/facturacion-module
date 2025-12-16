@@ -571,7 +571,7 @@ function FacturacionPageContent() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
-                                handleViewInvoice(invoice.id)
+                                handleRowClick(invoice)
                               }}
                               className="text-blue-600 hover:text-blue-900"
                             >
