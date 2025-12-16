@@ -97,6 +97,11 @@ function FacturacionPageContent() {
       params.set('fechaDesde', dateRange.fechaDesde)
       params.set('fechaHasta', dateRange.fechaHasta)
 
+      // Add tipoFactura filter if not 'ALL'
+      if (tipoFilter !== 'ALL') {
+        params.set('tipoFactura', tipoFilter)
+      }
+
       Object.entries(columnFilters).forEach(([key, value]) => {
         if (value) params.set(`column_${key}`, value)
       })
@@ -106,8 +111,6 @@ function FacturacionPageContent() {
       const data = await response.json()
 
       const fetched: InvoiceFromDb[] = data?.invoices ?? []
-
-      // The DB does not expose tipoFactura; keep all for now
       setInvoices(fetched)
       setTotalResults(fetched.length)
     } catch (err) {

@@ -44,10 +44,16 @@ export class InvoicesRepository {
       fechaHasta?: string
       importeMinimo?: string
       importeMaximo?: string
+      tipoFactura?: 'emitida' | 'recibida'
     }
   }) {
     const { page = 1, limit = 10, search, columnFilters = {}, filters = {} } = params
     const where: any = {}
+    
+    // Filter by invoice type: FRECFA = false for emitida, true for recibida
+    if (filters.tipoFactura) {
+      where.FRECFA = filters.tipoFactura === 'recibida'
+    }
 
     if (search) {
       where.OR = [

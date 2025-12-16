@@ -8,6 +8,7 @@ type InvoiceFilters = {
   importeMaximo?: string
   formaPago?: string
   lugarEmision?: string
+  tipoFactura?: 'emitida' | 'recibida'
 }
 
 type InvoiceColumnFilters = {
@@ -33,7 +34,8 @@ const filterKeys: Array<keyof InvoiceFilters> = [
   'importeMinimo',
   'importeMaximo',
   'formaPago',
-  'lugarEmision'
+  'lugarEmision',
+  'tipoFactura'
 ]
 
 const columnFilterKeys: Array<keyof InvoiceColumnFilters> = [
