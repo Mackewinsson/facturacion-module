@@ -3,13 +3,14 @@ import { InvoicesRepository } from '@/lib/repositories/invoices'
 import { requireAuth, createUnauthorizedResponse } from '@/lib/auth-utils'
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-const getInvoiceId = (params: RouteParams['params']) => {
-  const id = parseInt(params.id, 10)
+const getInvoiceId = async (params: Promise<{ id: string }>) => {
+  const resolvedParams = await params
+  const id = parseInt(resolvedParams.id, 10)
   if (Number.isNaN(id)) {
     throw new Error('ID de factura inválido')
   }
@@ -19,7 +20,7 @@ const getInvoiceId = (params: RouteParams['params']) => {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     await requireAuth(request)
-    const id = getInvoiceId(params)
+    const id = await getInvoiceId(params)
     const invoice = await InvoicesRepository.findById(id)
 
     if (!invoice) {
@@ -47,7 +48,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         success: false,
-        error: status === 400 ? error?.message : 'No se pudo obtener la factura',
+        error: status === 400 && error instanceof Error ? error.message : 'No se pudo obtener la factura',
         details: process.env.NODE_ENV === 'development' ? errorMessage : undefined,
         stack: process.env.NODE_ENV === 'development' ? errorStack : undefined
       },
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     await requireAuth(request)
-    const id = getInvoiceId(params)
+    const id = await getInvoiceId(params)
     return NextResponse.json(
       {
         success: false,
@@ -76,7 +77,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         success: false,
-        error: status === 400 ? error?.message : 'No se pudo actualizar la factura'
+        error: status === 400 && error instanceof Error ? error.message : 'No se pudo actualizar la factura'
       },
       { status }
     )
@@ -86,7 +87,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     await requireAuth(request)
-    const id = getInvoiceId(params)
+    const id = await getInvoiceId(params)
     return NextResponse.json(
       {
         success: false,
@@ -103,7 +104,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         success: false,
-        error: status === 400 ? error?.message : 'No se pudo eliminar la factura'
+        error: status === 400 && error instanceof Error ? error.message : 'No se pudo eliminar la factura'
       },
       { status }
     )

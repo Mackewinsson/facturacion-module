@@ -122,12 +122,12 @@ const buildWhere = (params: {
   // Búsqueda global por número, NIF, nombre o dirección
   if (search) {
     where.OR = [
-      { NUMCFA: { contains: search, mode: 'insensitive' } },
-      { ENT: { is: { NIFENT: { contains: search, mode: 'insensitive' } } } },
-      { ENT: { is: { NCOENT: { contains: search, mode: 'insensitive' } } } },
-      { DIR: { is: { DIRDIR: { contains: search, mode: 'insensitive' } } } },
-      { DIR: { is: { POBDIR: { contains: search, mode: 'insensitive' } } } },
-      { DIR: { is: { CPODIR: { contains: search, mode: 'insensitive' } } } }
+      { NUMCFA: { contains: search,  } },
+      { ENT: { is: { NIFENT: { contains: search,  } } } },
+      { ENT: { is: { NCOENT: { contains: search,  } } } },
+      { DIR: { is: { DIRDIR: { contains: search,  } } } },
+      { DIR: { is: { POBDIR: { contains: search,  } } } },
+      { DIR: { is: { CPODIR: { contains: search,  } } } }
     ]
   }
 
@@ -135,27 +135,27 @@ const buildWhere = (params: {
   const columnClauses: Prisma.CFAWhereInput[] = []
 
   if (columnFilters?.factura) {
-    columnClauses.push({ NUMCFA: { contains: columnFilters.factura, mode: 'insensitive' } })
+    columnClauses.push({ NUMCFA: { contains: columnFilters.factura,  } })
   }
 
   if (columnFilters?.nif) {
-    columnClauses.push({ ENT: { is: { NIFENT: { contains: columnFilters.nif, mode: 'insensitive' } } } })
+    columnClauses.push({ ENT: { is: { NIFENT: { contains: columnFilters.nif,  } } } })
   }
 
   if (columnFilters?.cliente) {
-    columnClauses.push({ ENT: { is: { NCOENT: { contains: columnFilters.cliente, mode: 'insensitive' } } } })
+    columnClauses.push({ ENT: { is: { NCOENT: { contains: columnFilters.cliente,  } } } })
   }
 
   if (columnFilters?.direccion) {
-    columnClauses.push({ DIR: { is: { DIRDIR: { contains: columnFilters.direccion, mode: 'insensitive' } } } })
+    columnClauses.push({ DIR: { is: { DIRDIR: { contains: columnFilters.direccion,  } } } })
   }
 
   if (columnFilters?.poblacion) {
-    columnClauses.push({ DIR: { is: { POBDIR: { contains: columnFilters.poblacion, mode: 'insensitive' } } } })
+    columnClauses.push({ DIR: { is: { POBDIR: { contains: columnFilters.poblacion,  } } } })
   }
 
   if (columnFilters?.codigoPostal) {
-    columnClauses.push({ DIR: { is: { CPODIR: { contains: columnFilters.codigoPostal, mode: 'insensitive' } } } })
+    columnClauses.push({ DIR: { is: { CPODIR: { contains: columnFilters.codigoPostal,  } } } })
   }
 
   return appendAnd(where, columnClauses)

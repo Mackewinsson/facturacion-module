@@ -3,13 +3,14 @@ import { EntitiesRepository } from '@/lib/repositories/entities'
 import { requireAuth, createUnauthorizedResponse } from '@/lib/auth-utils'
 
 type RouteParams = {
-  params: {
+  params: Promise<{
     id: string
-  }
+  }>
 }
 
-const getEntityId = (params: RouteParams['params']) => {
-  const id = parseInt(params.id, 10)
+const getEntityId = async (params: Promise<{ id: string }>) => {
+  const resolvedParams = await params
+  const id = parseInt(resolvedParams.id, 10)
   if (Number.isNaN(id)) {
     throw new Error('ID de entidad inválido')
   }
@@ -19,7 +20,7 @@ const getEntityId = (params: RouteParams['params']) => {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     await requireAuth(request)
-    const id = getEntityId(params)
+    const id = await getEntityId(params)
     const entity = await EntitiesRepository.findById(id)
 
     if (!entity) {
@@ -45,7 +46,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         success: false,
-        error: status === 400 ? error.message : 'No se pudo obtener la entidad'
+        error: status === 400 && error instanceof Error ? error.message : 'No se pudo obtener la entidad'
       },
       { status }
     )
@@ -55,7 +56,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
     await requireAuth(request)
-    const id = getEntityId(params)
+    const id = await getEntityId(params)
     const payload = await request.json()
     const updated = await EntitiesRepository.update(id, payload)
     return NextResponse.json({
@@ -71,7 +72,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         success: false,
-        error: status === 400 ? error.message : 'No se pudo actualizar la entidad'
+        error: status === 400 && error instanceof Error ? error.message : 'No se pudo actualizar la entidad'
       },
       { status }
     )
@@ -81,14 +82,14 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     await requireAuth(request)
-    const id = getEntityId(params)
-    return NextResponse.json(
-      {
-        success: false,
+    const id = await getEntityId(params)
+      return NextResponse.json(
+        {
+          success: false,
         error: 'Eliminación de entidades en base de datos no está disponible en este entorno'
-      },
+        },
       { status: 501 }
-    )
+      )
   } catch (error) {
     if (error instanceof Error && (error.message.includes('Missing') || error.message.includes('Invalid') || error.message.includes('expired'))) {
       return createUnauthorizedResponse(error.message)
@@ -98,7 +99,7 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     return NextResponse.json(
       {
         success: false,
-        error: status === 400 ? error.message : 'No se pudo eliminar la entidad'
+        error: status === 400 && error instanceof Error ? error.message : 'No se pudo eliminar la entidad'
       },
       { status }
     )

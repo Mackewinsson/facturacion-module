@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  # SQL Server Database
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: recepcionactiva-sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=${DB_SA_PASSWORD:-sa2006Strong!}
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+      - ./MotosMunozDatos 15-09-2025:/var/opt/mssql/backup/MotosMunozDatos 15-09-2025:ro
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${DB_SA_PASSWORD:-sa2006Strong!}' -C -Q 'SELECT 1' || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+    networks:
+      - recepcionactiva-network
+
+volumes:
+  sqlserver_data:
+
+networks:
+  recepcionactiva-network:
+    driver: bridge
+

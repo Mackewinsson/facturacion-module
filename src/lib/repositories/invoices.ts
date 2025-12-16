@@ -19,7 +19,7 @@ const mapLine = (line: any): LineaFactura => {
     cantidad: safeNumber(line.SERLAB),
     precioUnitario: safeNumber(line.NETLAB),
     descuentoPct: descuentoTotal > 0 ? descuentoTotal : undefined,
-    tipoIVA: (line.IVALAB as number) ?? 0,
+    tipoIVA: (Math.round(safeNumber(line.IVALAB)) as 0 | 4 | 10 | 21) || 0,
     recargoEquivalenciaPct: rePct || undefined,
     baseLinea: base,
     cuotaIVA,
@@ -223,8 +223,8 @@ export class InvoicesRepository {
           calle: record.ALM?.DIR?.DIRDIR ?? '',
           codigoPostal: record.ALM?.DIR?.CPODIR ?? '',
           municipio: record.ALM?.DIR?.POBDIR ?? '',
-          provincia: record.ALM?.DIR?.PRO?.NOMPRO ?? '',
-          pais: record.ALM?.DIR?.PAI?.NOMPAI ?? ''
+          provincia: (record.ALM?.DIR as any)?.PRO?.NOMPRO ?? '',
+          pais: (record.ALM?.DIR as any)?.PAI?.NOMPAI ?? ''
         }
       },
       cliente: {
@@ -248,10 +248,10 @@ export class InvoicesRepository {
         cuotaRETotal: cr1 + cr2 + cr3 + crp,
         totalFactura: safeNumber(record.TOTCFA)
       },
-      formaPago: record.FPACFA ?? '',
+      formaPago: String(record.FPACFA ?? ''),
       medioPago: record.MPACFA ?? '',
       fechaVencimiento: credit?.FVTCRT?.toISOString(),
-      notas: record.NUTCFA ?? '',
+      notas: record.NOTCFA ?? '',
       status: safeNumber(record.TOTCFA) < 0 ? 'OVERDUE' : 'SENT',
       esRectificativa: safeNumber(record.TOTCFA) < 0,
       causaRectificacion: undefined,
@@ -269,8 +269,10 @@ export class InvoicesRepository {
       importeGastosAsoc1: 0,
       ctaGastosAsoc2: '',
       importeGastosAsoc2: 0,
-      statusHistory: undefined
-    } as Invoice
+      statusHistory: undefined,
+      createdAt: record.FECCFA?.toISOString() || new Date().toISOString(),
+      updatedAt: record.FEMCFA?.toISOString() || new Date().toISOString()
+    } as unknown as Invoice
   }
 }
 

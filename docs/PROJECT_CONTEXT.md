@@ -584,3 +584,4 @@ sqlserver://localhost:1433;database=MotosMunozDatos;user=sa;password=sa2006Stron
 
 **Prisma Client:** `src/lib/prisma.ts` - Configurado para SQL Server con PrismaMssql adapter
 
+

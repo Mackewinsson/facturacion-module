@@ -55,3 +55,4 @@ export function extractTokenFromHeader(request: NextRequest): string | null {
   return authHeader.substring(7) // Remove 'Bearer ' prefix
 }
 
+

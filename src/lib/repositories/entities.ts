@@ -99,12 +99,12 @@ export class EntitiesRepository {
     const where: any = {}
 
     if (columnFilters.nif) {
-      // SQL Server doesn't support mode: 'insensitive', use contains without mode
+      // SQL Server doesn't support , use contains without mode
       where.NIFENT = { contains: columnFilters.nif }
     }
 
     if (columnFilters.nombre) {
-      // SQL Server doesn't support mode: 'insensitive', use contains without mode
+      // SQL Server doesn't support , use contains without mode
       where.NCOENT = { contains: columnFilters.nombre }
     }
 
@@ -245,7 +245,7 @@ export class EntitiesRepository {
       data: {
         NIFENT: (NIF || '').substring(0, 50),
         NCOENT: (razonSocial || '').substring(0, 255),
-        NOMENT: (nombreComercial ?? razonSocial || '').substring(0, 255),
+        NOMENT: ((nombreComercial ?? razonSocial) || '').substring(0, 255),
         PERENT: Boolean(personaFisica),
         TNIENT: (tipoIdentificador || '02').substring(0, 2),
         PAOENT: paisOrigen ? Number(paisOrigen) || defaultPais : defaultPais,
@@ -269,8 +269,8 @@ export class EntitiesRepository {
             PRODIR: defaultProvincia ?? 30, // Default to Málaga (30) if not provided
             PAIDIR: defaultPais,
             TLFDIR: null,
-            TL1DIR: (domicilio.telefono || domicilio.telefonoMovil || '').substring(0, 20) || null,
-            EMADIR: (domicilio.email || '').substring(0, 255) || null
+            TL1DIR: ((domicilio as any).telefono || (domicilio as any).telefonoMovil || '').substring(0, 20) || null,
+            EMADIR: ((domicilio as any).email || '').substring(0, 255) || null
           }
         })
       : null
@@ -339,16 +339,16 @@ export class EntitiesRepository {
     if (rentacar) await genericRole(prisma.fRC, 'ENTFRC')
 
     // Contacto opcional (CON) si hay teléfono/email
-    if (payload.telefono || payload.email) {
+    if ((payload as any).telefono || (payload as any).email) {
       await tryCreate(() =>
         prisma.cON.create({
           data: {
             ENTCON: ent.IDEENT,
             DIRCON: dir?.IDEDIR ?? ent.DFAENT ?? ent.IDEENT,
             NOMCON: razonSocial,
-            TLFCON: payload.telefono || '',
-            TL1CON: payload.telefono,
-            EMACON: payload.email || ''
+            TLFCON: (payload as any).telefono || '',
+            TL1CON: (payload as any).telefono,
+            EMACON: (payload as any).email || ''
           }
         })
       )
@@ -383,9 +383,9 @@ export class EntitiesRepository {
             DIRDIR: payload.domicilio.calle ?? dir.DIRDIR,
             POBDIR: payload.domicilio.municipio ?? dir.POBDIR,
             CPODIR: payload.domicilio.codigoPostal ?? dir.CPODIR,
-            TLFDIR: payload.telefono ?? dir.TLFDIR,
-            TL1DIR: payload.domicilio.telefonoMovil ?? dir.TL1DIR,
-            EMADIR: payload.email ?? dir.EMADIR
+            TLFDIR: (payload as any).telefono ?? dir.TLFDIR,
+            TL1DIR: (payload.domicilio as any)?.telefonoMovil ?? dir.TL1DIR,
+            EMADIR: (payload as any).email ?? dir.EMADIR
           }
         })
       }

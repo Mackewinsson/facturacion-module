@@ -73,7 +73,13 @@ export async function GET(request: NextRequest) {
 
     const filters = filterKeys.reduce<InvoiceFilters>((acc, key) => {
       const value = searchParams.get(key)
-      if (value) acc[key] = value
+      if (value) {
+        if (key === 'tipoFactura' && (value === 'emitida' || value === 'recibida')) {
+          acc[key] = value
+        } else if (key !== 'tipoFactura') {
+          acc[key] = value
+        }
+      }
       return acc
     }, {})
 

@@ -314,7 +314,7 @@ function FacturacionPageContent() {
               <span className="font-medium">
                 {totalResults} resultado{totalResults !== 1 ? 's' : ''} encontrado{totalResults !== 1 ? 's' : ''} con filtros aplicados
                 {(dateRange.fechaDesde !== '2025-08-25' || dateRange.fechaHasta !== '2025-09-24') && 
-                  ` (${formatDateForDisplay(dateRange.fechaDesde)} - ${formatDateForDisplay(dateRange.fechaHasta)})`
+                  ` (${new Date(dateRange.fechaDesde).toLocaleDateString('es-ES')} - ${new Date(dateRange.fechaHasta).toLocaleDateString('es-ES')})`
                 }
               </span>
             </div>
