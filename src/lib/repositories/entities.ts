@@ -99,11 +99,13 @@ export class EntitiesRepository {
     const where: any = {}
 
     if (columnFilters.nif) {
-      where.NIFENT = { contains: columnFilters.nif, mode: 'insensitive' }
+      // SQL Server doesn't support mode: 'insensitive', use contains without mode
+      where.NIFENT = { contains: columnFilters.nif }
     }
 
     if (columnFilters.nombre) {
-      where.NCOENT = { contains: columnFilters.nombre, mode: 'insensitive' }
+      // SQL Server doesn't support mode: 'insensitive', use contains without mode
+      where.NCOENT = { contains: columnFilters.nombre }
     }
 
     const records = await prisma.eNT.findMany({

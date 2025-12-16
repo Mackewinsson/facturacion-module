@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useEffect } from 'react'
-import { Entidad, Direccion, MockEntityService } from '@/lib/mock-data'
+import { Entidad, Direccion } from '@/lib/mock-data'
 import BaseModal from './BaseModal'
 import ModalToolbarButton from './ModalToolbarButton'
 
@@ -63,14 +63,29 @@ export default function EntityModal({
 
   const handleSave = async () => {
     try {
-      await MockEntityService.updateEntity(entity.id, formData)
+      const response = await fetch(`/api/entities/${entity.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(formData),
+        cache: 'no-store'
+      })
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Error al actualizar la entidad')
+      }
+      const updatedData = await response.json()
+      if (updatedData.success && updatedData.data) {
+        setFormData(updatedData.data)
+      }
       setIsEditMode(false)
       onEntityUpdated?.()
       // You could add a toast notification here for success
     } catch (error) {
       console.error('Error updating entity:', error)
       // You could add a toast notification here for error
-      alert('Error al guardar los cambios. Por favor, inténtelo de nuevo.')
+      alert(error instanceof Error ? error.message : 'Error al guardar los cambios. Por favor, inténtelo de nuevo.')
     }
   }
 

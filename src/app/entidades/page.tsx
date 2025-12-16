@@ -2,7 +2,7 @@
 import { useState, useEffect, Suspense } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
-import { MockEntityService, Entidad } from '@/lib/mock-data'
+import { Entidad } from '@/lib/mock-data'
 import LayoutWithSidebar from '@/components/LayoutWithSidebar'
 import EntityModal from '@/components/EntityModal'
 import AddClientModal from '@/components/AddClientModal'
@@ -72,15 +72,35 @@ function EntidadesPageContent() {
   const loadEntities = async () => {
     try {
       setLoading(true)
-      const data = await MockEntityService.getEntities({
-        page: 1,
-        limit: 1000, // Load all entities
-        columnFilters: columnFilters,
-        tipoEntidadFilter: tipoEntidadFilter
-      })
+      setError('')
+      const params = new URLSearchParams()
+      params.set('page', '1')
+      params.set('limit', '1000')
+      if (tipoEntidadFilter !== 'ALL') {
+        params.set('tipo', tipoEntidadFilter)
+      }
+      if (columnFilters.nif) {
+        params.set('nif', columnFilters.nif)
+      }
+      if (columnFilters.nombre) {
+        params.set('nombre', columnFilters.nombre)
+      }
+      if (columnFilters.telefono) {
+        params.set('telefono', columnFilters.telefono)
+      }
 
-      setEntities(data.entities)
-      setTotalResults(data.total)
+      const response = await fetch(`/api/entities?${params.toString()}`, { cache: 'no-store' })
+      if (!response.ok) {
+        throw new Error('API error')
+      }
+      const data = await response.json()
+
+      if (data.success) {
+        setEntities(data.entities || [])
+        setTotalResults(data.total || 0)
+      } else {
+        throw new Error(data.error || 'Error al cargar las entidades')
+      }
     } catch (err) {
       setError('Error al cargar las entidades')
       console.error('Error loading entities:', err)
@@ -120,24 +140,42 @@ function EntidadesPageContent() {
   const handleModalDelete = async (id: number) => {
     if (confirm('¿Estás seguro de que quieres eliminar esta entidad?')) {
       try {
-        await MockEntityService.deleteEntity(id)
+        const response = await fetch(`/api/entities/${id}`, {
+          method: 'DELETE',
+          cache: 'no-store'
+        })
+        if (!response.ok) {
+          const data = await response.json()
+          throw new Error(data.error || 'Error al eliminar la entidad')
+        }
         handleCloseModal()
         loadEntities() // Reload the list
       } catch (err) {
         console.error('Error deleting entity:', err)
-        alert('Error al eliminar la entidad')
+        alert(err instanceof Error ? err.message : 'Error al eliminar la entidad')
       }
     }
   }
 
   const handleEntityAdded = async (entityData: any) => {
     try {
-      await MockEntityService.createEntity(entityData)
+      const response = await fetch('/api/entities', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(entityData),
+        cache: 'no-store'
+      })
+      if (!response.ok) {
+        const data = await response.json()
+        throw new Error(data.error || 'Error al crear la entidad')
+      }
       setIsAddModalOpen(false)
       loadEntities() // Reload the list
     } catch (err) {
       console.error('Error creating entity:', err)
-      alert('Error al crear la entidad')
+      alert(err instanceof Error ? err.message : 'Error al crear la entidad')
     }
   }
 
@@ -276,7 +314,7 @@ function EntidadesPageContent() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
-                            handleViewEntity(entity.id)
+                            handleRowClick(entity)
                           }}
                           className="text-blue-600 hover:text-blue-900 text-sm font-medium"
                         >
