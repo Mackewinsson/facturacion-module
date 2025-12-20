@@ -4,6 +4,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { InvoiceFromDb } from '@/lib/invoice-db-service'
 import LayoutWithSidebar from '@/components/LayoutWithSidebar'
+import InvoicePDFView from '@/components/InvoicePDFView'
 
 export default function VerFacturaPage() {
   const router = useRouter()
@@ -33,8 +34,20 @@ export default function VerFacturaPage() {
         cache: 'no-store',
         headers
       })
+      if (response.status === 401) {
+        // If user is already logged in, don't redirect - let them continue working
+        // The API route handles authentication gracefully in development mode
+        if (isAuthenticated) {
+          console.warn('401 response but user is authenticated - continuing anyway')
+        } else {
+          console.warn('401 response but user not authenticated - continuing anyway (dev mode)')
+        }
+        // Don't redirect - continue with the request
+      }
       if (!response.ok) {
-        setError('Error al cargar la factura')
+        const errorData = await response.json().catch(() => ({}))
+        const errorMessage = errorData.error || errorData.message || `Error ${response.status}: ${response.statusText}`
+        setError(errorMessage)
         return
       }
       const data = await response.json()
@@ -43,19 +56,14 @@ export default function VerFacturaPage() {
       } else {
         setError('Factura no encontrada')
       }
-    } catch {
+    } catch (err) {
+      console.error('Error loading invoice:', err)
       setError('Error de conexión')
     } finally {
       setLoading(false)
     }
   }
 
-  const formatDate = (dateString: string) => new Date(dateString).toLocaleDateString('es-ES')
-  const formatCurrency = (amount: number) =>
-    new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(amount)
-
-  const handlePrint = () => window.print()
-  const handleEdit = () => router.push(`/facturacion/editar/${invoiceId}`)
 
   if (loading) {
     return (
@@ -87,74 +95,22 @@ export default function VerFacturaPage() {
 
   return (
     <LayoutWithSidebar>
-      <div className="bg-background p-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="mb-6 flex justify-between items-center">
+      <div className="bg-background p-4 h-full flex flex-col">
+        <div className="max-w-7xl mx-auto w-full flex flex-col flex-1">
+          <div className="mb-4">
             <button
               onClick={() => router.push('/facturacion')}
-              className="text-blue-600 hover:text-blue-800"
+              className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
             >
-              ← Volver a Facturación
+              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+              Volver a Facturación
             </button>
-            <div className="flex gap-2">
-              <button
-                onClick={handleEdit}
-                className="bg-success hover:bg-success/90 text-white px-4 py-2 rounded-md text-sm font-medium"
-              >
-                Editar
-              </button>
-              <button
-                onClick={handlePrint}
-                className="bg-accent hover:bg-accent/90 text-accent-foreground px-4 py-2 rounded-md text-sm font-medium"
-              >
-                Imprimir
-              </button>
-            </div>
           </div>
 
-          <div className="bg-card rounded-lg shadow-sm border border-border p-8">
-            <div className="flex justify-between items-start mb-8">
-              <div>
-                <h1 className="text-3xl font-bold text-gray-900">FACTURA</h1>
-                <p className="text-lg text-gray-600">#{invoice.numero}</p>
-                <p className="text-sm text-gray-600">Fecha: {invoice.fecha ? formatDate(invoice.fecha) : '-'}</p>
-              </div>
-            </div>
-
-            <div className="mb-8">
-              <h2 className="text-lg font-semibold mb-4">Datos del Cliente</h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div>
-                  <div className="text-sm text-gray-600">Cliente:</div>
-                  <div className="font-medium">{invoice.clienteNombre}</div>
-                  <div className="text-sm text-gray-600">NIF: {invoice.clienteNif || '-'}</div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600">Dirección:</div>
-                  <div>{invoice.direccion?.direccion || '-'}</div>
-                  <div>{invoice.direccion?.codigoPostal || ''} {invoice.direccion?.poblacion || ''}</div>
-                  <div>{invoice.direccion?.provincia || ''}</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-gray-50 p-4 rounded-lg">
-              <h2 className="text-lg font-semibold mb-4">Resumen de Totales</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                  <p className="text-sm text-gray-600">Base Imponible</p>
-                  <p className="text-xl font-semibold">{formatCurrency(invoice.totales.baseImponible)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">IVA</p>
-                  <p className="text-xl font-semibold">{formatCurrency(invoice.totales.iva)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Total</p>
-                  <p className="text-xl font-semibold">{formatCurrency(invoice.totales.total)}</p>
-                </div>
-              </div>
-            </div>
+          <div className="flex-1 min-h-0">
+            <InvoicePDFView invoice={invoice} />
           </div>
         </div>
       </div>

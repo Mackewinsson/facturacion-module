@@ -4,7 +4,6 @@ import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { InvoiceFromDb } from '@/lib/invoice-db-service'
 import LayoutWithSidebar from '@/components/LayoutWithSidebar'
-import InvoiceModal from '@/components/InvoiceModal'
 
 function FacturacionPageContent() {
   const router = useRouter()
@@ -42,8 +41,6 @@ function FacturacionPageContent() {
     fechaDesde: '2024-01-01',
     fechaHasta: '2025-12-31'
   })
-  const [selectedInvoice, setSelectedInvoice] = useState<InvoiceFromDb | null>(null)
-  const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Debounce columnFilters changes - wait 500ms after user stops typing
   useEffect(() => {
@@ -225,24 +222,7 @@ function FacturacionPageContent() {
   }
 
   const handleRowClick = (invoice: InvoiceFromDb) => {
-    setSelectedInvoice(invoice)
-    setIsModalOpen(true)
-  }
-
-  const handleCloseModal = () => {
-    setIsModalOpen(false)
-    setSelectedInvoice(null)
-  }
-
-
-  const handleModalView = (id: number) => {
-    handleCloseModal()
-    handleViewInvoice(id)
-  }
-
-  const handleModalPrint = (id: number) => {
-    // TODO: Implement print functionality
-    console.log('Print invoice:', id)
+    router.push(`/facturacion/ver/${invoice.id}`)
   }
 
 
@@ -708,7 +688,7 @@ function FacturacionPageContent() {
                             <button
                               onClick={(e) => {
                                 e.stopPropagation()
-                                handleRowClick(invoice)
+                                router.push(`/facturacion/ver/${invoice.id}`)
                               }}
                               className="text-blue-600 hover:text-blue-900"
                             >
@@ -730,15 +710,6 @@ function FacturacionPageContent() {
 
       </div>
       </div>
-
-      {/* Invoice Modal */}
-      <InvoiceModal
-        invoice={selectedInvoice}
-        isOpen={isModalOpen}
-        onClose={handleCloseModal}
-        onPrint={handleModalPrint}
-        onView={handleModalView}
-      />
     </LayoutWithSidebar>
   )
 }

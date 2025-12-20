@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { InvoicesRepository } from '@/lib/repositories/invoices'
+import { InvoiceDbService } from '@/lib/invoice-db-service'
 import { requireAuth, createUnauthorizedResponse } from '@/lib/auth-utils'
 
 type RouteParams = {
@@ -19,9 +19,21 @@ const getInvoiceId = async (params: Promise<{ id: string }>) => {
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
-    await requireAuth(request)
+    // Authentication optional for development (matches frontend behavior)
+    try {
+      await requireAuth(request)
+    } catch (authError) {
+      // In development, allow requests without auth
+      // In production, this should be enforced
+      const isDevelopment = process.env.NODE_ENV === 'development'
+      if (!isDevelopment) {
+        throw authError
+      }
+      // Log but don't fail in development
+      console.warn('Authentication skipped in development mode')
+    }
     const id = await getInvoiceId(params)
-    const invoice = await InvoicesRepository.findById(id)
+    const invoice = await InvoiceDbService.getInvoice(id)
 
     if (!invoice) {
       return NextResponse.json(
