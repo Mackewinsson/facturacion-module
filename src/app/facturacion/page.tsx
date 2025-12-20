@@ -35,6 +35,9 @@ function FacturacionPageContent() {
   // Debounced version of columnFilters for API calls
   const [debouncedColumnFilters, setDebouncedColumnFilters] = useState(columnFilters)
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  // Track which input has focus to restore it after re-render
+  const focusedInputRef = useRef<string | null>(null)
+  const inputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({})
   const [dateRange, setDateRange] = useState({
     fechaDesde: '2024-01-01',
     fechaHasta: '2025-12-31'
@@ -160,6 +163,14 @@ function FacturacionPageContent() {
       setInvoices(fetched)
       setTotalResults(fetched.length)
       setError('') // Clear any previous errors on success
+      
+      // Restore focus to the input that was focused before the search
+      if (focusedInputRef.current && inputRefs.current[focusedInputRef.current]) {
+        // Use setTimeout to ensure DOM has updated
+        setTimeout(() => {
+          inputRefs.current[focusedInputRef.current!]?.focus()
+        }, 0)
+      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar las facturas'
       console.error('Error loading invoices:', err)
@@ -228,10 +239,21 @@ function FacturacionPageContent() {
 
 
   const handleColumnFilterChange = (columnName: string, value: string) => {
+    // Track which input is focused
+    focusedInputRef.current = columnName
     setColumnFilters(prev => ({
       ...prev,
       [columnName]: value
     }))
+  }
+
+  const handleFilterFocus = (columnName: string) => {
+    focusedInputRef.current = columnName
+  }
+
+  const handleFilterBlur = () => {
+    // Don't clear focusedInputRef on blur - we want to restore it after search
+    // Only clear if user explicitly clicks elsewhere
   }
 
   const handleDateRangeChange = (field: 'fechaDesde' | 'fechaHasta', value: string) => {
@@ -390,126 +412,168 @@ function FacturacionPageContent() {
                     <tr className="border-b border-gray-200">
                       <th className="px-3 py-2">
                         <input
+                          ref={(el) => { inputRefs.current['factura'] = el }}
                           type="text"
                           value={columnFilters.factura}
                           onChange={(e) => handleColumnFilterChange('factura', e.target.value)}
+                          onFocus={() => handleFilterFocus('factura')}
+                          onBlur={handleFilterBlur}
                           placeholder="Filtrar factura..."
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </th>
                       <th className="px-3 py-2">
                         <input
+                          ref={(el) => { inputRefs.current['fecha'] = el }}
                           type="text"
                           value={columnFilters.fecha}
                           onChange={(e) => handleColumnFilterChange('fecha', e.target.value)}
+                          onFocus={() => handleFilterFocus('fecha')}
+                          onBlur={handleFilterBlur}
                           placeholder="Filtrar fecha..."
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </th>
                       <th className="px-3 py-2">
                         <input
+                          ref={(el) => { inputRefs.current['nif'] = el }}
                           type="text"
                           value={columnFilters.nif}
                           onChange={(e) => handleColumnFilterChange('nif', e.target.value)}
+                          onFocus={() => handleFilterFocus('nif')}
+                          onBlur={handleFilterBlur}
                           placeholder="Filtrar NIF..."
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </th>
                       <th className="px-3 py-2">
                         <input
+                          ref={(el) => { inputRefs.current['cliente'] = el }}
                           type="text"
                           value={columnFilters.cliente}
                           onChange={(e) => handleColumnFilterChange('cliente', e.target.value)}
+                          onFocus={() => handleFilterFocus('cliente')}
+                          onBlur={handleFilterBlur}
                           placeholder="Filtrar cliente..."
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </th>
                       <th className="px-3 py-2">
                         <input
+                          ref={(el) => { inputRefs.current['baseImponible'] = el }}
                           type="text"
                           value={columnFilters.baseImponible}
                           onChange={(e) => handleColumnFilterChange('baseImponible', e.target.value)}
+                          onFocus={() => handleFilterFocus('baseImponible')}
+                          onBlur={handleFilterBlur}
                           placeholder="Filtrar base..."
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </th>
                       <th className="px-3 py-2">
                         <input
+                          ref={(el) => { inputRefs.current['iva'] = el }}
                           type="text"
                           value={columnFilters.iva}
                           onChange={(e) => handleColumnFilterChange('iva', e.target.value)}
+                          onFocus={() => handleFilterFocus('iva')}
+                          onBlur={handleFilterBlur}
                           placeholder="Filtrar IVA..."
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </th>
                       <th className="px-3 py-2">
                         <input
+                          ref={(el) => { inputRefs.current['total'] = el }}
                           type="text"
                           value={columnFilters.total}
                           onChange={(e) => handleColumnFilterChange('total', e.target.value)}
+                          onFocus={() => handleFilterFocus('total')}
+                          onBlur={handleFilterBlur}
                           placeholder="Filtrar total..."
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </th>
                       <th className="px-3 py-2">
                         <input
+                          ref={(el) => { inputRefs.current['direccion'] = el }}
                           type="text"
                           value={columnFilters.direccion}
                           onChange={(e) => handleColumnFilterChange('direccion', e.target.value)}
+                          onFocus={() => handleFilterFocus('direccion')}
+                          onBlur={handleFilterBlur}
                           placeholder="Filtrar dirección..."
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </th>
                       <th className="px-3 py-2">
                         <input
+                          ref={(el) => { inputRefs.current['poblacion'] = el }}
                           type="text"
                           value={columnFilters.poblacion}
                           onChange={(e) => handleColumnFilterChange('poblacion', e.target.value)}
+                          onFocus={() => handleFilterFocus('poblacion')}
+                          onBlur={handleFilterBlur}
                           placeholder="Filtrar población..."
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </th>
                       <th className="px-3 py-2">
                         <input
+                          ref={(el) => { inputRefs.current['provincia'] = el }}
                           type="text"
                           value={columnFilters.provincia}
                           onChange={(e) => handleColumnFilterChange('provincia', e.target.value)}
+                          onFocus={() => handleFilterFocus('provincia')}
+                          onBlur={handleFilterBlur}
                           placeholder="Filtrar provincia..."
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </th>
                       <th className="px-3 py-2">
                         <input
+                          ref={(el) => { inputRefs.current['codigoPostal'] = el }}
                           type="text"
                           value={columnFilters.codigoPostal}
                           onChange={(e) => handleColumnFilterChange('codigoPostal', e.target.value)}
+                          onFocus={() => handleFilterFocus('codigoPostal')}
+                          onBlur={handleFilterBlur}
                           placeholder="Filtrar C.P...."
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </th>
                       <th className="px-3 py-2">
                         <input
+                          ref={(el) => { inputRefs.current['formaPago'] = el }}
                           type="text"
                           value={columnFilters.formaPago}
                           onChange={(e) => handleColumnFilterChange('formaPago', e.target.value)}
+                          onFocus={() => handleFilterFocus('formaPago')}
+                          onBlur={handleFilterBlur}
                           placeholder="Filtrar forma pago..."
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </th>
                       <th className="px-3 py-2">
                         <input
+                          ref={(el) => { inputRefs.current['medioPago'] = el }}
                           type="text"
                           value={columnFilters.medioPago}
                           onChange={(e) => handleColumnFilterChange('medioPago', e.target.value)}
+                          onFocus={() => handleFilterFocus('medioPago')}
+                          onBlur={handleFilterBlur}
                           placeholder="Filtrar medio pago..."
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
                       </th>
                       <th className="px-3 py-2">
                         <input
+                          ref={(el) => { inputRefs.current['estado'] = el }}
                           type="text"
                           value={columnFilters.estado}
                           onChange={(e) => handleColumnFilterChange('estado', e.target.value)}
+                          onFocus={() => handleFilterFocus('estado')}
+                          onBlur={handleFilterBlur}
                           placeholder="Filtrar estado..."
                           className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                         />
