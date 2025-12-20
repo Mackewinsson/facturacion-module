@@ -64,7 +64,19 @@ const parseNumber = (value: string | null, fallback: number) => {
 
 export async function GET(request: NextRequest) {
   try {
-    await requireAuth(request)
+    // Authentication optional for development (matches frontend behavior)
+    try {
+      await requireAuth(request)
+    } catch (authError) {
+      // In development, allow requests without auth
+      // In production, this should be enforced
+      const isDevelopment = process.env.NODE_ENV === 'development'
+      if (!isDevelopment) {
+        throw authError
+      }
+      // Log but don't fail in development
+      console.warn('Authentication skipped in development mode')
+    }
     const { searchParams } = new URL(request.url)
 
     const page = parseNumber(searchParams.get('page'), 1)

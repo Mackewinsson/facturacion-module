@@ -57,20 +57,141 @@ export class InvoicesRepository {
 
     if (search) {
       where.OR = [
-        { NUMCFA: { contains: search, mode: 'insensitive' } },
-        { ENT: { is: { NIFENT: { contains: search, mode: 'insensitive' } } } },
-        { ENT: { is: { NCOENT: { contains: search, mode: 'insensitive' } } } }
+        { NUMCFA: { contains: search } },
+        { ENT: { is: { NIFENT: { contains: search } } } },
+        { ENT: { is: { NCOENT: { contains: search } } } }
       ]
     }
 
     if (columnFilters.factura) {
-      where.NUMCFA = { contains: columnFilters.factura, mode: 'insensitive' }
+      where.NUMCFA = { contains: columnFilters.factura }
     }
     if (columnFilters.nif) {
-      where.ENT = { is: { NIFENT: { contains: columnFilters.nif, mode: 'insensitive' } } }
+      where.ENT = { is: { NIFENT: { contains: columnFilters.nif } } }
     }
     if (columnFilters.cliente) {
-      where.ENT = { is: { NCOENT: { contains: columnFilters.cliente, mode: 'insensitive' } } }
+      where.ENT = { is: { NCOENT: { contains: columnFilters.cliente } } }
+    }
+
+    // Combine DIR-related filters into a single DIR object with AND logic
+    const dirFilters: any = {}
+    if (columnFilters.direccion) {
+      dirFilters.DIRDIR = { contains: columnFilters.direccion }
+    }
+    if (columnFilters.poblacion) {
+      dirFilters.POBDIR = { contains: columnFilters.poblacion }
+    }
+    if (columnFilters.provincia) {
+      dirFilters.PRO = { is: { NOMPRO: { contains: columnFilters.provincia } } }
+    }
+    if (columnFilters.codigoPostal) {
+      dirFilters.CPODIR = { contains: columnFilters.codigoPostal }
+    }
+    if (Object.keys(dirFilters).length > 0) {
+      where.DIR = { is: dirFilters }
+    }
+
+    // Payment filters
+    if (columnFilters.formaPago) {
+      const formaPagoNum = Number(columnFilters.formaPago)
+      if (!Number.isNaN(formaPagoNum)) {
+        where.FPACFA = formaPagoNum
+      } else {
+        // If not a number, search by payment method name
+        where.CFP = { is: { NOMCFP: { contains: columnFilters.formaPago } } }
+      }
+    }
+    if (columnFilters.medioPago) {
+      const medioPagoNum = Number(columnFilters.medioPago)
+      if (!Number.isNaN(medioPagoNum)) {
+        where.MPACFA = medioPagoNum
+      }
+    }
+
+    // Numeric filters with range matching
+    if (columnFilters.baseImponible) {
+      const baseValue = Number(columnFilters.baseImponible)
+      if (!Number.isNaN(baseValue)) {
+        const baseFilters = [
+          { BI1CFA: { gte: baseValue * 0.99, lte: baseValue * 1.01 } },
+          { BI2CFA: { gte: baseValue * 0.99, lte: baseValue * 1.01 } },
+          { BI3CFA: { gte: baseValue * 0.99, lte: baseValue * 1.01 } },
+          { BIPCFA: { gte: baseValue * 0.99, lte: baseValue * 1.01 } }
+        ]
+        // Combine with existing OR if present
+        if (where.OR) {
+          if (where.AND) {
+            where.AND.push({ OR: baseFilters })
+          } else {
+            where.AND = [
+              { OR: where.OR },
+              { OR: baseFilters }
+            ]
+            delete where.OR
+          }
+        } else {
+          where.OR = baseFilters
+        }
+      }
+    }
+    if (columnFilters.iva) {
+      const ivaValue = Number(columnFilters.iva)
+      if (!Number.isNaN(ivaValue)) {
+        const ivaFilters = [
+          { CI1CFA: { gte: ivaValue * 0.99, lte: ivaValue * 1.01 } },
+          { CI2CFA: { gte: ivaValue * 0.99, lte: ivaValue * 1.01 } },
+          { CI3CFA: { gte: ivaValue * 0.99, lte: ivaValue * 1.01 } },
+          { CIPCFA: { gte: ivaValue * 0.99, lte: ivaValue * 1.01 } }
+        ]
+        if (where.OR) {
+          if (where.AND) {
+            where.AND.push({ OR: ivaFilters })
+          } else {
+            where.AND = [
+              { OR: where.OR },
+              { OR: ivaFilters }
+            ]
+            delete where.OR
+          }
+        } else {
+          where.OR = ivaFilters
+        }
+      }
+    }
+    if (columnFilters.total) {
+      const totalValue = Number(columnFilters.total)
+      if (!Number.isNaN(totalValue)) {
+        where.TOTCFA = { gte: totalValue * 0.99, lte: totalValue * 1.01 }
+      }
+    }
+
+    // Date filter
+    if (columnFilters.fecha) {
+      const fechaValue = new Date(columnFilters.fecha)
+      if (!Number.isNaN(fechaValue.getTime())) {
+        const startOfDay = new Date(fechaValue)
+        startOfDay.setHours(0, 0, 0, 0)
+        const endOfDay = new Date(fechaValue)
+        endOfDay.setHours(23, 59, 59, 999)
+        // Only apply date filter if not conflicting with factura filter
+        if (!columnFilters.factura) {
+          where.FECCFA = { gte: startOfDay, lte: endOfDay }
+        } else {
+          // If both exist, combine with AND
+          if (!where.AND) where.AND = []
+          where.AND.push({ FECCFA: { gte: startOfDay, lte: endOfDay } })
+        }
+      }
+    }
+
+    // Status filter
+    if (columnFilters.estado) {
+      const estadoLower = columnFilters.estado.toLowerCase()
+      if (estadoLower === 'rectificativa') {
+        where.TOTCFA = { lt: 0 }
+      } else if (estadoLower === 'pagada' || estadoLower === 'paid') {
+        where.TOTCFA = { gt: 0 }
+      }
     }
 
     if (filters.fechaDesde || filters.fechaHasta) {

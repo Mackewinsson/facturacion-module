@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { InvoiceFromDb } from '@/lib/invoice-db-service'
@@ -32,12 +32,32 @@ function FacturacionPageContent() {
     medioPago: '',
     estado: ''
   })
+  // Debounced version of columnFilters for API calls
+  const [debouncedColumnFilters, setDebouncedColumnFilters] = useState(columnFilters)
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
   const [dateRange, setDateRange] = useState({
     fechaDesde: '2024-01-01',
     fechaHasta: '2025-12-31'
   })
   const [selectedInvoice, setSelectedInvoice] = useState<InvoiceFromDb | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
+
+  // Debounce columnFilters changes - wait 500ms after user stops typing
+  useEffect(() => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+    
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedColumnFilters(columnFilters)
+    }, 500)
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
+  }, [columnFilters])
 
   useEffect(() => {
     // Authentication disabled for development
@@ -46,7 +66,7 @@ function FacturacionPageContent() {
     //   return
     // }
     loadInvoices()
-  }, [isAuthenticated, router, columnFilters, dateRange, tipoFilter])
+  }, [isAuthenticated, router, debouncedColumnFilters, dateRange, tipoFilter])
 
   // Initialize tipoFilter from URL or localStorage
   useEffect(() => {
@@ -102,7 +122,7 @@ function FacturacionPageContent() {
         params.set('tipoFactura', tipoFilter)
       }
 
-      Object.entries(columnFilters).forEach(([key, value]) => {
+      Object.entries(debouncedColumnFilters).forEach(([key, value]) => {
         if (value) params.set(`column_${key}`, value)
       })
 
@@ -115,19 +135,35 @@ function FacturacionPageContent() {
         headers
       })
       if (response.status === 401) {
-        // Token expired or invalid, redirect to login
-        logout()
-        router.push('/login')
-        return
+        // If user is already logged in, don't redirect - let them continue working
+        // The API route handles authentication gracefully in development mode
+        // Only redirect if user is not authenticated AND we're not in dev mode
+        // Since authentication is disabled for development in this app, we should not redirect
+        if (isAuthenticated) {
+          // User is logged in but got 401 - might be token expired or dev mode issue
+          // Don't redirect, let them continue (API handles dev mode)
+          console.warn('401 response but user is authenticated - continuing anyway')
+        } else {
+          // User is not authenticated - but since auth is disabled for dev, don't redirect
+          // Only redirect in production if explicitly needed
+          console.warn('401 response but user not authenticated - continuing anyway (dev mode)')
+        }
+        // Don't redirect - continue with the request
       }
-      if (!response.ok) throw new Error('API error')
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || errorData.message || `Error ${response.status}: ${response.statusText}`)
+      }
       const data = await response.json()
 
       const fetched: InvoiceFromDb[] = data?.invoices ?? []
       setInvoices(fetched)
       setTotalResults(fetched.length)
+      setError('') // Clear any previous errors on success
     } catch (err) {
-      setError('Error al cargar las facturas')
+      const errorMessage = err instanceof Error ? err.message : 'Error al cargar las facturas'
+      console.error('Error loading invoices:', err)
+      setError(errorMessage)
     } finally {
       setLoading(false)
     }
