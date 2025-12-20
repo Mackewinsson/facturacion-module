@@ -4,12 +4,14 @@ import { prisma } from '@/lib/prisma'
 export async function GET() {
   try {
     // Get active users (where FEBUSU is null) with their associated entities
+    // Using NOMENT (name) instead of NCOENT (commercial name) to show user names
     const users = await prisma.$queryRaw`
       SELECT 
         u.ENTUSU as userId,
         u.ACCUSU as accessLevel,
         u.ADMUSU as adminLevel,
         u.FEAUSU as createdAt,
+        COALESCE(e.NOMENT, e.NCOENT) as userName,
         e.NCOENT as entityName,
         e.IDEENT as entityId
       FROM USU u
@@ -26,6 +28,7 @@ export async function GET() {
       accessLevel: number;
       adminLevel: number;
       createdAt: Date;
+      userName: string | null;
       entityName: string | null;
       entityId: number | null;
     }>) {
@@ -37,6 +40,7 @@ export async function GET() {
           accessLevel: user.accessLevel,
           adminLevel: user.adminLevel,
           createdAt: user.createdAt,
+          userName: user.userName,
           entities: []
         })
       }
@@ -54,9 +58,11 @@ export async function GET() {
       accessLevel: user.accessLevel,
       adminLevel: user.adminLevel,
       createdAt: user.createdAt,
-      displayName: user.entities.length > 0 
-        ? `${user.entities[0].name} (Nivel ${user.accessLevel})`
-        : `Usuario ${user.id} (Nivel ${user.accessLevel})`,
+      displayName: user.userName 
+        ? `${user.userName} (Nivel ${user.accessLevel})`
+        : user.entities.length > 0 
+          ? `${user.entities[0].name} (Nivel ${user.accessLevel})`
+          : `Usuario ${user.id} (Nivel ${user.accessLevel})`,
       entities: user.entities
     }))
 

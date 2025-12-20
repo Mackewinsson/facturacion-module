@@ -58,7 +58,7 @@ export default function Login() {
     setError('')
 
     if (!selectedUserId) {
-      setError('Por favor selecciona una empresa')
+      setError('Por favor selecciona un usuario')
       setLoading(false)
       return
     }
@@ -100,14 +100,14 @@ export default function Login() {
             Iniciar Sesión
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
-            Selecciona tu empresa y contraseña
+            Selecciona tu usuario y contraseña
           </p>
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
             <div>
               <label htmlFor="user" className="sr-only">
-                Empresa
+                Usuario
               </label>
               <select
                 id="user"
@@ -119,11 +119,11 @@ export default function Login() {
                 disabled={loadingUsers}
               >
                 <option value="">
-                  {loadingUsers ? 'Cargando empresas...' : 'Selecciona una empresa'}
+                  {loadingUsers ? 'Cargando usuarios...' : 'Selecciona un usuario'}
                 </option>
                 {users.map((user) => (
                   <option key={user.id} value={user.id}>
-                    {user.entities.length > 0 ? user.entities[0].name : `Usuario ${user.id}`}
+                    {user.displayName || `Usuario ${user.id}`}
                   </option>
                 ))}
               </select>
