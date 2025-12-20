@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, Suspense, useRef } from 'react'
+import { useState, useEffect, Suspense, useRef, useLayoutEffect } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { InvoiceFromDb } from '@/lib/invoice-db-service'
@@ -70,6 +70,22 @@ function FacturacionPageContent() {
     // }
     loadInvoices()
   }, [isAuthenticated, router, debouncedColumnFilters, dateRange, tipoFilter])
+
+  // Restore focus after invoices are loaded and component re-renders
+  useLayoutEffect(() => {
+    if (!loading && focusedInputRef.current && inputRefs.current[focusedInputRef.current]) {
+      // Use requestAnimationFrame to ensure DOM has fully updated
+      requestAnimationFrame(() => {
+        const input = inputRefs.current[focusedInputRef.current!]
+        if (input) {
+          // Set cursor position to end of input
+          input.focus()
+          const length = input.value.length
+          input.setSelectionRange(length, length)
+        }
+      })
+    }
+  }, [loading, invoices])
 
   // Initialize tipoFilter from URL or localStorage
   useEffect(() => {
@@ -163,14 +179,6 @@ function FacturacionPageContent() {
       setInvoices(fetched)
       setTotalResults(fetched.length)
       setError('') // Clear any previous errors on success
-      
-      // Restore focus to the input that was focused before the search
-      if (focusedInputRef.current && inputRefs.current[focusedInputRef.current]) {
-        // Use setTimeout to ensure DOM has updated
-        setTimeout(() => {
-          inputRefs.current[focusedInputRef.current!]?.focus()
-        }, 0)
-      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al cargar las facturas'
       console.error('Error loading invoices:', err)
@@ -251,9 +259,19 @@ function FacturacionPageContent() {
     focusedInputRef.current = columnName
   }
 
-  const handleFilterBlur = () => {
-    // Don't clear focusedInputRef on blur - we want to restore it after search
-    // Only clear if user explicitly clicks elsewhere
+  const handleFilterBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Only clear focusedInputRef if focus is moving to something outside the filter inputs
+    // Check if the relatedTarget (where focus is going) is not another filter input
+    const relatedTarget = e.relatedTarget as HTMLElement
+    if (relatedTarget && !relatedTarget.closest('thead')) {
+      // Focus is moving outside the table header (where filters are)
+      // Don't clear immediately - wait a bit to see if it's going to another filter
+      setTimeout(() => {
+        if (document.activeElement !== e.target && !document.activeElement?.closest('thead')) {
+          focusedInputRef.current = null
+        }
+      }, 100)
+    }
   }
 
   const handleDateRangeChange = (field: 'fechaDesde' | 'fechaHasta', value: string) => {
@@ -392,23 +410,13 @@ function FacturacionPageContent() {
             <div className="p-8 text-center">
               <div className="text-gray-500">Cargando facturas...</div>
             </div>
-          ) : invoices.length === 0 ? (
-            <div className="p-8 text-center">
-              <div className="text-gray-500 mb-4">No se encontraron facturas</div>
-              <button
-                onClick={handleCreateInvoice}
-                className="bg-accent hover:bg-accent/90 text-accent-foreground px-4 py-2 rounded-md text-sm font-medium"
-              >
-                Crear primera factura
-              </button>
-            </div>
           ) : (
             <>
               <div className="flex flex-col flex-1 min-h-0">
                 <div className="overflow-auto flex-1">
                   <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
-                    {/* Filter Row */}
+                    {/* Filter Row - Always visible */}
                     <tr className="border-b border-gray-200">
                       <th className="px-3 py-2">
                         <input
@@ -632,7 +640,20 @@ function FacturacionPageContent() {
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
-                    {invoices.map((invoice) => (
+                    {invoices.length === 0 ? (
+                      <tr>
+                        <td colSpan={15} className="px-3 py-8 text-center">
+                          <div className="text-gray-500 mb-4">No se encontraron facturas</div>
+                          <button
+                            onClick={handleCreateInvoice}
+                            className="bg-accent hover:bg-accent/90 text-accent-foreground px-4 py-2 rounded-md text-sm font-medium"
+                          >
+                            Crear primera factura
+                          </button>
+                        </td>
+                      </tr>
+                    ) : (
+                      invoices.map((invoice) => (
                       <tr 
                         key={invoice.id} 
                         className="hover:bg-gray-50 cursor-pointer"
@@ -696,7 +717,8 @@ function FacturacionPageContent() {
                           </div>
                         </td>
                       </tr>
-                    ))}
+                      ))
+                    )}
                   </tbody>
                   </table>
                 </div>
