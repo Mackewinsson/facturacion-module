@@ -61,8 +61,8 @@ export async function GET() {
       displayName: user.userName 
         ? `${user.userName} (Nivel ${user.accessLevel})`
         : user.entities.length > 0 
-          ? `${user.entities[0].name} (Nivel ${user.accessLevel})`
-          : `Usuario ${user.id} (Nivel ${user.accessLevel})`,
+        ? `${user.entities[0].name} (Nivel ${user.accessLevel})`
+        : `Usuario ${user.id} (Nivel ${user.accessLevel})`,
       entities: user.entities
     }))
 

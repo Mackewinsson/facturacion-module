@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
   try {
     // Authentication optional for development (matches frontend behavior)
     try {
-      await requireAuth(request)
+    await requireAuth(request)
     } catch (authError) {
       // In development, allow requests without auth
       // In production, this should be enforced
