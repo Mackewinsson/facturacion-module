@@ -210,6 +210,10 @@ function FacturacionPageContent() {
 
 
   const handleCreateInvoice = () => {
+    // Don't allow creating invoice when "TODAS" is selected
+    if (tipoFilter === 'ALL') {
+      return
+    }
     if (tipoFilter === 'recibida') {
       router.push('/facturacion/recibidas/nueva')
     } else {
@@ -301,7 +305,13 @@ function FacturacionPageContent() {
               
               <button
                 onClick={handleCreateInvoice}
-                className="flex items-center gap-2 px-3 py-2 bg-accent hover:bg-accent/90 text-accent-foreground rounded-md text-sm font-medium"
+                disabled={tipoFilter === 'ALL'}
+                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-medium ${
+                  tipoFilter === 'ALL'
+                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50'
+                    : 'bg-accent hover:bg-accent/90 text-accent-foreground'
+                }`}
+                title={tipoFilter === 'ALL' ? 'Selecciona un tipo de factura (Emitidas o Recibidas) para crear una nueva factura' : ''}
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
