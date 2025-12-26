@@ -40,9 +40,9 @@ export default function BaseModal({
       style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}
     >
       <div className={`bg-card rounded-lg shadow-xl ${maxWidthClasses[maxWidth]} w-full mx-4 max-h-[90vh] overflow-y-auto`}>
-        <div className="p-6">
+        <div className="p-4">
           {/* Header */}
-          <div className="flex justify-between items-center mb-6">
+          <div className="flex justify-between items-center mb-4">
             <div>
               <h2 className="text-xl font-semibold text-card-foreground">{title}</h2>
               {subtitle && (
@@ -61,7 +61,7 @@ export default function BaseModal({
 
           {/* Toolbar */}
           {toolbar && (
-            <div className="bg-gray-100 px-4 py-3 flex items-center gap-4 border-b rounded-lg mb-6">
+            <div className="bg-gray-100 px-3 py-2 flex items-center gap-3 border-b rounded-lg mb-4">
               {toolbar}
             </div>
           )}
@@ -73,7 +73,7 @@ export default function BaseModal({
 
           {/* Footer */}
           {footer && (
-            <div className="bg-gray-100 px-4 py-3 flex justify-end gap-3 border-t rounded-lg mt-6">
+            <div className="bg-gray-100 px-3 py-2 flex justify-end gap-3 border-t rounded-lg mt-4">
               {footer}
             </div>
           )}

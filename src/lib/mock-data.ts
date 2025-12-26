@@ -13,6 +13,11 @@ export interface Domicilio {
   municipio: string
   provincia: string
   pais: string
+  calleVia?: string // Calle/Via dropdown value
+  nombreCalle?: string // Street name
+  numero?: string // Street number
+  numeroExtension?: string // Street number extension (e.g., "3A")
+  centro?: string // Centro/center name (e.g., "PRINCIPAL")
 }
 
 export interface Direccion {
@@ -36,6 +41,12 @@ export interface Entidad {
   NIF: string
   razonSocial: string
   nombreComercial?: string
+  
+  // Persona Fisica fields
+  nombre?: string // First name
+  apellido1?: string // First surname
+  apellido2?: string // Second surname
+  sexo?: 'hombre' | 'mujer' // Gender
   
   // Dates
   fechaAlta: string
@@ -66,6 +77,7 @@ export interface Entidad {
   
   // Contact Information
   telefono?: string
+  telefonoMovil?: string // Mobile phone
   email?: string
   domicilio?: Domicilio
   direcciones?: Direccion[]

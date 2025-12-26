@@ -1,5 +1,5 @@
 'use client'
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { Entidad, Direccion } from '@/lib/mock-data'
 import BaseModal from './BaseModal'
 import ModalToolbarButton from './ModalToolbarButton'
@@ -26,23 +26,26 @@ export default function EntityModal({
 }: EntityModalProps) {
   const [isEditMode, setIsEditMode] = useState(false)
   const [formData, setFormData] = useState(entity || {} as Entidad)
-  const [activeTab, setActiveTab] = useState<'general' | 'direcciones' | 'notas'>('general')
+  const [isSaving, setIsSaving] = useState(false)
   const [showClienteModal, setShowClienteModal] = useState(false)
   const [showProveedorModal, setShowProveedorModal] = useState(false)
   const [showVendedorModal, setShowVendedorModal] = useState(false)
   const token = useAuthStore((state) => state.token)
+  const lastSavedEntityIdRef = useRef<number | null>(null)
 
-  // Update form data when entity changes
+  // Update form data when entity changes, but not if we just saved the same entity
   useEffect(() => {
     if (entity) {
-      setFormData(entity)
+      // Only update if it's a different entity or we haven't just saved this one
+      if (entity.id !== lastSavedEntityIdRef.current) {
+        setFormData(entity)
+      }
     }
   }, [entity])
 
-  // Reset tab and edit mode when modal closes
+  // Reset edit mode when modal closes
   useEffect(() => {
     if (!isOpen) {
-      setActiveTab('general')
       setIsEditMode(false)
       if (entity) {
         setFormData(entity)
@@ -64,6 +67,7 @@ export default function EntityModal({
   }
 
   const handleSave = async () => {
+    setIsSaving(true)
     try {
       const headers: HeadersInit = {
         'Content-Type': 'application/json'
@@ -84,11 +88,20 @@ export default function EntityModal({
       const updatedData = await response.json()
       if (updatedData.success && updatedData.data) {
         setFormData(updatedData.data)
+        lastSavedEntityIdRef.current = updatedData.data.id
       }
       setIsEditMode(false)
-      onEntityUpdated?.()
-      // You could add a toast notification here for success
+      setIsSaving(false)
+      // Call onEntityUpdated after a short delay to prevent flash
+      setTimeout(() => {
+        onEntityUpdated?.()
+        // Reset the ref after a delay to allow normal updates again
+        setTimeout(() => {
+          lastSavedEntityIdRef.current = null
+        }, 500)
+      }, 100)
     } catch (error) {
+      setIsSaving(false)
       console.error('Error updating entity:', error)
       // You could add a toast notification here for error
       alert(error instanceof Error ? error.message : 'Error al guardar los cambios. Por favor, inténtelo de nuevo.')
@@ -208,250 +221,439 @@ export default function EntityModal({
     </button>
   )
 
+  // Compute full name for display
+  const getFullName = () => {
+    if (formData.personaFisica && formData.nombre && formData.apellido1) {
+      return `${formData.nombre} ${formData.apellido1}${formData.apellido2 ? ' ' + formData.apellido2 : ''}`.trim()
+    }
+    return formData.razonSocial || ''
+  }
+
   return (
     <BaseModal
       isOpen={isOpen}
       onClose={onClose}
-      title="Ficha de Agenda"
-      subtitle={`${entity.razonSocial} - NIF: ${entity.NIF}`}
+      title="Entidad"
       toolbar={toolbar}
       footer={footer}
       maxWidth="4xl"
     >
+      <div className="space-y-3">
+        {/* Header Section */}
+        <div className="grid grid-cols-12 gap-2 items-start">
+          {/* NIF */}
+          <div className="col-span-2">
+            <label className="block text-xs font-semibold text-white bg-blue-700 px-2 py-1 mb-1">NIF</label>
+            <input
+              type="text"
+              value={formData.NIF}
+              onChange={(e) => handleInputChange('NIF', e.target.value)}
+              disabled={!isEditMode}
+              className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                isEditMode 
+                  ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                  : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+              }`}
+            />
+          </div>
 
-      {/* Entity Identification Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">NIF</label>
-          <input
-            type="text"
-            value={formData.NIF}
-            onChange={(e) => handleInputChange('NIF', e.target.value)}
-            disabled={!isEditMode}
-            className={`w-full px-3 py-2 border rounded-md text-sm ${
-              isEditMode 
-                ? 'border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500' 
-                : 'border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed'
-            }`}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Razón Social</label>
-          <input
-            type="text"
-            value={formData.razonSocial}
-            onChange={(e) => handleInputChange('razonSocial', e.target.value)}
-            disabled={!isEditMode}
-            className={`w-full px-3 py-2 border rounded-md text-sm ${
-              isEditMode 
-                ? 'border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500' 
-                : 'border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed'
-            }`}
-          />
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">N. Comercial</label>
-          <input
-            type="text"
-            value={formData.nombreComercial || ''}
-            onChange={(e) => handleInputChange('nombreComercial', e.target.value)}
-            disabled={!isEditMode}
-            placeholder="No especificado"
-            className={`w-full px-3 py-2 border rounded-md text-sm ${
-              isEditMode 
-                ? 'border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500' 
-                : 'border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed'
-            }`}
-          />
-        </div>
-      </div>
+          {/* Nombre / Razón Social Display */}
+          <div className="col-span-4">
+            <label className="block text-xs font-semibold text-white bg-blue-700 px-2 py-1 mb-1">
+              {formData.personaFisica ? 'Nombre' : 'Razón Social'}
+            </label>
+            <input
+              type="text"
+              value={getFullName()}
+              disabled
+              className="w-full px-2 py-1 border border-gray-300 bg-gray-100 text-gray-700 text-sm cursor-not-allowed"
+            />
+          </div>
 
-      {/* Tab Navigation */}
-      <div className="border-b border-gray-200 mb-6">
-        <nav className="-mb-px flex space-x-8">
-          <button
-            onClick={() => setActiveTab('general')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'general'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Generales
-          </button>
-          <button
-            onClick={() => setActiveTab('direcciones')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'direcciones'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Direcciones
-          </button>
-          <button
-            onClick={() => setActiveTab('notas')}
-            className={`py-2 px-1 border-b-2 font-medium text-sm ${
-              activeTab === 'notas'
-                ? 'border-blue-500 text-blue-600'
-                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-            }`}
-          >
-            Notas
-          </button>
-        </nav>
-      </div>
+          {/* N.comercial */}
+          <div className="col-span-3">
+            <label className="block text-xs font-semibold text-white bg-blue-700 px-2 py-1 mb-1">N.comercial</label>
+            <input
+              type="text"
+              value={formData.nombreComercial || ''}
+              onChange={(e) => handleInputChange('nombreComercial', e.target.value)}
+              disabled={!isEditMode}
+              className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                isEditMode 
+                  ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                  : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+              }`}
+            />
+          </div>
 
-      {/* Tab Content */}
-      {activeTab === 'general' && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Left Column */}
-          <div className="space-y-4">
-            {/* Dates */}
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Alta</label>
-                <input
-                  type="date"
-                  value={formData.fechaAlta}
-                  onChange={(e) => handleInputChange('fechaAlta', e.target.value)}
-                  disabled={!isEditMode}
-                  className={`w-full px-3 py-2 border rounded-md text-sm ${
-                    isEditMode 
-                      ? 'border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500' 
-                      : 'border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed'
-                  }`}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Baja</label>
-                <input
-                  type="date"
-                  value={formData.fechaBaja || ''}
-                  onChange={(e) => handleInputChange('fechaBaja', e.target.value)}
-                  disabled={!isEditMode}
-                  className={`w-full px-3 py-2 border rounded-md text-sm ${
-                    isEditMode 
-                      ? 'border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500' 
-                      : 'border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed'
-                  }`}
-                />
-              </div>
-            </div>
-            
-            <div className="flex items-center">
+          {/* Metadata Box */}
+          <div className="col-span-3 bg-gray-200 px-3 py-2 border border-gray-400">
+            <div className="text-xs text-gray-700 mb-1">Modificado por:</div>
+            <div className="text-xs font-medium text-gray-900 mb-2">USUARIO6, DEMO</div>
+            <div className="text-xs text-gray-700 mb-1">El día:</div>
+            <div className="text-xs font-medium text-gray-900">{formatDate(entity.updatedAt)}</div>
+          </div>
+        </div>
+
+        {/* Persona Física Section */}
+        <div className="border border-gray-400 p-2 bg-gray-50">
+          <div className="flex items-start gap-3">
+            <div className="flex items-center gap-2">
               <input
                 type="checkbox"
                 checked={formData.personaFisica}
                 onChange={(e) => handleInputChange('personaFisica', e.target.checked)}
                 disabled={!isEditMode}
+                className={`${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+              />
+              <label className={`text-sm font-medium ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>
+                Persona física
+              </label>
+              <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+            </div>
+
+            {/* Name Fields */}
+            {formData.personaFisica && (
+              <div className="flex-1 grid grid-cols-3 gap-2">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Nombre:</label>
+                  <input
+                    type="text"
+                    value={formData.nombre || ''}
+                    onChange={(e) => handleInputChange('nombre', e.target.value)}
+                    disabled={!isEditMode}
+                    className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                      isEditMode 
+                        ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                        : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Apellido 1º:</label>
+                  <input
+                    type="text"
+                    value={formData.apellido1 || ''}
+                    onChange={(e) => handleInputChange('apellido1', e.target.value)}
+                    disabled={!isEditMode}
+                    className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                      isEditMode 
+                        ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                        : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                    }`}
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Apellido 2º:</label>
+                  <input
+                    type="text"
+                    value={formData.apellido2 || ''}
+                    onChange={(e) => handleInputChange('apellido2', e.target.value)}
+                    disabled={!isEditMode}
+                    className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                      isEditMode 
+                        ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                        : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                    }`}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Sexo Radio Buttons */}
+            {formData.personaFisica && (
+              <div className="flex items-center gap-4">
+                <label className="text-xs font-medium text-gray-700">Sexo:</label>
+                <div className="flex gap-3">
+                  <label className="flex items-center gap-1 text-sm">
+                    <input
+                      type="radio"
+                      name="sexo"
+                      value="hombre"
+                      checked={formData.sexo === 'hombre'}
+                      onChange={(e) => handleInputChange('sexo', e.target.value)}
+                      disabled={!isEditMode}
+                      className={!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}
+                    />
+                    <span className={!isEditMode ? 'text-gray-500' : 'text-gray-700'}>* Hombre</span>
+                  </label>
+                  <label className="flex items-center gap-1 text-sm">
+                    <input
+                      type="radio"
+                      name="sexo"
+                      value="mujer"
+                      checked={formData.sexo === 'mujer'}
+                      onChange={(e) => handleInputChange('sexo', e.target.value)}
+                      disabled={!isEditMode}
+                      className={!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}
+                    />
+                    <span className={!isEditMode ? 'text-gray-500' : 'text-gray-700'}>Mujer</span>
+                  </label>
+                </div>
+              </div>
+            )}
+
+            {/* Verificar datos con Hacienda Button */}
+            <button
+              type="button"
+              disabled={!isEditMode}
+              className="px-4 py-2 bg-blue-600 text-white text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+            >
+              Verificar datos con Hacienda
+            </button>
+          </div>
+        </div>
+
+        {/* Main Form Layout - Three Columns */}
+        <div className="grid grid-cols-12 gap-3">
+          {/* Left Column - Checkboxes */}
+          <div className="col-span-3 space-y-1.5">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.extranjero}
+                onChange={(e) => handleInputChange('extranjero', e.target.checked)}
+                disabled={!isEditMode}
                 className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
               />
-              <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Persona física</label>
+              <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Extranjero/a</label>
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Tipo Identificador</label>
-              <select
-                value={formData.tipoIdentificador}
-                onChange={(e) => handleInputChange('tipoIdentificador', e.target.value)}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.operadorIntracomunitario}
+                onChange={(e) => handleInputChange('operadorIntracomunitario', e.target.checked)}
                 disabled={!isEditMode}
-                className={`w-full px-3 py-2 border rounded-md text-sm ${
-                  isEditMode 
-                    ? 'border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500' 
-                    : 'border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                <option value="NIF/CIF-IVA">NIF/CIF-IVA</option>
-                <option value="NIE">NIE</option>
-                <option value="PASAPORTE">PASAPORTE</option>
-                <option value="OTRO">OTRO</option>
-              </select>
+                className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+              />
+              <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Operador intracomunitario</label>
             </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">País de origen</label>
-              <select
-                value={formData.paisOrigen}
-                onChange={(e) => handleInputChange('paisOrigen', e.target.value)}
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.importacionExportacion}
+                onChange={(e) => handleInputChange('importacionExportacion', e.target.checked)}
                 disabled={!isEditMode}
-                className={`w-full px-3 py-2 border rounded-md text-sm ${
-                  isEditMode 
-                    ? 'border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500' 
-                    : 'border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                <option value="ESPAÑA">ESPAÑA</option>
-                <option value="FRANCIA">FRANCIA</option>
-                <option value="PORTUGAL">PORTUGAL</option>
-                <option value="ITALIA">ITALIA</option>
-              </select>
+                className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+              />
+              <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Importación/Exportación</label>
             </div>
-            
-            <div className="space-y-2">
-              <div className="flex items-center">
+            <div className="flex items-center">
+              <input
+                type="checkbox"
+                checked={formData.regimenCanario}
+                onChange={(e) => handleInputChange('regimenCanario', e.target.checked)}
+                disabled={!isEditMode}
+                className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+              />
+              <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Régimen Canario</label>
+            </div>
+
+            {/* Dates */}
+            <div className="mt-3 space-y-1.5">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Alta</label>
                 <input
-                  type="checkbox"
-                  checked={formData.extranjero}
-                  onChange={(e) => handleInputChange('extranjero', e.target.checked)}
+                  type="date"
+                  value={formData.fechaAlta ? formData.fechaAlta.split('T')[0] : ''}
+                  onChange={(e) => handleInputChange('fechaAlta', e.target.value)}
                   disabled={!isEditMode}
-                  className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                    isEditMode 
+                      ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                      : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                  }`}
                 />
-                <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Extranjero/a</label>
               </div>
-              <div className="flex items-center">
+              <div>
+                <label className="block text-xs font-medium text-gray-700 mb-1">Baja</label>
                 <input
-                  type="checkbox"
-                  checked={formData.operadorIntracomunitario}
-                  onChange={(e) => handleInputChange('operadorIntracomunitario', e.target.checked)}
+                  type="date"
+                  value={formData.fechaBaja ? formData.fechaBaja.split('T')[0] : ''}
+                  onChange={(e) => handleInputChange('fechaBaja', e.target.value)}
                   disabled={!isEditMode}
-                  className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  placeholder="dd/mm/aaaa"
+                  className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                    isEditMode 
+                      ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                      : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                  }`}
                 />
-                <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Operador intracomunitario</label>
-              </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.importacionExportacion}
-                  onChange={(e) => handleInputChange('importacionExportacion', e.target.checked)}
-                  disabled={!isEditMode}
-                  className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                />
-                <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Importación/Exportación</label>
-              </div>
-              <div className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={formData.regimenCanario}
-                  onChange={(e) => handleInputChange('regimenCanario', e.target.checked)}
-                  disabled={!isEditMode}
-                  className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                />
-                <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Régimen Canario</label>
               </div>
             </div>
           </div>
+          {/* Middle Column - Centro/Direccion/Localizacion */}
+          <div className="col-span-5">
+            <fieldset className="border border-gray-400 p-2">
+              <legend className="text-xs font-semibold text-gray-700 px-1">Centro</legend>
+              <div className="mb-2">
+                <input
+                  type="text"
+                  value={formData.domicilio?.centro || 'PRINCIPAL'}
+                  onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), centro: e.target.value })}
+                  disabled={!isEditMode}
+                  className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                    isEditMode 
+                      ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                      : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                  }`}
+                />
+              </div>
 
-          {/* Right Column */}
-          <div className="space-y-4">
-            {/* Modification Details */}
-            <div className="bg-gray-50 p-3 rounded-md">
-              <div className="text-sm text-gray-600 mb-1">Modificado por:</div>
-              <div className="text-sm font-medium">USUARIO6, DEMO</div>
-              <div className="text-sm text-gray-600 mb-1 mt-2">El día:</div>
-              <div className="text-sm font-medium">{formatDate(entity.updatedAt)}</div>
-            </div>
-            
+              {/* Direccion Subsection */}
+              <fieldset className="border border-gray-300 p-1.5 mb-2">
+                <legend className="text-xs font-medium text-gray-700 px-1">Dirección</legend>
+                <div className="space-y-1.5">
+                  <div className="grid grid-cols-3 gap-1.5">
+                    <div>
+                      <label className="block text-xs text-gray-600 mb-1">Calle/Vía</label>
+                      <select
+                        value={formData.domicilio?.calleVia || 'Calle'}
+                        onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), calleVia: e.target.value })}
+                        disabled={!isEditMode}
+                        className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                          isEditMode 
+                            ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                            : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                        }`}
+                      >
+                        <option value="Calle">Calle</option>
+                        <option value="Avenida">Avenida</option>
+                        <option value="Plaza">Plaza</option>
+                        <option value="Paseo">Paseo</option>
+                      </select>
+                    </div>
+                    <div className="col-span-2">
+                      <label className="block text-xs text-gray-600 mb-1">Nombre</label>
+                      <input
+                        type="text"
+                        value={formData.domicilio?.nombreCalle || formData.domicilio?.calle || ''}
+                        onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), nombreCalle: e.target.value, calle: e.target.value })}
+                        disabled={!isEditMode}
+                        className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                          isEditMode 
+                            ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                            : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                        }`}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Número</label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={formData.domicilio?.numero || ''}
+                        onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), numero: e.target.value })}
+                        disabled={!isEditMode}
+                        className={`flex-1 px-2 py-1 border border-gray-300 text-sm ${
+                          isEditMode 
+                            ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                            : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                        }`}
+                      />
+                      <input
+                        type="text"
+                        value={formData.domicilio?.numeroExtension || ''}
+                        onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), numeroExtension: e.target.value })}
+                        disabled={!isEditMode}
+                        placeholder="3A"
+                        className={`w-20 px-2 py-1 border border-gray-300 text-sm ${
+                          isEditMode 
+                            ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                            : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                        }`}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </fieldset>
+
+              {/* Localizacion Subsection */}
+              <fieldset className="border border-gray-300 p-1.5">
+                <legend className="text-xs font-medium text-gray-700 px-1">Localización</legend>
+                <div className="grid grid-cols-2 gap-1.5">
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Cód.postal</label>
+                    <input
+                      type="text"
+                      value={formData.domicilio?.codigoPostal || ''}
+                      onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), codigoPostal: e.target.value })}
+                      disabled={!isEditMode}
+                      className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                        isEditMode 
+                          ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                          : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                      }`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">País</label>
+                    <input
+                      type="text"
+                      value={formData.domicilio?.pais || 'ESPAÑA'}
+                      onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), pais: e.target.value })}
+                      disabled={!isEditMode}
+                      className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                        isEditMode 
+                          ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                          : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                      }`}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Provincia</label>
+                    <select
+                      value={formData.domicilio?.provincia || ''}
+                      onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), provincia: e.target.value })}
+                      disabled={!isEditMode}
+                      className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                        isEditMode 
+                          ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                          : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      <option value="MALAGA">MALAGA</option>
+                      <option value="MADRID">MADRID</option>
+                      <option value="BARCELONA">BARCELONA</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs text-gray-600 mb-1">Localidad</label>
+                    <select
+                      value={formData.domicilio?.municipio || ''}
+                      onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), municipio: e.target.value })}
+                      disabled={!isEditMode}
+                      className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                        isEditMode 
+                          ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                          : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                      }`}
+                    >
+                      <option value="MALAGA">MALAGA</option>
+                      <option value="MADRID">MADRID</option>
+                      <option value="BARCELONA">BARCELONA</option>
+                    </select>
+                  </div>
+                </div>
+              </fieldset>
+            </fieldset>
+          </div>
+
+          {/* Right Column - Moneda and Relaciones */}
+          <div className="col-span-4 space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Moneda de la entidad</label>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Moneda de la entidad</label>
               <select
                 value={formData.monedaEntidad}
                 onChange={(e) => handleInputChange('monedaEntidad', e.target.value)}
                 disabled={!isEditMode}
-                className={`w-full px-3 py-2 border rounded-md text-sm ${
+                className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                   isEditMode 
-                    ? 'border-gray-300 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500' 
-                    : 'border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed'
+                    ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                    : 'bg-gray-100 text-gray-500 cursor-not-allowed'
                 }`}
               >
                 <option value="Eur">Eur</option>
@@ -460,10 +662,10 @@ export default function EntityModal({
               </select>
             </div>
             
-            {/* Relationships */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Relaciones</label>
-              <div className="space-y-2">
+            {/* Relaciones */}
+            <fieldset className="border border-gray-400 p-2">
+              <legend className="text-xs font-semibold text-gray-700 px-1">Relaciones</legend>
+              <div className="space-y-1.5">
                 <div className="flex items-center">
                   <input
                     type="checkbox"
@@ -473,17 +675,6 @@ export default function EntityModal({
                     className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
                   <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Proveedor</label>
-                  {formData.proveedor && (
-                    <button
-                      onClick={() => handleRelationshipClick('proveedor')}
-                      className="ml-2 p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
-                      title="Ver información de Proveedor"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </button>
-                  )}
                 </div>
                 <div className="flex items-center">
                   <input
@@ -494,17 +685,6 @@ export default function EntityModal({
                     className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
                   <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Cliente</label>
-                  {formData.cliente && (
-                    <button
-                      onClick={() => handleRelationshipClick('cliente')}
-                      className="ml-2 p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
-                      title="Ver información de Cliente"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </button>
-                  )}
                 </div>
                 <div className="flex items-center">
                   <input
@@ -515,17 +695,6 @@ export default function EntityModal({
                     className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
                   <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Vendedor</label>
-                  {formData.vendedor && (
-                    <button
-                      onClick={() => handleRelationshipClick('vendedor')}
-                      className="ml-2 p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
-                      title="Ver información de Vendedor"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </button>
-                  )}
                 </div>
                 <div className="flex items-center">
                   <input
@@ -536,17 +705,6 @@ export default function EntityModal({
                     className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
                   <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Operario de Taller</label>
-                  {formData.operarioTaller && (
-                    <button
-                      onClick={() => handleRelationshipClick('operarioTaller')}
-                      className="ml-2 p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
-                      title="Ver información de Operario de Taller"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </button>
-                  )}
                 </div>
                 <div className="flex items-center">
                   <input
@@ -557,17 +715,6 @@ export default function EntityModal({
                     className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
                   <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Aseguradora</label>
-                  {formData.aseguradora && (
-                    <button
-                      onClick={() => handleRelationshipClick('aseguradora')}
-                      className="ml-2 p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
-                      title="Ver información de Aseguradora"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </button>
-                  )}
                 </div>
                 <div className="flex items-center">
                   <input
@@ -578,17 +725,6 @@ export default function EntityModal({
                     className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
                   <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Financiera</label>
-                  {formData.financiera && (
-                    <button
-                      onClick={() => handleRelationshipClick('financiera')}
-                      className="ml-2 p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
-                      title="Ver información de Financiera"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </button>
-                  )}
                 </div>
                 <div className="flex items-center">
                   <input
@@ -598,18 +734,7 @@ export default function EntityModal({
                     disabled={!isEditMode}
                     className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
-                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Agencia de Transporte</label>
-                  {formData.agenciaTransporte && (
-                    <button
-                      onClick={() => handleRelationshipClick('agenciaTransporte')}
-                      className="ml-2 p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
-                      title="Ver información de Agencia de Transporte"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </button>
-                  )}
+                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Agencia de Transport</label>
                 </div>
                 <div className="flex items-center">
                   <input
@@ -620,17 +745,6 @@ export default function EntityModal({
                     className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
                   <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Banco</label>
-                  {formData.banco && (
-                    <button
-                      onClick={() => handleRelationshipClick('banco')}
-                      className="ml-2 p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
-                      title="Ver información de Banco"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </button>
-                  )}
                 </div>
                 <div className="flex items-center">
                   <input
@@ -641,191 +755,92 @@ export default function EntityModal({
                     className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
                   <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Rentacar</label>
-                  {formData.rentacar && (
-                    <button
-                      onClick={() => handleRelationshipClick('rentacar')}
-                      className="ml-2 p-1 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
-                      title="Ver información de Rentacar"
-                    >
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
-                    </button>
-                  )}
                 </div>
               </div>
-            </div>
+            </fieldset>
           </div>
         </div>
-      )}
 
-      {/* Tab Content */}
-      {activeTab === 'general' && (
-        <>
-          {/* Address Section */}
-          {entity.domicilio && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Dirección</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Calle</label>
-                  <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
-                    {entity.domicilio.calle}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Código Postal</label>
-                  <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
-                    {entity.domicilio.codigoPostal}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Municipio</label>
-                  <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
-                    {entity.domicilio.municipio}
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Provincia</label>
-                  <div className="text-sm text-gray-900 bg-gray-50 px-3 py-2 rounded-md">
-                    {entity.domicilio.provincia}
-                  </div>
-                </div>
-              </div>
-            </div>
-          )}
-        </>
-      )}
-
-      {/* Direcciones Tab Content */}
-      {activeTab === 'direcciones' && (
-        <div className="space-y-4">
-          {/* Addresses Table */}
-          <div className="border border-gray-300 rounded">
-            <table className="w-full">
-              <thead>
-                <tr className="bg-gray-100 border-b border-gray-300">
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 border-r border-gray-300">
-                    Centro
-                  </th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 border-r border-gray-300">
-                    Dirección
-                  </th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 border-r border-gray-300">
-                    Teléfono
-                  </th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700 border-r border-gray-300">
-                    Tlf. Móvil
-                  </th>
-                  <th className="px-3 py-2 text-left text-xs font-medium text-gray-700">
-                    Email
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {entity.direcciones && entity.direcciones.length > 0 ? (
-                  entity.direcciones.map((direccion, index) => (
-                    <tr key={direccion.id} className={`border-b border-gray-300 ${index === 0 ? 'bg-blue-100' : 'hover:bg-gray-50'}`}>
-                      <td className="px-3 py-2 text-sm font-medium text-gray-900 border-r border-gray-300">
-                        {direccion.centro}
-                      </td>
-                      <td className="px-3 py-2 text-sm text-gray-900 border-r border-gray-300">
-                        {direccion.direccion}
-                      </td>
-                      <td className="px-3 py-2 text-sm text-gray-900 border-r border-gray-300">
-                        {direccion.telefono || '-'}
-                      </td>
-                      <td className="px-3 py-2 text-sm text-gray-900 border-r border-gray-300">
-                        {direccion.telefonoMovil || '-'}
-                      </td>
-                      <td className="px-3 py-2 text-sm text-gray-900">
-                        {direccion.email || '-'}
-                      </td>
-                    </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan={5} className="px-3 py-4 text-center text-sm text-gray-500">
-                      No hay direcciones registradas
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Billing Address Section */}
-          {entity.direcciones && entity.direcciones.length > 0 && (
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-700">Dirección de facturación</label>
-              <div className="relative">
-                <select
+        {/* Vias de Contacto Section */}
+        <fieldset className="border border-gray-400 p-2">
+          <legend className="text-xs font-semibold text-gray-700 px-1">Vías de contacto</legend>
+          <div className="grid grid-cols-3 gap-3">
+            {/* Telefono */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1">Teléfono</label>
+              <div className="flex gap-1">
+                <input
+                  type="text"
+                  value="34"
+                  disabled
+                  className="w-12 px-2 py-1 border border-gray-300 bg-gray-100 text-gray-500 text-sm cursor-not-allowed"
+                />
+                <input
+                  type="text"
+                  value={formData.telefono || ''}
+                  onChange={(e) => handleInputChange('telefono', e.target.value)}
                   disabled={!isEditMode}
-                  className={`w-full px-3 py-2 border border-gray-300 rounded text-sm appearance-none pr-8 ${
+                  className={`flex-1 px-2 py-1 border border-gray-300 text-sm ${
                     isEditMode 
-                      ? 'bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-blue-500' 
+                      ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
                       : 'bg-gray-100 text-gray-500 cursor-not-allowed'
                   }`}
-                >
-                  {entity.direcciones.map((direccion) => (
-                    <option key={direccion.id} value={direccion.id}>
-                      {direccion.centro}. {direccion.direccion}
-                    </option>
-                  ))}
-                </select>
-                <div className="absolute inset-y-0 right-0 flex items-center pr-2 pointer-events-none">
-                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                  </svg>
-                </div>
+                />
               </div>
             </div>
-          )}
-        </div>
-      )}
 
-      {/* Notas Tab Content */}
-      {activeTab === 'notas' && (
-        <div className="space-y-6">
-          <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-            <h3 className="text-lg font-semibold text-green-900 mb-2">Notas</h3>
-            <p className="text-green-700">
-              Información adicional y observaciones sobre esta entidad.
-            </p>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">Notas Generales</label>
-            <textarea
-              disabled
-              rows={8}
-              className="w-full px-3 py-2 border border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed rounded-md text-sm resize-none"
-              placeholder="No hay notas registradas para esta entidad..."
-            />
-          </div>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Movil */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Notas de Contacto</label>
-              <textarea
-                disabled
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed rounded-md text-sm resize-none"
-                placeholder="Notas específicas sobre el contacto..."
+              <label className="block text-xs font-medium text-gray-700 mb-1 flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                Móvil
+              </label>
+              <div className="flex gap-1">
+                <input
+                  type="text"
+                  value="34"
+                  disabled
+                  className="w-12 px-2 py-1 border border-gray-300 bg-gray-100 text-gray-500 text-sm cursor-not-allowed"
+                />
+                <input
+                  type="text"
+                  value={formData.telefonoMovil || ''}
+                  onChange={(e) => handleInputChange('telefonoMovil', e.target.value)}
+                  disabled={!isEditMode}
+                  className={`flex-1 px-2 py-1 border border-gray-300 text-sm ${
+                    isEditMode 
+                      ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                      : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                  }`}
+                />
+              </div>
+            </div>
+
+            {/* E-mail */}
+            <div>
+              <label className="block text-xs font-medium text-gray-700 mb-1 flex items-center gap-1">
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+                E-mail
+              </label>
+              <input
+                type="email"
+                value={formData.email || ''}
+                onChange={(e) => handleInputChange('email', e.target.value)}
+                disabled={!isEditMode}
+                className={`w-full px-2 py-1 border border-gray-300 text-sm ${
+                  isEditMode 
+                    ? 'bg-white text-gray-900 focus:outline-none focus:ring-1 focus:ring-blue-500' 
+                    : 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                }`}
               />
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Notas Comerciales</label>
-              <textarea
-                disabled
-                rows={4}
-                className="w-full px-3 py-2 border border-gray-200 bg-gray-100 text-gray-500 cursor-not-allowed rounded-md text-sm resize-none"
-                placeholder="Notas sobre relaciones comerciales..."
-              />
-            </div>
           </div>
-        </div>
-      )}
+        </fieldset>
+      </div>
 
 
       {/* Ficha de Cliente Modal */}
