@@ -59,6 +59,19 @@ export default function EntityModal({
     return new Date(dateString).toLocaleDateString('es-ES')
   }
 
+  const formatDateTime = (dateString?: string) => {
+    if (!dateString) return ''
+    const date = new Date(dateString)
+    return date.toLocaleString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    })
+  }
+
   const handleInputChange = (field: string, value: any) => {
     setFormData(prev => ({
       ...prev,
@@ -289,9 +302,15 @@ export default function EntityModal({
           {/* Metadata Box */}
           <div className="col-span-3 bg-gray-200 px-3 py-2 border border-gray-400">
             <div className="text-xs text-gray-700 mb-1">Modificado por:</div>
-            <div className="text-xs font-medium text-gray-900 mb-2">USUARIO6, DEMO</div>
+            <div className="text-xs font-medium text-gray-900 mb-2">
+              {formData.modificadoPor || 'N/A'}
+            </div>
             <div className="text-xs text-gray-700 mb-1">El día:</div>
-            <div className="text-xs font-medium text-gray-900">{formatDate(entity.updatedAt)}</div>
+            <div className="text-xs font-medium text-gray-900">
+              {formData.fechaModificacion 
+                ? formatDateTime(formData.fechaModificacion)
+                : formatDate(entity.updatedAt)}
+            </div>
           </div>
         </div>
 

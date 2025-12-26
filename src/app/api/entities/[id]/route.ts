@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { EntitiesRepository } from '@/lib/repositories/entities'
-import { requireAuth, createUnauthorizedResponse } from '@/lib/auth-utils'
+import { requireAuth, createUnauthorizedResponse, getAuthenticatedUser } from '@/lib/auth-utils'
 
 type RouteParams = {
   params: Promise<{
@@ -55,10 +55,10 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    await requireAuth(request)
+    const user = await requireAuth(request)
     const id = await getEntityId(params)
     const payload = await request.json()
-    const updated = await EntitiesRepository.update(id, payload)
+    const updated = await EntitiesRepository.update(id, payload, user.userId)
     return NextResponse.json({
       success: true,
       data: updated

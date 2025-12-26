@@ -83,7 +83,11 @@ const mapEntidad = (row: any): Entidad => {
     nombreORazonSocial: row.NCOENT,
     pais: row.DIR_DIR_ENTDIRToENT?.[0]?.PAI?.NOMPAI ?? 'España',
     createdAt: row.FEAENT?.toISOString() ?? '',
-    updatedAt: row.FEBENT?.toISOString() ?? row.FEAENT?.toISOString() ?? ''
+    updatedAt: row.FEBENT?.toISOString() ?? row.FEAENT?.toISOString() ?? '',
+    
+    // Modification tracking
+    modificadoPor: (row as any).modificadoPor ?? undefined,
+    fechaModificacion: row.FEMENT ? new Date(row.FEMENT).toISOString() : undefined
   }
 }
 
@@ -212,11 +216,15 @@ export class EntitiesRepository {
 
     if (!record) return null
     
-    // Check FVE, FCS, FRC relationships separately
-    const [fve, fcs, frc] = await Promise.all([
+    // Check FVE, FCS, FRC relationships separately and get user info
+    const [fve, fcs, frc, usuario] = await Promise.all([
       prisma.fVE.findUnique({ where: { ENTFVE: record.IDEENT }, select: { ENTFVE: true } }),
       prisma.fCS.findUnique({ where: { ENTFCS: record.IDEENT }, select: { ENTFCS: true } }),
-      prisma.fRC.findUnique({ where: { ENTFRC: record.IDEENT }, select: { ENTFRC: true } })
+      prisma.fRC.findUnique({ where: { ENTFRC: record.IDEENT }, select: { ENTFRC: true } }),
+      record.USUENT ? prisma.eNT.findUnique({ 
+        where: { IDEENT: record.USUENT }, 
+        select: { NCOENT: true } 
+      }) : Promise.resolve(null)
     ])
     
     const roles = mapRoles(record)
@@ -224,7 +232,7 @@ export class EntitiesRepository {
     roles.aseguradora = Boolean(fcs)
     roles.rentacar = Boolean(frc)
     
-    return mapEntidad({ ...record, _roles: roles })
+    return mapEntidad({ ...record, _roles: roles, modificadoPor: usuario?.NCOENT })
   }
 
   static async create(payload: Omit<Entidad, 'id' | 'createdAt' | 'updatedAt'>) {
@@ -373,7 +381,7 @@ export class EntitiesRepository {
     return this.findById(ent.IDEENT)
   }
 
-  static async update(id: number, payload: Partial<Entidad>) {
+  static async update(id: number, payload: Partial<Entidad>, userId?: number) {
     await prisma.eNT.update({
       where: { IDEENT: id },
       data: {
@@ -386,7 +394,9 @@ export class EntitiesRepository {
         EXTENT: payload.extranjero ? 1 : 0,
         INTENT: payload.operadorIntracomunitario,
         EXPENT: payload.importacionExportacion,
-        CANENT: payload.regimenCanario
+        CANENT: payload.regimenCanario,
+        USUENT: userId, // Usuario que modifica
+        FEMENT: new Date() // Fecha de modificación
       }
     })
 

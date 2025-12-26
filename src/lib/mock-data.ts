@@ -89,6 +89,10 @@ export interface Entidad {
   pais: string
   createdAt: string
   updatedAt: string
+  
+  // Modification tracking
+  modificadoPor?: string // Nombre del usuario que modificó
+  fechaModificacion?: string // Fecha y hora de modificación (FEMENT)
 }
 
 export interface Cliente {
