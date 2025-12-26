@@ -1,11 +1,13 @@
 'use client'
-import { useState, useEffect, Suspense } from 'react'
+import { useState, useEffect, Suspense, useRef, useCallback } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { Entidad } from '@/lib/mock-data'
 import LayoutWithSidebar from '@/components/LayoutWithSidebar'
 import EntityModal from '@/components/EntityModal'
 import AddClientModal from '@/components/AddClientModal'
+
+const ITEMS_PER_PAGE = 50
 
 function EntidadesPageContent() {
   const router = useRouter()
@@ -16,24 +18,42 @@ function EntidadesPageContent() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [totalResults, setTotalResults] = useState(0)
+  const [currentPage, setCurrentPage] = useState(1)
+  const [totalPages, setTotalPages] = useState(1)
   const [tipoEntidadFilter, setTipoEntidadFilter] = useState<'ALL' | 'cliente' | 'proveedor' | 'vendedor'>('ALL')
   const [columnFilters, setColumnFilters] = useState({
     nif: '',
     nombre: '',
     telefono: ''
   })
+  // Debounced version of columnFilters for API calls
+  const [debouncedColumnFilters, setDebouncedColumnFilters] = useState(columnFilters)
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
   const [selectedEntity, setSelectedEntity] = useState<Entidad | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
+  // Debounce columnFilters changes - wait 500ms after user stops typing
   useEffect(() => {
-    // Authentication disabled for development
-    // if (!isAuthenticated) {
-    //   router.push('/login')
-    //   return
-    // }
-    loadEntities()
-  }, [isAuthenticated, router, columnFilters, tipoEntidadFilter])
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current)
+    }
+    
+    debounceTimerRef.current = setTimeout(() => {
+      setDebouncedColumnFilters(columnFilters)
+    }, 500)
+
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current)
+      }
+    }
+  }, [columnFilters])
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [debouncedColumnFilters, tipoEntidadFilter])
 
   // Initialize tipoEntidadFilter from URL or localStorage
   useEffect(() => {
@@ -59,6 +79,15 @@ function EntidadesPageContent() {
     }
     // Sync query param without losing other params
     const params = new URLSearchParams(searchParams.toString())
+    const currentTipo = params.get('tipo') || 'ALL'
+    if (tipoEntidadFilter === 'ALL' && currentTipo === 'ALL') {
+      // Already correct, no need to update
+      return
+    }
+    if (tipoEntidadFilter === currentTipo) {
+      // Already in sync, no need to update
+      return
+    }
     if (tipoEntidadFilter === 'ALL') {
       params.delete('tipo')
     } else {
@@ -67,26 +96,29 @@ function EntidadesPageContent() {
     const queryString = params.toString()
     const href = queryString ? `${pathname}?${queryString}` : pathname
     router.replace(href)
-  }, [tipoEntidadFilter, pathname, router, searchParams])
+  // Only depend on tipoEntidadFilter and pathname to avoid loops
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tipoEntidadFilter, pathname])
 
-  const loadEntities = async () => {
+  // Memoize loadEntities to prevent infinite loops
+  const loadEntities = useCallback(async () => {
     try {
       setLoading(true)
       setError('')
       const params = new URLSearchParams()
-      params.set('page', '1')
-      params.set('limit', '1000')
+      params.set('page', String(currentPage))
+      params.set('limit', String(ITEMS_PER_PAGE))
       if (tipoEntidadFilter !== 'ALL') {
         params.set('tipo', tipoEntidadFilter)
       }
-      if (columnFilters.nif) {
-        params.set('nif', columnFilters.nif)
+      if (debouncedColumnFilters.nif) {
+        params.set('nif', debouncedColumnFilters.nif)
       }
-      if (columnFilters.nombre) {
-        params.set('nombre', columnFilters.nombre)
+      if (debouncedColumnFilters.nombre) {
+        params.set('nombre', debouncedColumnFilters.nombre)
       }
-      if (columnFilters.telefono) {
-        params.set('telefono', columnFilters.telefono)
+      if (debouncedColumnFilters.telefono) {
+        params.set('telefono', debouncedColumnFilters.telefono)
       }
 
       const headers: HeadersInit = {}
@@ -111,6 +143,7 @@ function EntidadesPageContent() {
       if (data.success) {
         setEntities(data.entities || [])
         setTotalResults(data.total || 0)
+        setTotalPages(data.pages || 1)
       } else {
         throw new Error(data.error || 'Error al cargar las entidades')
       }
@@ -120,7 +153,16 @@ function EntidadesPageContent() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [currentPage, tipoEntidadFilter, debouncedColumnFilters, token, logout, router])
+
+  useEffect(() => {
+    // Authentication disabled for development
+    // if (!isAuthenticated) {
+    //   router.push('/login')
+    //   return
+    // }
+    loadEntities()
+  }, [loadEntities, isAuthenticated])
 
   const handleCreateEntity = () => {
     setIsAddModalOpen(true)
@@ -348,6 +390,32 @@ function EntidadesPageContent() {
                 ))}
               </tbody>
             </table>
+          </div>
+          
+          {/* Pagination Controls */}
+          <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-muted/30">
+            <div className="text-sm text-muted-foreground">
+              Mostrando {entities.length > 0 ? ((currentPage - 1) * ITEMS_PER_PAGE + 1) : 0} - {Math.min(currentPage * ITEMS_PER_PAGE, totalResults)} de {totalResults} entidades
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                disabled={currentPage === 1 || loading}
+                className="px-3 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Anterior
+              </button>
+              <span className="text-sm text-muted-foreground px-2">
+                Página {currentPage} de {totalPages}
+              </span>
+              <button
+                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages || loading}
+                className="px-3 py-2 text-sm font-medium text-foreground bg-card border border-border rounded-md hover:bg-muted disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Siguiente
+              </button>
+            </div>
           </div>
         </div>
       </div>

@@ -20,8 +20,8 @@ const getInvoiceId = async (params: Promise<{ id: string }>) => {
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {
     // Authentication optional for development (matches frontend behavior)
-    try {
-      await requireAuth(request)
+  try {
+    await requireAuth(request)
     } catch (authError) {
       // In development, allow requests without auth
       // In production, this should be enforced

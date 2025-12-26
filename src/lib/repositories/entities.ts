@@ -108,6 +108,17 @@ export class EntitiesRepository {
       where.NCOENT = { contains: columnFilters.nombre }
     }
 
+    // Apply tipoEntidadFilter at database level when possible
+    if (tipoEntidadFilter === 'cliente') {
+      where.FCL = { isNot: null }
+    } else if (tipoEntidadFilter === 'proveedor') {
+      where.FPR = { isNot: null }
+    }
+    // Note: vendedor (FVE) cannot be filtered at DB level as it's a separate table
+
+    // Get total count from database with same where clause
+    const total = await prisma.eNT.count({ where })
+
     const records = await prisma.eNT.findMany({
       where,
       skip: (page - 1) * limit,
@@ -154,20 +165,25 @@ export class EntitiesRepository {
       return mapEntidad({ ...row, _roles: roles })
     })
 
+    // Apply vendedor filter post-query if needed (since FVE is separate table)
     const filtered =
-      tipoEntidadFilter === 'ALL'
-        ? mapped
-        : mapped.filter(entity => {
-            if (tipoEntidadFilter === 'cliente') return entity.cliente
-            if (tipoEntidadFilter === 'proveedor') return entity.proveedor
-            if (tipoEntidadFilter === 'vendedor') return entity.vendedor
-            return false
-          })
+      tipoEntidadFilter === 'vendedor'
+        ? mapped.filter(entity => entity.vendedor)
+        : mapped
+
+    // For vendedor filter, we need to adjust total count
+    // Since we can't count FVE relationships efficiently, we use the filtered count
+    // This is a limitation - for accurate vendedor counts, we'd need a more complex query
+    const finalTotal = tipoEntidadFilter === 'vendedor' 
+      ? filtered.length // Approximate for vendedor filter
+      : total
 
     return {
       entities: filtered,
-      total: filtered.length,
-      pages: Math.ceil(filtered.length / limit) || 1
+      total: finalTotal,
+      page,
+      limit,
+      pages: Math.ceil(finalTotal / limit) || 1
     }
   }
 
