@@ -530,9 +530,9 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
             </div>
           </div>
 
-          <div className="space-y-6 px-6 py-6">
+          <div className="space-y-4 px-6 py-4">
             {/* Row 1: Factura number and date */}
-            <div className="flex items-center gap-8 mb-6">
+            <div className="flex items-center gap-6">
               <div className="flex items-center gap-2">
                 <label className="text-sm font-medium text-muted-foreground">Factura</label>
                 {isReceivedInvoice ? (
@@ -550,10 +550,10 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                       }
                     }}
                     placeholder="Número de factura"
-                    className={`${baseInputClasses} w-40`}
+                    className={`${baseInputClasses} w-36`}
                   />
                 ) : (
-                  <span className="text-lg font-semibold text-card-foreground">
+                  <span className="text-lg font-bold text-card-foreground">
                     {formData.serie}{formData.numero}
                   </span>
                 )}
@@ -564,15 +564,15 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                   type="date"
                   value={formData.fechaExpedicion || ''}
                   onChange={e => handleInputChange('fechaExpedicion', e.target.value)}
-                  className={`${baseInputClasses} w-40`}
+                  className={`${baseInputClasses} w-36`}
                 />
               </div>
             </div>
 
             {/* Row 2: Proveedor + Exportación/Importación */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-card-foreground mb-2">Proveedor</label>
+                <label className="block text-sm font-medium text-card-foreground mb-1">Proveedor</label>
                 <ClientSearch
                   onClientSelect={handleClientSelect}
                   selectedClient={selectedClient}
@@ -595,7 +595,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
             </div>
 
             {/* Row 3: Dirección/Teléfono dropdown */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <div className="relative">
                   <select
@@ -614,9 +614,9 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
             </div>
 
             {/* Row 4: Forma pago */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-card-foreground mb-2">Forma pago</label>
+                <label className="block text-sm font-medium text-card-foreground mb-1">Forma pago</label>
                 <select
                   value={formData.formaPago || 'Crédito 30 días'}
                   onChange={e => handleInputChange('formaPago', e.target.value)}
@@ -633,11 +633,11 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
 
             {/* Row 5: Notas */}
             <div>
-              <label className="block text-sm font-medium text-card-foreground mb-2">Notas</label>
+              <label className="block text-sm font-medium text-card-foreground mb-1">Notas</label>
               <textarea
                 value={formData.notas || ''}
                 onChange={e => handleInputChange('notas', e.target.value)}
-                rows={3}
+                rows={2}
                 className={`${baseInputClasses} resize-none`}
               />
             </div>
@@ -661,9 +661,9 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
 
 
             {formData.tipoFactura === 'rectificativa' && (
-              <section className="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-5">
-                <h2 className="text-lg font-semibold text-amber-900">Datos de rectificación</h2>
-                <div className="mt-4 grid gap-4 md:grid-cols-2">
+              <section className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+                <h2 className="text-base font-semibold text-amber-900">Datos de rectificación</h2>
+                <div className="mt-3 grid gap-4 md:grid-cols-2">
                   <div>
                     <label className="block text-sm font-medium text-amber-900">Causa de rectificación</label>
                     <select
@@ -705,13 +705,13 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
             )}
 
             {/* Invoice Lines Section */}
-            <section>
-              <div className="overflow-hidden rounded-2xl border border-border bg-card">
-                <div className="border-b border-border px-5 py-4">
-                  <h2 className="text-lg font-semibold text-card-foreground">Líneas de Factura</h2>
+            <section className="mt-4">
+              <div className="overflow-hidden rounded-xl border border-border bg-card">
+                <div className="border-b border-border px-4 py-3">
+                  <h2 className="text-base font-semibold text-card-foreground">Líneas de Factura</h2>
                 </div>
                 
-                <div className="p-5">
+                <div className="p-4">
                   {/* Table Header */}
                   <div className="grid grid-cols-13 gap-4 mb-4 pb-2 border-b border-border">
                     <div className="col-span-1 text-sm font-medium text-muted-foreground"></div>
@@ -860,12 +860,12 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
 
             {/* Totales y Cálculos Section */}
             <section>
-              <div className="overflow-hidden rounded-2xl border border-border bg-card">
-                <div className="border-b border-border px-5 py-4">
-                  <h2 className="text-lg font-semibold text-card-foreground">Totales y Cálculos</h2>
+              <div className="overflow-hidden rounded-xl border border-border bg-card">
+                <div className="border-b border-border px-4 py-3">
+                  <h2 className="text-base font-semibold text-card-foreground">Totales y Cálculos</h2>
                 </div>
                 
-                <div className="p-5">
+                <div className="p-4">
                   <div className="space-y-4">
                     {/* Tax Breakdown Row */}
                     <div className="grid grid-cols-4 gap-6">
@@ -967,9 +967,9 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
 
 
             {getMencionesObligatorias().length > 0 && (
-              <section className="rounded-2xl border border-yellow-200 bg-yellow-50 px-5 py-5">
-                <h3 className="text-lg font-semibold text-yellow-900">Menciones obligatorias</h3>
-                <div className="mt-3 space-y-2">
+              <section className="rounded-xl border border-yellow-200 bg-yellow-50 px-4 py-3">
+                <h3 className="text-base font-semibold text-yellow-900">Menciones obligatorias</h3>
+                <div className="mt-2 space-y-2">
                   {getMencionesObligatorias().map((mencion, index) => (
                     <div
                       key={index}

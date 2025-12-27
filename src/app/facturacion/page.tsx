@@ -407,8 +407,8 @@ function FacturacionPageContent() {
                   <table className="min-w-full divide-y divide-gray-200">
                   <thead className="bg-gray-50">
                     {/* Filter Row - Always visible */}
-                    <tr className="border-b border-gray-200">
-                      <th className="px-3 py-2">
+                    <tr className="border-b-2 border-gray-300">
+                      <th className="px-2 py-3">
                         <input
                           ref={(el) => { inputRefs.current['factura'] = el }}
                           type="text"
@@ -417,10 +417,10 @@ function FacturacionPageContent() {
                           onFocus={() => handleFilterFocus('factura')}
                           onBlur={handleFilterBlur}
                           placeholder="Filtrar factura..."
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full min-w-[100px] px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-3 py-2">
+                      <th className="px-2 py-3">
                         <input
                           ref={(el) => { inputRefs.current['fecha'] = el }}
                           type="text"
@@ -429,10 +429,10 @@ function FacturacionPageContent() {
                           onFocus={() => handleFilterFocus('fecha')}
                           onBlur={handleFilterBlur}
                           placeholder="Filtrar fecha..."
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full min-w-[100px] px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-3 py-2">
+                      <th className="px-2 py-3">
                         <input
                           ref={(el) => { inputRefs.current['nif'] = el }}
                           type="text"
@@ -441,10 +441,10 @@ function FacturacionPageContent() {
                           onFocus={() => handleFilterFocus('nif')}
                           onBlur={handleFilterBlur}
                           placeholder="Filtrar NIF..."
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full min-w-[100px] px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-3 py-2">
+                      <th className="px-2 py-3">
                         <input
                           ref={(el) => { inputRefs.current['cliente'] = el }}
                           type="text"
@@ -453,10 +453,10 @@ function FacturacionPageContent() {
                           onFocus={() => handleFilterFocus('cliente')}
                           onBlur={handleFilterBlur}
                           placeholder="Filtrar cliente..."
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full min-w-[120px] px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-3 py-2">
+                      <th className="px-2 py-3">
                         <input
                           ref={(el) => { inputRefs.current['baseImponible'] = el }}
                           type="text"
@@ -465,10 +465,10 @@ function FacturacionPageContent() {
                           onFocus={() => handleFilterFocus('baseImponible')}
                           onBlur={handleFilterBlur}
                           placeholder="Filtrar base..."
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full min-w-[90px] px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-3 py-2">
+                      <th className="px-2 py-3">
                         <input
                           ref={(el) => { inputRefs.current['iva'] = el }}
                           type="text"
@@ -477,10 +477,10 @@ function FacturacionPageContent() {
                           onFocus={() => handleFilterFocus('iva')}
                           onBlur={handleFilterBlur}
                           placeholder="Filtrar IVA..."
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full min-w-[80px] px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-3 py-2">
+                      <th className="px-2 py-3">
                         <input
                           ref={(el) => { inputRefs.current['total'] = el }}
                           type="text"
@@ -489,10 +489,10 @@ function FacturacionPageContent() {
                           onFocus={() => handleFilterFocus('total')}
                           onBlur={handleFilterBlur}
                           placeholder="Filtrar total..."
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full min-w-[90px] px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-3 py-2">
+                      <th className="px-2 py-3">
                         <input
                           ref={(el) => { inputRefs.current['direccion'] = el }}
                           type="text"
@@ -501,10 +501,10 @@ function FacturacionPageContent() {
                           onFocus={() => handleFilterFocus('direccion')}
                           onBlur={handleFilterBlur}
                           placeholder="Filtrar dirección..."
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full min-w-[120px] px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-3 py-2">
+                      <th className="px-2 py-3">
                         <input
                           ref={(el) => { inputRefs.current['poblacion'] = el }}
                           type="text"
@@ -513,10 +513,10 @@ function FacturacionPageContent() {
                           onFocus={() => handleFilterFocus('poblacion')}
                           onBlur={handleFilterBlur}
                           placeholder="Filtrar población..."
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full min-w-[110px] px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-3 py-2">
+                      <th className="px-2 py-3">
                         <input
                           ref={(el) => { inputRefs.current['provincia'] = el }}
                           type="text"
@@ -525,10 +525,10 @@ function FacturacionPageContent() {
                           onFocus={() => handleFilterFocus('provincia')}
                           onBlur={handleFilterBlur}
                           placeholder="Filtrar provincia..."
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full min-w-[100px] px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-3 py-2">
+                      <th className="px-2 py-3">
                         <input
                           ref={(el) => { inputRefs.current['codigoPostal'] = el }}
                           type="text"
@@ -537,10 +537,10 @@ function FacturacionPageContent() {
                           onFocus={() => handleFilterFocus('codigoPostal')}
                           onBlur={handleFilterBlur}
                           placeholder="Filtrar C.P...."
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full min-w-[80px] px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-3 py-2">
+                      <th className="px-2 py-3">
                         <input
                           ref={(el) => { inputRefs.current['formaPago'] = el }}
                           type="text"
@@ -549,10 +549,10 @@ function FacturacionPageContent() {
                           onFocus={() => handleFilterFocus('formaPago')}
                           onBlur={handleFilterBlur}
                           placeholder="Filtrar forma pago..."
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full min-w-[110px] px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-3 py-2">
+                      <th className="px-2 py-3">
                         <input
                           ref={(el) => { inputRefs.current['medioPago'] = el }}
                           type="text"
@@ -561,10 +561,10 @@ function FacturacionPageContent() {
                           onFocus={() => handleFilterFocus('medioPago')}
                           onBlur={handleFilterBlur}
                           placeholder="Filtrar medio pago..."
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full min-w-[110px] px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-3 py-2">
+                      <th className="px-2 py-3">
                         <input
                           ref={(el) => { inputRefs.current['estado'] = el }}
                           type="text"
@@ -573,58 +573,58 @@ function FacturacionPageContent() {
                           onFocus={() => handleFilterFocus('estado')}
                           onBlur={handleFilterBlur}
                           placeholder="Filtrar estado..."
-                          className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          className="w-full min-w-[90px] px-3 py-2 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
                         />
                       </th>
-                      <th className="px-3 py-2">
+                      <th className="px-2 py-3">
                         {/* No filter for actions column */}
                       </th>
                     </tr>
                     {/* Header Row */}
                     <tr>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Factura
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Fecha
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         NIF
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Cliente
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Base Imponible
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         IVA
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Total
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Dirección
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Población
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Provincia
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         C.P.
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Forma Pago
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Medio Pago
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Estado
                       </th>
-                      <th className="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className="px-2 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                         Acciones
                       </th>
                     </tr>
@@ -649,51 +649,51 @@ function FacturacionPageContent() {
                         className="hover:bg-gray-50 cursor-pointer"
                         onClick={() => handleRowClick(invoice)}
                       >
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
                           {invoice.numero}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
                           {formatDate(invoice.fecha)}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
                           {invoice.clienteNif || '-'}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
                           {invoice.clienteNombre}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
                           {formatCurrency(invoice.totales.baseImponible)}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
                           {formatCurrency(invoice.totales.iva)}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                           {formatCurrency(invoice.totales.total)}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
                           {invoice.direccion?.direccion || '-'}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
                           {invoice.direccion?.poblacion || '-'}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
                           {invoice.direccion?.provincia || '-'}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
                           {invoice.direccion?.codigoPostal || '-'}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
                           {'-'}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm text-gray-900">
                           {'-'}
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap">
+                        <td className="px-2 py-2 whitespace-nowrap">
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor('PAID')}`}>
                             {getStatusText('PAID')}
                           </span>
                         </td>
-                        <td className="px-3 py-4 whitespace-nowrap text-sm font-medium">
+                        <td className="px-2 py-2 whitespace-nowrap text-sm font-medium">
                           <div className="flex gap-2">
                             <button
                               onClick={(e) => {
