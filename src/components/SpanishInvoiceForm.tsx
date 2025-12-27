@@ -599,13 +599,13 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
               <div>
                 <div className="relative">
                   <select
-                    value={selectedClient?.telefono || ''}
+                    value={(selectedClient as any)?.telefono || ''}
                     onChange={() => {}}
                     className={`${baseInputClasses}`}
                   >
                     <option value="">
-                      {selectedClient?.telefono 
-                        ? `(${selectedClient.telefono})` 
+                      {(selectedClient as any)?.telefono 
+                        ? `(${(selectedClient as any).telefono})` 
                         : '(952223930 / 952221315)'}
                     </option>
                   </select>
