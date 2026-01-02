@@ -431,10 +431,15 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
         headers['Authorization'] = `Bearer ${token}`
       }
 
-      console.log('📤 Enviando factura a la API:', payload)
+      // Use PUT for updates, POST for new invoices
+      const isUpdate = invoiceId !== undefined
+      const url = isUpdate ? `/api/invoices/${invoiceId}` : '/api/invoices'
+      const method = isUpdate ? 'PUT' : 'POST'
 
-      const response = await fetch('/api/invoices', {
-        method: 'POST',
+      console.log(`📤 ${isUpdate ? 'Actualizando' : 'Creando'} factura en la API:`, payload)
+
+      const response = await fetch(url, {
+        method,
         headers,
         body: JSON.stringify(payload),
         cache: 'no-store'
@@ -442,21 +447,21 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Error al crear la factura')
+        throw new Error(errorData.error || `Error al ${isUpdate ? 'actualizar' : 'crear'} la factura`)
       }
 
       const result = await response.json()
       
       if (result.success && result.data) {
-        console.log('✅ Factura creada exitosamente:', result.data)
+        console.log(`✅ Factura ${isUpdate ? 'actualizada' : 'creada'} exitosamente:`, result.data)
         setShowPreviewModal(false)
         router.push(`/facturacion/ver/${result.data.id}`)
       } else {
-        throw new Error('Error al crear la factura')
+        throw new Error(`Error al ${isUpdate ? 'actualizar' : 'crear'} la factura`)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Error de conexión')
-      console.error('❌ Error al crear factura:', err)
+      console.error(`❌ Error al ${invoiceId ? 'actualizar' : 'crear'} factura:`, err)
     } finally {
       setLoading(false)
     }
@@ -491,8 +496,13 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
         headers['Authorization'] = `Bearer ${token}`
       }
 
-      const response = await fetch('/api/invoices', {
-        method: 'POST',
+      // Use PUT for updates, POST for new invoices
+      const isUpdate = invoiceId !== undefined
+      const url = isUpdate ? `/api/invoices/${invoiceId}` : '/api/invoices'
+      const method = isUpdate ? 'PUT' : 'POST'
+
+      const response = await fetch(url, {
+        method,
         headers,
         body: JSON.stringify(payload),
         cache: 'no-store'
@@ -500,7 +510,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || 'Error al guardar el borrador')
+        throw new Error(errorData.error || `Error al guardar el borrador`)
       }
 
       const result = await response.json()

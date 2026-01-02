@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { InvoiceDbService } from '@/lib/invoice-db-service'
+import { InvoicesRepository } from '@/lib/repositories/invoices'
 import { requireAuth, createUnauthorizedResponse } from '@/lib/auth-utils'
 
 type RouteParams = {
@@ -33,7 +34,8 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       console.warn('Authentication skipped in development mode')
     }
     const id = await getInvoiceId(params)
-    const invoice = await InvoiceDbService.getInvoice(id)
+    // Use InvoicesRepository.findById to get full Invoice structure with lines
+    const invoice = await InvoicesRepository.findById(id)
 
     if (!invoice) {
       return NextResponse.json(
@@ -71,25 +73,50 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
 
 export async function PUT(request: NextRequest, { params }: RouteParams) {
   try {
-    await requireAuth(request)
+    // Authentication optional for development (matches frontend behavior)
+    try {
+      await requireAuth(request)
+    } catch (authError) {
+      const isDevelopment = process.env.NODE_ENV === 'development'
+      if (!isDevelopment) {
+        throw authError
+      }
+      console.warn('Authentication skipped in development mode')
+    }
+    
     const id = await getInvoiceId(params)
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Actualización de facturas requiere mapa de IDs (clienteId, piezaId)'
-      },
-      { status: 400 }
-    )
+    const body = await request.json()
+
+    // Validate required fields
+    if (!body.cliente?.NIF) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'El NIF del cliente es requerido'
+        },
+        { status: 400 }
+      )
+    }
+
+    // Update invoice using repository
+    const updatedInvoice = await InvoicesRepository.update(id, body)
+
+    return NextResponse.json({
+      success: true,
+      data: updatedInvoice
+    })
   } catch (error) {
     if (error instanceof Error && (error.message.includes('Missing') || error.message.includes('Invalid') || error.message.includes('expired'))) {
       return createUnauthorizedResponse(error.message)
     }
     console.error('Error updating invoice:', error)
-    const status = error instanceof Error && error.message.includes('inválido') ? 400 : 500
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const status = error instanceof Error && (error.message.includes('inválido') || error.message.includes('no encontrada')) ? 400 : 500
     return NextResponse.json(
       {
         success: false,
-        error: status === 400 && error instanceof Error ? error.message : 'No se pudo actualizar la factura'
+        error: status === 400 && error instanceof Error ? error.message : 'No se pudo actualizar la factura',
+        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
       },
       { status }
     )

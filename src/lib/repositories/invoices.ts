@@ -582,5 +582,201 @@ export class InvoicesRepository {
     }
     return created
   }
+
+  static async update(id: number, invoiceData: Partial<Invoice>): Promise<Invoice> {
+    // Verify invoice exists and get current entity NIF
+    const existingInvoice = await prisma.cFA.findUnique({
+      where: { IDECFA: id },
+      include: { ENT: true }
+    })
+    if (!existingInvoice) {
+      throw new Error('Factura no encontrada')
+    }
+
+    // Get default values for required fields
+    const defaultDep = await prisma.dEP.findFirst({ 
+      where: { NOMDEP: { contains: invoiceData.departamento || 'VENTAS' } } 
+    })
+    const defaultFpa = await prisma.cFP.findFirst({ 
+      where: { NOMCFP: { contains: invoiceData.formaPago || 'CONTADO' } } 
+    })
+    
+    // Fallback: get first available if not found
+    const fallbackDep = defaultDep || await prisma.dEP.findFirst({ orderBy: { IDEDEP: 'asc' } })
+    const fallbackFpa = defaultFpa || await prisma.cFP.findFirst({ orderBy: { IDECFP: 'asc' } })
+    
+    // Default values
+    const DEPCFA = fallbackDep?.IDEDEP ?? existingInvoice.DEPCFA
+    const FPACFA = fallbackFpa?.IDECFP ?? existingInvoice.FPACFA
+    const TIVCFA = 1 // Tipo IVA (default)
+    const DIVCFA = 1 // Divisa (EUR)
+    const ALMCFA = existingInvoice.ALMCFA ?? 1 // Keep existing or default
+
+    // Find or update entity (cliente)
+    let ENTCFA: number = existingInvoice.ENTCFA
+    const currentNIF = existingInvoice.ENT?.NIFENT
+    if (invoiceData.cliente?.NIF && invoiceData.cliente.NIF !== currentNIF) {
+      const existingEnt = await prisma.eNT.findFirst({
+        where: { NIFENT: invoiceData.cliente.NIF }
+      })
+      if (existingEnt) {
+        ENTCFA = existingEnt.IDEENT
+      } else {
+        // Create new entity if not found
+        const newEnt = await prisma.eNT.create({
+          data: {
+            NCOENT: invoiceData.cliente.nombreORazonSocial || '',
+            NIFENT: invoiceData.cliente.NIF || '',
+            MONENT: DIVCFA,
+            PAOENT: 1, // España (país de origen)
+            TNIENT: '02' // Default tipo NIF
+          }
+        })
+        ENTCFA = newEnt.IDEENT
+      }
+    }
+
+    // Find or update address (DIR)
+    let DIRCFA: number | null = existingInvoice.DIRCFA ?? null
+    if (invoiceData.cliente?.domicilio) {
+      const existingDir = await prisma.dIR.findFirst({
+        where: {
+          ENTDIR: ENTCFA,
+          DIRDIR: invoiceData.cliente.domicilio.calle || ''
+        }
+      })
+      if (existingDir) {
+        DIRCFA = existingDir.IDEDIR
+        // Update address if needed
+        await prisma.dIR.update({
+          where: { IDEDIR: existingDir.IDEDIR },
+          data: {
+            DIRDIR: invoiceData.cliente.domicilio.calle || existingDir.DIRDIR,
+            POBDIR: invoiceData.cliente.domicilio.municipio || existingDir.POBDIR,
+            CPODIR: invoiceData.cliente.domicilio.codigoPostal || existingDir.CPODIR,
+            PRODIR: 30, // Default province (should be mapped properly)
+            PAIDIR: 1 // España
+          }
+        })
+      } else if (invoiceData.cliente.domicilio.calle) {
+        // Create new address if not found
+        const newDir = await prisma.dIR.create({
+          data: {
+            ENTDIR: ENTCFA,
+            NOMDIR: 'PRINCIPAL',
+            DIRDIR: invoiceData.cliente.domicilio.calle || '',
+            POBDIR: invoiceData.cliente.domicilio.municipio || '',
+            CPODIR: invoiceData.cliente.domicilio.codigoPostal || '',
+            PRODIR: 30, // Default province
+            PAIDIR: 1 // España
+          }
+        })
+        DIRCFA = newDir.IDEDIR
+      }
+    }
+
+    // Calculate bases and IVA by type from lineas
+    const lineas = invoiceData.lineas || []
+    let BI1CFA = 0, BI2CFA = 0, BI3CFA = 0, BIPCFA = 0
+    let CI1CFA = 0, CI2CFA = 0, CI3CFA = 0, CIPCFA = 0
+    let RE1CFA = 0, RE2CFA = 0, RE3CFA = 0, REPCFA = 0
+
+    lineas.forEach(linea => {
+      const base = linea.baseLinea || 0
+      const iva = linea.cuotaIVA || 0
+      const re = linea.cuotaRE || 0
+      const tipoIVA = (linea.tipoIVA as number) || 21
+
+      // Group by IVA type (0, 4, 10, 21)
+      if (tipoIVA === 0) {
+        BI1CFA += base
+        CI1CFA += iva
+        RE1CFA += re
+      } else if (tipoIVA === 4) {
+        BI2CFA += base
+        CI2CFA += iva
+        RE2CFA += re
+      } else if (tipoIVA === 10) {
+        BI3CFA += base
+        CI3CFA += iva
+        RE3CFA += re
+      } else if (tipoIVA === 21) {
+        BIPCFA += base
+        CIPCFA += iva
+        REPCFA += re
+      }
+    })
+
+    // Calculate totals
+    const baseImponibleTotal = BI1CFA + BI2CFA + BI3CFA + BIPCFA
+    const cuotaIVATotal = CI1CFA + CI2CFA + CI3CFA + CIPCFA
+    const cuotaRETotal = RE1CFA + RE2CFA + RE3CFA + REPCFA
+    const TOTCFA = baseImponibleTotal + cuotaIVATotal + cuotaRETotal
+
+    // Keep existing invoice number or update if provided
+    const NUMCFA = invoiceData.numero || existingInvoice.NUMCFA
+
+    // Dates
+    const FECCFA = invoiceData.fechaContable 
+      ? new Date(invoiceData.fechaContable)
+      : existingInvoice.FECCFA
+    const FEMCFA = invoiceData.fechaExpedicion
+      ? new Date(invoiceData.fechaExpedicion)
+      : existingInvoice.FEMCFA
+
+    // Update invoice in CFA table
+    const updatedInvoice = await prisma.cFA.update({
+      where: { IDECFA: id },
+      data: {
+        NUMCFA,
+        ALMCFA,
+        DEPCFA,
+        FECCFA,
+        ENTCFA,
+        DIRCFA,
+        FPACFA,
+        TIVCFA,
+        DIVCFA,
+        FEMCFA,
+        BI1CFA,
+        TI1CFA: lineas.find(l => (l.tipoIVA as number) === 0) ? 0 : 0,
+        RE1CFA,
+        BI2CFA,
+        TI2CFA: lineas.find(l => (l.tipoIVA as number) === 4) ? 4 : 0,
+        RE2CFA,
+        BI3CFA,
+        TI3CFA: lineas.find(l => (l.tipoIVA as number) === 10) ? 10 : 0,
+        RE3CFA,
+        BIPCFA,
+        TIPCFA: lineas.find(l => (l.tipoIVA as number) === 21) ? 21 : 21,
+        REPCFA,
+        CI1CFA,
+        CI2CFA,
+        CI3CFA,
+        CIPCFA,
+        CR1CFA: RE1CFA,
+        CR2CFA: RE2CFA,
+        CR3CFA: RE3CFA,
+        CRPCFA: REPCFA,
+        TOTCFA,
+        FRECFA: invoiceData.tipoFactura === 'recibida',
+        NOTCFA: invoiceData.notas || null,
+        CO2CFA: invoiceData.exportacionImportacion || false,
+        CONCFA: false,
+        FICCFA: false
+      },
+      include: {
+        ENT: true,
+        DIR: { include: { PRO: true, PAI: true } }
+      }
+    })
+
+    // Return updated invoice using findById to get full structure
+    const updated = await this.findById(updatedInvoice.IDECFA)
+    if (!updated) {
+      throw new Error('Error al recuperar la factura actualizada')
+    }
+    return updated
+  }
 }
 
