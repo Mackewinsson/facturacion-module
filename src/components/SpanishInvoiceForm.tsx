@@ -594,24 +594,20 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
               </div>
             </div>
 
-            {/* Row 3: Dirección/Teléfono dropdown */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <div className="relative">
-                  <select
-                    value={(selectedClient as any)?.telefono || ''}
-                    onChange={() => {}}
-                    className={`${baseInputClasses}`}
-                  >
-                    <option value="">
-                      {(selectedClient as any)?.telefono 
-                        ? `(${(selectedClient as any).telefono})` 
-                        : '(952223930 / 952221315)'}
-                    </option>
-                  </select>
+            {/* Row 3: Teléfono del cliente (solo si hay cliente seleccionado con teléfono) */}
+            {selectedClient && (selectedClient as any)?.telefono && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-card-foreground mb-1">Teléfono</label>
+                  <input
+                    type="text"
+                    value={(selectedClient as any).telefono}
+                    readOnly
+                    className={`${baseInputClasses} bg-muted cursor-not-allowed`}
+                  />
                 </div>
               </div>
-            </div>
+            )}
 
             {/* Row 4: Forma pago */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
