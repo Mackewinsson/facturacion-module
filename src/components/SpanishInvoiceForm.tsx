@@ -69,12 +69,12 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
 
   const [formData, setFormData] = useState<Partial<Invoice>>({
     tipoFactura: isReceivedInvoice ? 'recibida' : 'ordinaria',
-    serie: isReceivedInvoice ? '' : 'X7',
-    numero: isReceivedInvoice ? '' : '001134',
+    serie: '',
+    numero: '',
     fechaExpedicion: new Date().toISOString().split('T')[0],
     fechaContable: new Date().toISOString().split('T')[0],
     lugarEmision: '',
-    departamento: 'Administración',
+    departamento: '',
     cliente: {
       tipo: 'particular',
       nombreORazonSocial: '',
@@ -99,7 +99,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
         cantidad: 1,
         precioUnitario: 0,
         descuentoPct: 0,
-        tipoIVA: 21,
+        tipoIVA: allowedVATRates && allowedVATRates.length > 0 ? (allowedVATRates[0] as unknown as TipoIVA) : (21 as TipoIVA),
         baseLinea: 0,
         cuotaIVA: 0,
         cuotaRE: 0,
@@ -113,7 +113,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
       cuotaRETotal: 0,
       totalFactura: 0
     },
-    formaPago: 'Crédito 30 días',
+    formaPago: '',
     medioPago: 'Sin Pagar',
     fechaVencimiento: '',
     notas: '',
@@ -614,10 +614,11 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
               <div>
                 <label className="block text-sm font-medium text-card-foreground mb-1">Forma pago</label>
                 <select
-                  value={formData.formaPago || 'Crédito 30 días'}
+                  value={formData.formaPago || ''}
                   onChange={e => handleInputChange('formaPago', e.target.value)}
                   className={`${baseInputClasses}`}
                 >
+                  <option value="">Seleccionar forma de pago</option>
                   <option value="Crédito 30 días">Crédito 30 días</option>
                   <option value="Contado">Contado</option>
                   <option value="Transferencia bancaria">Transferencia bancaria</option>
