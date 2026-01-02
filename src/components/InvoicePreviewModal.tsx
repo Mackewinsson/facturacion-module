@@ -6,10 +6,12 @@ import { generateInvoiceFormPDF } from '@/lib/pdf/invoice-form-pdf-generator'
 interface InvoicePreviewModalProps {
   isOpen: boolean
   onClose: () => void
+  onApprove: () => Promise<void>
   formData: Partial<Invoice>
+  isSubmitting?: boolean
 }
 
-export default function InvoicePreviewModal({ isOpen, onClose, formData }: InvoicePreviewModalProps) {
+export default function InvoicePreviewModal({ isOpen, onClose, onApprove, formData, isSubmitting = false }: InvoicePreviewModalProps) {
   const [pdfUrl, setPdfUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -80,6 +82,10 @@ export default function InvoicePreviewModal({ isOpen, onClose, formData }: Invoi
     document.body.removeChild(link)
   }
 
+  const handleApprove = async () => {
+    await onApprove()
+  }
+
   if (!isOpen) return null
 
   return (
@@ -102,7 +108,7 @@ export default function InvoicePreviewModal({ isOpen, onClose, formData }: Invoi
             <div className="flex items-center gap-3">
               <button
                 onClick={handlePrint}
-                disabled={!pdfUrl}
+                disabled={!pdfUrl || isSubmitting}
                 className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -112,8 +118,8 @@ export default function InvoicePreviewModal({ isOpen, onClose, formData }: Invoi
               </button>
               <button
                 onClick={handleDownload}
-                disabled={!pdfUrl}
-                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                disabled={!pdfUrl || isSubmitting}
+                className="flex items-center gap-2 bg-gray-600 hover:bg-gray-700 disabled:bg-gray-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -122,7 +128,8 @@ export default function InvoicePreviewModal({ isOpen, onClose, formData }: Invoi
               </button>
               <button
                 onClick={onClose}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                disabled={isSubmitting}
+                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors disabled:opacity-50"
               >
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -132,7 +139,7 @@ export default function InvoicePreviewModal({ isOpen, onClose, formData }: Invoi
           </div>
 
           {/* Content */}
-          <div className="p-6" style={{ height: '75vh' }}>
+          <div className="p-6" style={{ height: '65vh' }}>
             {loading && (
               <div className="flex items-center justify-center h-full bg-gray-50 rounded-lg">
                 <div className="text-center">
@@ -185,18 +192,42 @@ export default function InvoicePreviewModal({ isOpen, onClose, formData }: Invoi
             )}
           </div>
 
-          {/* Footer */}
-          <div className="flex justify-end border-t border-gray-200 px-6 py-4">
-            <button
-              onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-            >
-              Cerrar
-            </button>
+          {/* Footer with action buttons */}
+          <div className="flex justify-between items-center border-t border-gray-200 px-6 py-4 bg-gray-50 rounded-b-2xl">
+            <p className="text-sm text-gray-500">
+              Revisa los datos antes de aprobar la factura
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={onClose}
+                disabled={isSubmitting}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 rounded-lg transition-colors disabled:opacity-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={handleApprove}
+                disabled={!pdfUrl || isSubmitting}
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-6 py-2 rounded-lg text-sm font-semibold transition-colors"
+              >
+                {isSubmitting ? (
+                  <>
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    Aprobar y Guardar
+                  </>
+                )}
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </div>
   )
 }
-

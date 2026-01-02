@@ -4,7 +4,6 @@ import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, useFieldArray, Controller, useWatch } from 'react-hook-form'
 import {
-  MockInvoiceService,
   Invoice,
   TipoFactura,
   TipoIVA,
@@ -13,6 +12,7 @@ import {
   LineaFactura,
   Cliente
 } from '@/lib/mock-data'
+import { useAuthStore } from '@/store/auth'
 import {
   VAT_RATES,
   MOTIVOS_EXENCION,
@@ -134,6 +134,7 @@ const getDefaultValues = (isReceivedInvoice: boolean, allowedVATRates?: number[]
 
 export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = false, hideRecargoEquivalencia = false, allowedVATRates, isReceivedInvoice = false }: SpanishInvoiceFormProps) {
   const router = useRouter()
+  const token = useAuthStore((state) => state.token)
 
   // React Hook Form setup
   const {
@@ -354,36 +355,125 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
     setDraggedIndex(null)
   }
 
-  // Form submission
-  const submitInvoice = async (data: InvoiceFormData, nextStatus: 'DRAFT' | 'APPROVED') => {
+  // Prepare invoice data for preview/submission
+  const prepareInvoiceData = (data: InvoiceFormData): Partial<Invoice> | null => {
+    const emisorData = getEmisorData()
+    const lineas = (data.lineas || []).map(linea => {
+      const base = calculateLineBase(linea)
+      const cuotaIVA = calculateLineVAT(linea)
+      const cuotaRE = calculateLineRE(linea)
+      const total = calculateLineTotal(linea)
+
+      return {
+        ...linea,
+        baseLinea: base,
+        cuotaIVA,
+        cuotaRE,
+        totalLinea: total
+      }
+    })
+    const totales = calculateInvoiceTotals(lineas)
+
+    const payload: Partial<Invoice> = {
+      ...data,
+      emisor: emisorData,
+      lineas,
+      totales
+    }
+
+    return payload
+  }
+
+  // Validate and show preview
+  const handleShowPreview = () => {
+    setError('')
+    setValidationErrors([])
+
+    const data = getValues()
+    const payload = prepareInvoiceData(data)
+    
+    if (!payload) {
+      setError('Error preparando los datos de la factura')
+      return
+    }
+
+    const validationErrorsList = validateInvoiceByType(payload as Invoice)
+    if (validationErrorsList.length > 0) {
+      setValidationErrors(validationErrorsList)
+      return
+    }
+
+    // Update form values with calculated data
+    setValue('lineas', payload.lineas as LineaFactura[])
+    setValue('totales', payload.totales)
+
+    setShowPreviewModal(true)
+  }
+
+  // Approve and submit invoice (called from preview modal)
+  const handleApproveInvoice = async () => {
+    setLoading(true)
+    setError('')
+
+    try {
+      const data = getValues()
+      const payload = prepareInvoiceData(data)
+      
+      if (!payload) {
+        throw new Error('Error preparando los datos')
+      }
+
+      // Prepare API request
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
+      }
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      console.log('📤 Enviando factura a la API:', payload)
+
+      const response = await fetch('/api/invoices', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+        cache: 'no-store'
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Error al crear la factura')
+      }
+
+      const result = await response.json()
+      
+      if (result.success && result.data) {
+        console.log('✅ Factura creada exitosamente:', result.data)
+        setShowPreviewModal(false)
+        router.push(`/facturacion/ver/${result.data.id}`)
+      } else {
+        throw new Error('Error al crear la factura')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error de conexión')
+      console.error('❌ Error al crear factura:', err)
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Save as draft (directly without preview)
+  const handleSaveDraft = async () => {
     setLoading(true)
     setError('')
     setValidationErrors([])
 
     try {
-      const emisorData = getEmisorData()
-      const lineas = (data.lineas || []).map(linea => {
-        const base = calculateLineBase(linea)
-        const cuotaIVA = calculateLineVAT(linea)
-        const cuotaRE = calculateLineRE(linea)
-        const total = calculateLineTotal(linea)
-
-        return {
-          ...linea,
-          baseLinea: base,
-          cuotaIVA,
-          cuotaRE,
-          totalLinea: total
-        }
-      })
-      const totales = calculateInvoiceTotals(lineas)
-
-      const payload: Partial<Invoice> = {
-        ...data,
-        status: nextStatus,
-        emisor: emisorData,
-        lineas,
-        totales
+      const data = getValues()
+      const payload = prepareInvoiceData(data)
+      
+      if (!payload) {
+        throw new Error('Error preparando los datos')
       }
 
       const validationErrorsList = validateInvoiceByType(payload as Invoice)
@@ -393,32 +483,43 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
         return
       }
 
-      setValue('status', nextStatus)
-      setValue('lineas', lineas)
-      setValue('totales', totales)
-
-      const newInvoice = await MockInvoiceService.createInvoice(
-        payload as unknown as Omit<Invoice, 'id' | 'numero' | 'createdAt' | 'updatedAt'>
-      )
-      if (newInvoice) {
-        router.push(`/facturacion/preview/${newInvoice.id}`)
-      } else {
-        setError('Error al crear la factura')
+      // Prepare API request
+      const headers: HeadersInit = {
+        'Content-Type': 'application/json'
       }
-    } catch {
-      setError('Error de conexión')
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const response = await fetch('/api/invoices', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(payload),
+        cache: 'no-store'
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || 'Error al guardar el borrador')
+      }
+
+      const result = await response.json()
+      
+      if (result.success) {
+        router.push(`/facturacion`)
+      } else {
+        throw new Error('Error al guardar el borrador')
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Error de conexión')
     } finally {
       setLoading(false)
     }
   }
 
-  const onSubmit = async (data: InvoiceFormData) => {
-    await submitInvoice(data, 'DRAFT')
-  }
-
-  const handleSaveDraft = async () => {
-    const data = getValues()
-    await submitInvoice(data, 'DRAFT')
+  // Form submission handler (legacy, now used for Enter key submission)
+  const onSubmit = (data: InvoiceFormData) => {
+    handleShowPreview()
   }
 
   const formatCurrency = (amount: number) => {
@@ -450,25 +551,19 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
             <div className="flex flex-wrap items-center gap-2">
               <button
                 type="button"
-                onClick={() => setShowPreviewModal(true)}
-                className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary"
-              >
-                Vista previa
-              </button>
-              <button
-                type="button"
                 onClick={handleSaveDraft}
                 disabled={loading}
                 className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
               >
-                Guardar como borrador
+                {loading ? 'Guardando...' : 'Guardar como borrador'}
               </button>
               <button
-                type="submit"
+                type="button"
+                onClick={handleShowPreview}
                 disabled={loading}
                 className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
-                {loading ? 'Guardando...' : 'Guardar'}
+                Guardar
               </button>
             </div>
           </div>
@@ -976,11 +1071,20 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
               Cancelar
             </button>
             <button
-              type="submit"
+              type="button"
+              onClick={handleSaveDraft}
+              disabled={loading}
+              className="rounded-lg border border-border px-4 py-2 text-sm font-medium text-muted-foreground hover:bg-secondary disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {loading ? 'Guardando...' : 'Guardar como borrador'}
+            </button>
+            <button
+              type="button"
+              onClick={handleShowPreview}
               disabled={loading}
               className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-accent-foreground shadow-sm hover:bg-accent/90 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? 'Guardando...' : 'Guardar'}
+              Guardar
             </button>
           </div>
         </form>
@@ -996,7 +1100,9 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
       <InvoicePreviewModal
         isOpen={showPreviewModal}
         onClose={() => setShowPreviewModal(false)}
+        onApprove={handleApproveInvoice}
         formData={formData}
+        isSubmitting={loading}
       />
     </div>
   )

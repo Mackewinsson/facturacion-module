@@ -395,5 +395,192 @@ export class InvoicesRepository {
       updatedAt: record.FEMCFA?.toISOString() || new Date().toISOString()
     } as unknown as Invoice
   }
+
+  static async create(invoiceData: Partial<Invoice>): Promise<Invoice> {
+    // Get default values for required fields
+    const defaultDep = await prisma.dEP.findFirst({ 
+      where: { NOMDEP: { contains: invoiceData.departamento || 'VENTAS' } } 
+    })
+    const defaultFpa = await prisma.cFP.findFirst({ 
+      where: { NOMCFP: { contains: invoiceData.formaPago || 'CONTADO' } } 
+    })
+    
+    // Fallback: get first available if not found
+    const fallbackDep = defaultDep || await prisma.dEP.findFirst({ orderBy: { IDEDEP: 'asc' } })
+    const fallbackFpa = defaultFpa || await prisma.cFP.findFirst({ orderBy: { IDECFP: 'asc' } })
+    
+    // Default values
+    const DEPCFA = fallbackDep?.IDEDEP ?? 1 // Default to first department if not found
+    const FPACFA = fallbackFpa?.IDECFP ?? 1 // Default to first payment method if not found
+    const TIVCFA = 1 // Tipo IVA (default)
+    const DIVCFA = 1 // Divisa (EUR)
+    const ALMCFA = 1 // Almacén (default)
+
+    // Find or create entity (cliente)
+    let ENTCFA: number
+    if (invoiceData.cliente?.NIF) {
+      const existingEnt = await prisma.eNT.findFirst({
+        where: { NIFENT: invoiceData.cliente.NIF }
+      })
+      if (existingEnt) {
+        ENTCFA = existingEnt.IDEENT
+      } else {
+        // Create new entity if not found
+        const newEnt = await prisma.eNT.create({
+          data: {
+            NCOENT: invoiceData.cliente.nombreORazonSocial || '',
+            NIFENT: invoiceData.cliente.NIF || '',
+            MONENT: DIVCFA,
+            PAOENT: 1, // España (país de origen)
+            TNIENT: '02' // Default tipo NIF
+          }
+        })
+        ENTCFA = newEnt.IDEENT
+      }
+    } else {
+      throw new Error('Cliente NIF es requerido')
+    }
+
+    // Find or create address (DIR)
+    let DIRCFA: number | null = null
+    if (invoiceData.cliente?.domicilio) {
+      const existingDir = await prisma.dIR.findFirst({
+        where: {
+          ENTDIR: ENTCFA,
+          DIRDIR: invoiceData.cliente.domicilio.calle || ''
+        }
+      })
+      if (existingDir) {
+        DIRCFA = existingDir.IDEDIR
+      } else if (invoiceData.cliente.domicilio.calle) {
+        // Create new address if not found
+        const newDir = await prisma.dIR.create({
+          data: {
+            ENTDIR: ENTCFA,
+            NOMDIR: 'PRINCIPAL',
+            DIRDIR: invoiceData.cliente.domicilio.calle || '',
+            POBDIR: invoiceData.cliente.domicilio.municipio || '',
+            CPODIR: invoiceData.cliente.domicilio.codigoPostal || '',
+            PRODIR: 30, // Default province
+            PAIDIR: 1 // España
+          }
+        })
+        DIRCFA = newDir.IDEDIR
+      }
+    }
+
+    // Calculate bases and IVA by type from lineas
+    const lineas = invoiceData.lineas || []
+    let BI1CFA = 0, BI2CFA = 0, BI3CFA = 0, BIPCFA = 0
+    let CI1CFA = 0, CI2CFA = 0, CI3CFA = 0, CIPCFA = 0
+    let RE1CFA = 0, RE2CFA = 0, RE3CFA = 0, REPCFA = 0
+
+    lineas.forEach(linea => {
+      const base = linea.baseLinea || 0
+      const iva = linea.cuotaIVA || 0
+      const re = linea.cuotaRE || 0
+      const tipoIVA = (linea.tipoIVA as number) || 21
+
+      // Group by IVA type (0, 4, 10, 21)
+      if (tipoIVA === 0) {
+        BI1CFA += base
+        CI1CFA += iva
+        RE1CFA += re
+      } else if (tipoIVA === 4) {
+        BI2CFA += base
+        CI2CFA += iva
+        RE2CFA += re
+      } else if (tipoIVA === 10) {
+        BI3CFA += base
+        CI3CFA += iva
+        RE3CFA += re
+      } else if (tipoIVA === 21) {
+        BIPCFA += base
+        CIPCFA += iva
+        REPCFA += re
+      }
+    })
+
+    // Calculate totals
+    const baseImponibleTotal = BI1CFA + BI2CFA + BI3CFA + BIPCFA
+    const cuotaIVATotal = CI1CFA + CI2CFA + CI3CFA + CIPCFA
+    const cuotaRETotal = RE1CFA + RE2CFA + RE3CFA + REPCFA
+    const TOTCFA = baseImponibleTotal + cuotaIVATotal + cuotaRETotal
+
+    // Generate invoice number if not provided
+    let NUMCFA = invoiceData.numero || ''
+    if (!NUMCFA) {
+      const serie = invoiceData.serie || 'A'
+      const lastInvoice = await prisma.cFA.findFirst({
+        where: { NUMCFA: { startsWith: serie } },
+        orderBy: { IDECFA: 'desc' }
+      })
+      const nextNum = lastInvoice 
+        ? (parseInt(lastInvoice.NUMCFA.replace(serie, '')) || 0) + 1
+        : 1
+      NUMCFA = `${serie}${String(nextNum).padStart(5, '0')}`
+    }
+
+    // Dates
+    const FECCFA = invoiceData.fechaContable 
+      ? new Date(invoiceData.fechaContable)
+      : new Date()
+    const FEMCFA = invoiceData.fechaExpedicion
+      ? new Date(invoiceData.fechaExpedicion)
+      : new Date()
+
+    // Create invoice in CFA table
+    const newInvoice = await prisma.cFA.create({
+      data: {
+        NUMCFA,
+        ALMCFA,
+        DEPCFA,
+        FECCFA,
+        ENTCFA,
+        DIRCFA,
+        FPACFA,
+        TIVCFA,
+        DIVCFA,
+        FEMCFA,
+        BI1CFA,
+        TI1CFA: lineas.find(l => (l.tipoIVA as number) === 0) ? 0 : 0,
+        RE1CFA,
+        BI2CFA,
+        TI2CFA: lineas.find(l => (l.tipoIVA as number) === 4) ? 4 : 0,
+        RE2CFA,
+        BI3CFA,
+        TI3CFA: lineas.find(l => (l.tipoIVA as number) === 10) ? 10 : 0,
+        RE3CFA,
+        BIPCFA,
+        TIPCFA: lineas.find(l => (l.tipoIVA as number) === 21) ? 21 : 21,
+        REPCFA,
+        CI1CFA,
+        CI2CFA,
+        CI3CFA,
+        CIPCFA,
+        CR1CFA: RE1CFA,
+        CR2CFA: RE2CFA,
+        CR3CFA: RE3CFA,
+        CRPCFA: REPCFA,
+        TOTCFA,
+        FRECFA: invoiceData.tipoFactura === 'recibida',
+        NOTCFA: invoiceData.notas || null,
+        CO2CFA: invoiceData.exportacionImportacion || false,
+        CONCFA: false,
+        FICCFA: false
+      },
+      include: {
+        ENT: true,
+        DIR: { include: { PRO: true, PAI: true } }
+      }
+    })
+
+    // Return created invoice using findById to get full structure
+    const created = await this.findById(newInvoice.IDECFA)
+    if (!created) {
+      throw new Error('Error al recuperar la factura creada')
+    }
+    return created
+  }
 }
 
