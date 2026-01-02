@@ -124,8 +124,9 @@ export default function ClientSearch({
   }, [])
 
   const filteredClients = useMemo(() => {
+    // No mostrar clientes hasta que el usuario empiece a escribir
     if (!searchTerm.trim()) {
-      return clients
+      return []
     }
 
     const value = searchTerm.trim().toLowerCase()

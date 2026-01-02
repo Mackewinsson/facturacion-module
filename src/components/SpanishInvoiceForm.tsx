@@ -569,14 +569,14 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
               </div>
             </div>
 
-            {/* Row 2: Proveedor + Exportación/Importación */}
+            {/* Row 2: Cliente + Exportación/Importación */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-card-foreground mb-1">Proveedor</label>
+                <label className="block text-sm font-medium text-card-foreground mb-1">Cliente</label>
                 <ClientSearch
                   onClientSelect={handleClientSelect}
                   selectedClient={selectedClient}
-                  placeholder="CIAL. NAVARRO HERMANOS, S.A."
+                  placeholder="Seleccionar cliente"
                   onAddNewClient={handleAddNewClient}
                 />
               </div>
