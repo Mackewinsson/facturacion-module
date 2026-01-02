@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react'
-import { Entidad, Direccion } from '@/lib/mock-data'
+import { useForm, Controller } from 'react-hook-form'
+import { Entidad, Domicilio } from '@/lib/mock-data'
 import BaseModal from './BaseModal'
 import ModalToolbarButton from './ModalToolbarButton'
 import { useAuthStore } from '@/store/auth'
@@ -25,7 +26,6 @@ export default function EntityModal({
   onEntityUpdated
 }: EntityModalProps) {
   const [isEditMode, setIsEditMode] = useState(false)
-  const [formData, setFormData] = useState(entity || {} as Entidad)
   const [isSaving, setIsSaving] = useState(false)
   const [showClienteModal, setShowClienteModal] = useState(false)
   const [showProveedorModal, setShowProveedorModal] = useState(false)
@@ -33,25 +33,41 @@ export default function EntityModal({
   const token = useAuthStore((state) => state.token)
   const lastSavedEntityIdRef = useRef<number | null>(null)
 
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    setValue,
+    getValues,
+    formState: { errors }
+  } = useForm<Entidad>({
+    defaultValues: entity || {} as Entidad
+  })
+
+  // Watch form values for display
+  const formData = watch()
+
   // Update form data when entity changes, but not if we just saved the same entity
   useEffect(() => {
     if (entity) {
       // Only update if it's a different entity or we haven't just saved this one
       if (entity.id !== lastSavedEntityIdRef.current) {
-        setFormData(entity)
+        reset(entity)
       }
     }
-  }, [entity])
+  }, [entity, reset])
 
   // Reset edit mode when modal closes
   useEffect(() => {
     if (!isOpen) {
       setIsEditMode(false)
       if (entity) {
-        setFormData(entity)
+        reset(entity)
       }
     }
-  }, [isOpen, entity])
+  }, [isOpen, entity, reset])
 
   if (!isOpen || !entity) return null
 
@@ -72,15 +88,9 @@ export default function EntityModal({
     })
   }
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
-  }
-
   const handleSave = async () => {
     setIsSaving(true)
+    const data = getValues()
     try {
       const headers: HeadersInit = {
         'Content-Type': 'application/json'
@@ -91,16 +101,16 @@ export default function EntityModal({
       const response = await fetch(`/api/entities/${entity.id}`, {
         method: 'PUT',
         headers,
-        body: JSON.stringify(formData),
+        body: JSON.stringify(data),
         cache: 'no-store'
       })
       if (!response.ok) {
-        const data = await response.json()
-        throw new Error(data.error || 'Error al actualizar la entidad')
+        const responseData = await response.json()
+        throw new Error(responseData.error || 'Error al actualizar la entidad')
       }
       const updatedData = await response.json()
       if (updatedData.success && updatedData.data) {
-        setFormData(updatedData.data)
+        reset(updatedData.data)
         lastSavedEntityIdRef.current = updatedData.data.id
       }
       setIsEditMode(false)
@@ -122,11 +132,11 @@ export default function EntityModal({
   }
 
   const handleCancel = () => {
-    setFormData(entity)
+    reset(entity)
     setIsEditMode(false)
   }
 
-  const handleEdit = () => {
+  const handleEditMode = () => {
     setIsEditMode(true)
   }
 
@@ -177,7 +187,7 @@ export default function EntityModal({
       {!isEditMode ? (
         <>
           <ModalToolbarButton
-            onClick={handleEdit}
+            onClick={handleEditMode}
             icon={
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
@@ -242,6 +252,12 @@ export default function EntityModal({
     return formData.razonSocial || ''
   }
 
+  // Helper to update nested domicilio fields
+  const updateDomicilio = (field: string, value: string) => {
+    const currentDomicilio = getValues('domicilio') || {}
+    setValue('domicilio', { ...currentDomicilio, [field]: value } as Domicilio)
+  }
+
   return (
     <BaseModal
       isOpen={isOpen}
@@ -259,8 +275,7 @@ export default function EntityModal({
             <label className="block text-xs font-semibold text-white bg-blue-700 px-2 py-1 mb-1">NIF</label>
             <input
               type="text"
-              value={formData.NIF}
-              onChange={(e) => handleInputChange('NIF', e.target.value)}
+              {...register('NIF')}
               disabled={!isEditMode}
               className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                 isEditMode 
@@ -288,8 +303,7 @@ export default function EntityModal({
             <label className="block text-xs font-semibold text-white bg-blue-700 px-2 py-1 mb-1">N.comercial</label>
             <input
               type="text"
-              value={formData.nombreComercial || ''}
-              onChange={(e) => handleInputChange('nombreComercial', e.target.value)}
+              {...register('nombreComercial')}
               disabled={!isEditMode}
               className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                 isEditMode 
@@ -318,12 +332,18 @@ export default function EntityModal({
         <div className="border border-gray-400 p-2 bg-gray-50">
           <div className="flex items-start gap-3">
             <div className="flex items-center gap-2">
-              <input
-                type="checkbox"
-                checked={formData.personaFisica}
-                onChange={(e) => handleInputChange('personaFisica', e.target.checked)}
-                disabled={!isEditMode}
-                className={`${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+              <Controller
+                name="personaFisica"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    type="checkbox"
+                    checked={field.value || false}
+                    onChange={field.onChange}
+                    disabled={!isEditMode}
+                    className={`${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                )}
               />
               <label className={`text-sm font-medium ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>
                 Persona física
@@ -340,8 +360,7 @@ export default function EntityModal({
                   <label className="block text-xs font-medium text-gray-700 mb-1">Nombre:</label>
                   <input
                     type="text"
-                    value={formData.nombre || ''}
-                    onChange={(e) => handleInputChange('nombre', e.target.value)}
+                    {...register('nombre')}
                     disabled={!isEditMode}
                     className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                       isEditMode 
@@ -354,8 +373,7 @@ export default function EntityModal({
                   <label className="block text-xs font-medium text-gray-700 mb-1">Apellido 1º:</label>
                   <input
                     type="text"
-                    value={formData.apellido1 || ''}
-                    onChange={(e) => handleInputChange('apellido1', e.target.value)}
+                    {...register('apellido1')}
                     disabled={!isEditMode}
                     className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                       isEditMode 
@@ -368,8 +386,7 @@ export default function EntityModal({
                   <label className="block text-xs font-medium text-gray-700 mb-1">Apellido 2º:</label>
                   <input
                     type="text"
-                    value={formData.apellido2 || ''}
-                    onChange={(e) => handleInputChange('apellido2', e.target.value)}
+                    {...register('apellido2')}
                     disabled={!isEditMode}
                     className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                       isEditMode 
@@ -389,10 +406,8 @@ export default function EntityModal({
                   <label className="flex items-center gap-1 text-sm">
                     <input
                       type="radio"
-                      name="sexo"
                       value="hombre"
-                      checked={formData.sexo === 'hombre'}
-                      onChange={(e) => handleInputChange('sexo', e.target.value)}
+                      {...register('sexo')}
                       disabled={!isEditMode}
                       className={!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}
                     />
@@ -401,10 +416,8 @@ export default function EntityModal({
                   <label className="flex items-center gap-1 text-sm">
                     <input
                       type="radio"
-                      name="sexo"
                       value="mujer"
-                      checked={formData.sexo === 'mujer'}
-                      onChange={(e) => handleInputChange('sexo', e.target.value)}
+                      {...register('sexo')}
                       disabled={!isEditMode}
                       className={!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}
                     />
@@ -429,46 +442,70 @@ export default function EntityModal({
         <div className="grid grid-cols-12 gap-3">
           {/* Left Column - Checkboxes */}
           <div className="col-span-3 space-y-1.5">
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.extranjero}
-                onChange={(e) => handleInputChange('extranjero', e.target.checked)}
-                disabled={!isEditMode}
-                className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-              />
-              <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Extranjero/a</label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.operadorIntracomunitario}
-                onChange={(e) => handleInputChange('operadorIntracomunitario', e.target.checked)}
-                disabled={!isEditMode}
-                className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-              />
-              <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Operador intracomunitario</label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.importacionExportacion}
-                onChange={(e) => handleInputChange('importacionExportacion', e.target.checked)}
-                disabled={!isEditMode}
-                className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-              />
-              <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Importación/Exportación</label>
-            </div>
-            <div className="flex items-center">
-              <input
-                type="checkbox"
-                checked={formData.regimenCanario}
-                onChange={(e) => handleInputChange('regimenCanario', e.target.checked)}
-                disabled={!isEditMode}
-                className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-              />
-              <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Régimen Canario</label>
-            </div>
+            <Controller
+              name="extranjero"
+              control={control}
+              render={({ field }) => (
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={field.value || false}
+                    onChange={field.onChange}
+                    disabled={!isEditMode}
+                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Extranjero/a</label>
+                </div>
+              )}
+            />
+            <Controller
+              name="operadorIntracomunitario"
+              control={control}
+              render={({ field }) => (
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={field.value || false}
+                    onChange={field.onChange}
+                    disabled={!isEditMode}
+                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Operador intracomunitario</label>
+                </div>
+              )}
+            />
+            <Controller
+              name="importacionExportacion"
+              control={control}
+              render={({ field }) => (
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={field.value || false}
+                    onChange={field.onChange}
+                    disabled={!isEditMode}
+                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Importación/Exportación</label>
+                </div>
+              )}
+            />
+            <Controller
+              name="regimenCanario"
+              control={control}
+              render={({ field }) => (
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    checked={field.value || false}
+                    onChange={field.onChange}
+                    disabled={!isEditMode}
+                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Régimen Canario</label>
+                </div>
+              )}
+            />
 
             {/* Dates */}
             <div className="mt-3 space-y-1.5">
@@ -476,8 +513,7 @@ export default function EntityModal({
                 <label className="block text-xs font-medium text-gray-700 mb-1">Alta</label>
                 <input
                   type="date"
-                  value={formData.fechaAlta ? formData.fechaAlta.split('T')[0] : ''}
-                  onChange={(e) => handleInputChange('fechaAlta', e.target.value)}
+                  {...register('fechaAlta')}
                   disabled={!isEditMode}
                   className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                     isEditMode 
@@ -490,8 +526,7 @@ export default function EntityModal({
                 <label className="block text-xs font-medium text-gray-700 mb-1">Baja</label>
                 <input
                   type="date"
-                  value={formData.fechaBaja ? formData.fechaBaja.split('T')[0] : ''}
-                  onChange={(e) => handleInputChange('fechaBaja', e.target.value)}
+                  {...register('fechaBaja')}
                   disabled={!isEditMode}
                   placeholder="dd/mm/aaaa"
                   className={`w-full px-2 py-1 border border-gray-300 text-sm ${
@@ -511,7 +546,7 @@ export default function EntityModal({
                 <input
                   type="text"
                   value={formData.domicilio?.centro || 'PRINCIPAL'}
-                  onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), centro: e.target.value })}
+                  onChange={(e) => updateDomicilio('centro', e.target.value)}
                   disabled={!isEditMode}
                   className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                     isEditMode 
@@ -530,7 +565,7 @@ export default function EntityModal({
                       <label className="block text-xs text-gray-600 mb-1">Calle/Vía</label>
                       <select
                         value={formData.domicilio?.calleVia || 'Calle'}
-                        onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), calleVia: e.target.value })}
+                        onChange={(e) => updateDomicilio('calleVia', e.target.value)}
                         disabled={!isEditMode}
                         className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                           isEditMode 
@@ -549,7 +584,10 @@ export default function EntityModal({
                       <input
                         type="text"
                         value={formData.domicilio?.nombreCalle || formData.domicilio?.calle || ''}
-                        onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), nombreCalle: e.target.value, calle: e.target.value })}
+                        onChange={(e) => {
+                          const currentDomicilio = getValues('domicilio') || {}
+                          setValue('domicilio', { ...currentDomicilio, nombreCalle: e.target.value, calle: e.target.value } as Domicilio)
+                        }}
                         disabled={!isEditMode}
                         className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                           isEditMode 
@@ -565,7 +603,7 @@ export default function EntityModal({
                       <input
                         type="text"
                         value={formData.domicilio?.numero || ''}
-                        onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), numero: e.target.value })}
+                        onChange={(e) => updateDomicilio('numero', e.target.value)}
                         disabled={!isEditMode}
                         className={`flex-1 px-2 py-1 border border-gray-300 text-sm ${
                           isEditMode 
@@ -576,7 +614,7 @@ export default function EntityModal({
                       <input
                         type="text"
                         value={formData.domicilio?.numeroExtension || ''}
-                        onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), numeroExtension: e.target.value })}
+                        onChange={(e) => updateDomicilio('numeroExtension', e.target.value)}
                         disabled={!isEditMode}
                         placeholder="3A"
                         className={`w-20 px-2 py-1 border border-gray-300 text-sm ${
@@ -599,7 +637,7 @@ export default function EntityModal({
                     <input
                       type="text"
                       value={formData.domicilio?.codigoPostal || ''}
-                      onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), codigoPostal: e.target.value })}
+                      onChange={(e) => updateDomicilio('codigoPostal', e.target.value)}
                       disabled={!isEditMode}
                       className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                         isEditMode 
@@ -613,7 +651,7 @@ export default function EntityModal({
                     <input
                       type="text"
                       value={formData.domicilio?.pais || 'ESPAÑA'}
-                      onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), pais: e.target.value })}
+                      onChange={(e) => updateDomicilio('pais', e.target.value)}
                       disabled={!isEditMode}
                       className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                         isEditMode 
@@ -626,7 +664,7 @@ export default function EntityModal({
                     <label className="block text-xs text-gray-600 mb-1">Provincia</label>
                     <select
                       value={formData.domicilio?.provincia || ''}
-                      onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), provincia: e.target.value })}
+                      onChange={(e) => updateDomicilio('provincia', e.target.value)}
                       disabled={!isEditMode}
                       className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                         isEditMode 
@@ -643,7 +681,7 @@ export default function EntityModal({
                     <label className="block text-xs text-gray-600 mb-1">Localidad</label>
                     <select
                       value={formData.domicilio?.municipio || ''}
-                      onChange={(e) => handleInputChange('domicilio', { ...(formData.domicilio || {}), municipio: e.target.value })}
+                      onChange={(e) => updateDomicilio('municipio', e.target.value)}
                       disabled={!isEditMode}
                       className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                         isEditMode 
@@ -666,8 +704,7 @@ export default function EntityModal({
             <div>
               <label className="block text-xs font-medium text-gray-700 mb-1">Moneda de la entidad</label>
               <select
-                value={formData.monedaEntidad}
-                onChange={(e) => handleInputChange('monedaEntidad', e.target.value)}
+                {...register('monedaEntidad')}
                 disabled={!isEditMode}
                 className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                   isEditMode 
@@ -685,96 +722,150 @@ export default function EntityModal({
             <fieldset className="border border-gray-400 p-2">
               <legend className="text-xs font-semibold text-gray-700 px-1">Relaciones</legend>
               <div className="space-y-1.5">
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.proveedor}
-                    onChange={(e) => handleInputChange('proveedor', e.target.checked)}
-                    disabled={!isEditMode}
-                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Proveedor</label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.cliente}
-                    onChange={(e) => handleInputChange('cliente', e.target.checked)}
-                    disabled={!isEditMode}
-                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Cliente</label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.vendedor}
-                    onChange={(e) => handleInputChange('vendedor', e.target.checked)}
-                    disabled={!isEditMode}
-                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Vendedor</label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.operarioTaller}
-                    onChange={(e) => handleInputChange('operarioTaller', e.target.checked)}
-                    disabled={!isEditMode}
-                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Operario de Taller</label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.aseguradora}
-                    onChange={(e) => handleInputChange('aseguradora', e.target.checked)}
-                    disabled={!isEditMode}
-                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Aseguradora</label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.financiera}
-                    onChange={(e) => handleInputChange('financiera', e.target.checked)}
-                    disabled={!isEditMode}
-                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Financiera</label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.agenciaTransporte}
-                    onChange={(e) => handleInputChange('agenciaTransporte', e.target.checked)}
-                    disabled={!isEditMode}
-                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Agencia de Transport</label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.banco}
-                    onChange={(e) => handleInputChange('banco', e.target.checked)}
-                    disabled={!isEditMode}
-                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Banco</label>
-                </div>
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    checked={formData.rentacar}
-                    onChange={(e) => handleInputChange('rentacar', e.target.checked)}
-                    disabled={!isEditMode}
-                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Rentacar</label>
-                </div>
+                <Controller
+                  name="proveedor"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={field.value || false}
+                        onChange={field.onChange}
+                        disabled={!isEditMode}
+                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      />
+                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Proveedor</label>
+                    </div>
+                  )}
+                />
+                <Controller
+                  name="cliente"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={field.value || false}
+                        onChange={field.onChange}
+                        disabled={!isEditMode}
+                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      />
+                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Cliente</label>
+                    </div>
+                  )}
+                />
+                <Controller
+                  name="vendedor"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={field.value || false}
+                        onChange={field.onChange}
+                        disabled={!isEditMode}
+                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      />
+                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Vendedor</label>
+                    </div>
+                  )}
+                />
+                <Controller
+                  name="operarioTaller"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={field.value || false}
+                        onChange={field.onChange}
+                        disabled={!isEditMode}
+                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      />
+                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Operario de Taller</label>
+                    </div>
+                  )}
+                />
+                <Controller
+                  name="aseguradora"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={field.value || false}
+                        onChange={field.onChange}
+                        disabled={!isEditMode}
+                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      />
+                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Aseguradora</label>
+                    </div>
+                  )}
+                />
+                <Controller
+                  name="financiera"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={field.value || false}
+                        onChange={field.onChange}
+                        disabled={!isEditMode}
+                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      />
+                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Financiera</label>
+                    </div>
+                  )}
+                />
+                <Controller
+                  name="agenciaTransporte"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={field.value || false}
+                        onChange={field.onChange}
+                        disabled={!isEditMode}
+                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      />
+                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Agencia de Transport</label>
+                    </div>
+                  )}
+                />
+                <Controller
+                  name="banco"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={field.value || false}
+                        onChange={field.onChange}
+                        disabled={!isEditMode}
+                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      />
+                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Banco</label>
+                    </div>
+                  )}
+                />
+                <Controller
+                  name="rentacar"
+                  control={control}
+                  render={({ field }) => (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={field.value || false}
+                        onChange={field.onChange}
+                        disabled={!isEditMode}
+                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      />
+                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Rentacar</label>
+                    </div>
+                  )}
+                />
               </div>
             </fieldset>
           </div>
@@ -796,8 +887,7 @@ export default function EntityModal({
                 />
                 <input
                   type="text"
-                  value={formData.telefono || ''}
-                  onChange={(e) => handleInputChange('telefono', e.target.value)}
+                  {...register('telefono')}
                   disabled={!isEditMode}
                   className={`flex-1 px-2 py-1 border border-gray-300 text-sm ${
                     isEditMode 
@@ -825,8 +915,7 @@ export default function EntityModal({
                 />
                 <input
                   type="text"
-                  value={formData.telefonoMovil || ''}
-                  onChange={(e) => handleInputChange('telefonoMovil', e.target.value)}
+                  {...register('telefonoMovil')}
                   disabled={!isEditMode}
                   className={`flex-1 px-2 py-1 border border-gray-300 text-sm ${
                     isEditMode 
@@ -847,8 +936,7 @@ export default function EntityModal({
               </label>
               <input
                 type="email"
-                value={formData.email || ''}
-                onChange={(e) => handleInputChange('email', e.target.value)}
+                {...register('email')}
                 disabled={!isEditMode}
                 className={`w-full px-2 py-1 border border-gray-300 text-sm ${
                   isEditMode 

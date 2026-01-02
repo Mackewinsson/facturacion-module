@@ -1,5 +1,6 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useForm, Controller } from 'react-hook-form'
 import { Cliente, TipoCliente, Entidad, TipoEntidad } from '@/lib/mock-data'
 import BaseModal from './BaseModal'
 
@@ -14,189 +15,161 @@ interface AddClientModalProps {
 type ContactType = 'empresa' | 'persona'
 type TabType = 'basico' | 'cuentas' | 'preferencias' | 'contabilidad'
 
+interface FormData {
+  // Entity Identification
+  NIF: string
+  razonSocial: string
+  nombreComercial: string
+  
+  // Dates
+  fechaAlta: string
+  fechaBaja: string
+  
+  // Type and Classification
+  personaFisica: boolean
+  tipoIdentificador: 'NIF/CIF-IVA' | 'NIE' | 'PASAPORTE' | 'OTRO'
+  paisOrigen: string
+  extranjero: boolean
+  operadorIntracomunitario: boolean
+  importacionExportacion: boolean
+  regimenCanario: boolean
+  
+  // Entity Relationships
+  proveedor: boolean
+  cliente: boolean
+  vendedor: boolean
+  operarioTaller: boolean
+  aseguradora: boolean
+  financiera: boolean
+  agenciaTransporte: boolean
+  banco: boolean
+  rentacar: boolean
+  
+  // Currency and Additional Info
+  monedaEntidad: string
+  
+  // Contact Information
+  telefono: string
+  email: string
+  movil: string
+  website: string
+  identificacionVAT: string
+  tags: string
+  tipoContacto: string
+  domicilio: {
+    calle: string
+    codigoPostal: string
+    municipio: string
+    provincia: string
+    pais: string
+  }
+  
+  // Legacy fields for compatibility
+  tipoEntidad: TipoEntidad
+  tipo: TipoCliente
+  nombreORazonSocial: string
+  pais: string
+}
+
+const getDefaultValues = (suggestedName: string): FormData => ({
+  // Entity Identification
+  NIF: '',
+  razonSocial: suggestedName,
+  nombreComercial: '',
+  
+  // Dates
+  fechaAlta: new Date().toISOString().split('T')[0],
+  fechaBaja: '',
+  
+  // Type and Classification
+  personaFisica: false,
+  tipoIdentificador: 'NIF/CIF-IVA',
+  paisOrigen: 'ESPAÑA',
+  extranjero: false,
+  operadorIntracomunitario: false,
+  importacionExportacion: false,
+  regimenCanario: false,
+  
+  // Entity Relationships
+  proveedor: false,
+  cliente: true,
+  vendedor: false,
+  operarioTaller: false,
+  aseguradora: false,
+  financiera: false,
+  agenciaTransporte: false,
+  banco: false,
+  rentacar: false,
+  
+  // Currency and Additional Info
+  monedaEntidad: 'Eur',
+  
+  // Contact Information
+  telefono: '',
+  email: '',
+  movil: '',
+  website: '',
+  identificacionVAT: '',
+  tags: '',
+  tipoContacto: 'Sin especificar',
+  domicilio: {
+    calle: '',
+    codigoPostal: '',
+    municipio: '',
+    provincia: '',
+    pais: 'España'
+  },
+  
+  // Legacy fields for compatibility
+  tipoEntidad: 'cliente',
+  tipo: 'empresario/profesional',
+  nombreORazonSocial: suggestedName,
+  pais: 'España'
+})
+
 export default function AddClientModal({ isOpen, onClose, onClientAdded, suggestedName = '', isEntityModal = false }: AddClientModalProps) {
   const [contactType, setContactType] = useState<ContactType>('empresa')
   const [activeTab, setActiveTab] = useState<TabType>('basico')
-  const [formData, setFormData] = useState({
-    // Entity Identification
-    NIF: '',
-    razonSocial: suggestedName,
-    nombreComercial: '',
-    
-    // Dates
-    fechaAlta: new Date().toISOString().split('T')[0],
-    fechaBaja: '',
-    
-    // Type and Classification
-    personaFisica: false,
-    tipoIdentificador: 'NIF/CIF-IVA' as 'NIF/CIF-IVA' | 'NIE' | 'PASAPORTE' | 'OTRO',
-    paisOrigen: 'ESPAÑA',
-    extranjero: false,
-    operadorIntracomunitario: false,
-    importacionExportacion: false,
-    regimenCanario: false,
-    
-    // Entity Relationships
-    proveedor: false,
-    cliente: true,
-    vendedor: false,
-    operarioTaller: false,
-    aseguradora: false,
-    financiera: false,
-    agenciaTransporte: false,
-    banco: false,
-    rentacar: false,
-    
-    // Currency and Additional Info
-    monedaEntidad: 'Eur',
-    
-    // Contact Information
-    telefono: '',
-    email: '',
-    movil: '',
-    website: '',
-    identificacionVAT: '',
-    tags: '',
-    tipoContacto: 'Sin especificar',
-    domicilio: {
-      calle: '',
-      codigoPostal: '',
-      municipio: '',
-      provincia: '',
-      pais: 'España'
-    },
-    
-    // Legacy fields for compatibility
-    tipoEntidad: 'cliente' as TipoEntidad,
-    tipo: 'empresario/profesional' as TipoCliente,
-    nombreORazonSocial: suggestedName,
-    pais: 'España'
+
+  const {
+    register,
+    handleSubmit,
+    control,
+    reset,
+    watch,
+    setValue,
+    formState: { errors }
+  } = useForm<FormData>({
+    defaultValues: getDefaultValues(suggestedName),
+    mode: 'onChange'
   })
 
-  const [errors, setErrors] = useState<string[]>([])
+  // Reset form when suggestedName changes
+  useEffect(() => {
+    if (suggestedName) {
+      setValue('razonSocial', suggestedName)
+      setValue('nombreORazonSocial', suggestedName)
+    }
+  }, [suggestedName, setValue])
 
-  const handleInputChange = (field: string, value: any) => {
-    setFormData(prev => {
-      const newData = { ...prev } as any
-      const keys = field.split('.')
-      
-      if (keys.length === 1) {
-        newData[keys[0]] = value
-      } else if (keys.length === 2) {
-        if (!newData[keys[0]]) {
-          newData[keys[0]] = {}
-        }
-        newData[keys[0]][keys[1]] = value
-      } else if (keys.length === 3) {
-        if (!newData[keys[0]]) {
-          newData[keys[0]] = {}
-        }
-        if (!newData[keys[0]][keys[1]]) {
-          newData[keys[0]][keys[1]] = {}
-        }
-        newData[keys[0]][keys[1]][keys[2]] = value
-      }
-      
-      return newData
-    })
-  }
+  // Watch form values for display
+  const tipoEntidad = watch('tipoEntidad')
 
   const handleContactTypeChange = (type: ContactType) => {
     setContactType(type)
-    setFormData(prev => ({
-      ...prev,
-      tipo: type === 'empresa' ? 'empresario/profesional' : 'particular'
-    }))
+    setValue('tipo', type === 'empresa' ? 'empresario/profesional' : 'particular')
   }
 
-  const validateForm = () => {
-    const newErrors: string[] = []
-    
-    if (!formData.razonSocial.trim()) {
-      newErrors.push('La razón social es obligatoria')
-    }
-    
-    if (!formData.NIF.trim()) {
-      newErrors.push('El NIF es obligatorio')
-    }
-    
-    if (!formData.personaFisica && !formData.domicilio.calle.trim()) {
-      newErrors.push('La dirección es obligatoria para empresas')
-    }
-    
-    setErrors(newErrors)
-    return newErrors.length === 0
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    if (validateForm()) {
-      onClientAdded(formData)
-      onClose()
-      // Reset form
-      setFormData({
-        // Entity Identification
-        NIF: '',
-        razonSocial: '',
-        nombreComercial: '',
-        
-        // Dates
-        fechaAlta: new Date().toISOString().split('T')[0],
-        fechaBaja: '',
-        
-        // Type and Classification
-        personaFisica: false,
-        tipoIdentificador: 'NIF/CIF-IVA',
-        paisOrigen: 'ESPAÑA',
-        extranjero: false,
-        operadorIntracomunitario: false,
-        importacionExportacion: false,
-        regimenCanario: false,
-        
-        // Entity Relationships
-        proveedor: false,
-        cliente: true,
-        vendedor: false,
-        operarioTaller: false,
-        aseguradora: false,
-        financiera: false,
-        agenciaTransporte: false,
-        banco: false,
-        rentacar: false,
-        
-        // Currency and Additional Info
-        monedaEntidad: 'Eur',
-        
-        // Contact Information
-        telefono: '',
-        email: '',
-        movil: '',
-        website: '',
-        identificacionVAT: '',
-        tags: '',
-        tipoContacto: 'Sin especificar',
-        domicilio: {
-          calle: '',
-          codigoPostal: '',
-          municipio: '',
-          provincia: '',
-          pais: 'España'
-        },
-        
-        // Legacy fields for compatibility
-        tipoEntidad: 'cliente' as TipoEntidad,
-        tipo: 'empresario/profesional',
-        nombreORazonSocial: '',
-        pais: 'España'
-      })
-      setErrors([])
-    }
+  const onSubmit = (data: FormData) => {
+    onClientAdded(data as unknown as Cliente | Entidad)
+    onClose()
+    // Reset form
+    reset(getDefaultValues(''))
   }
 
   const handleClose = () => {
     onClose()
-    setErrors([])
+    reset(getDefaultValues(''))
   }
 
   const tabs = [
@@ -243,9 +216,9 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
               <div className="flex space-x-2">
                 <button
                   type="button"
-                  onClick={() => handleInputChange('tipoEntidad', 'cliente')}
+                  onClick={() => setValue('tipoEntidad', 'cliente')}
                   className={`px-4 py-2 rounded-md font-medium ${
-                    formData.tipoEntidad === 'cliente'
+                    tipoEntidad === 'cliente'
                       ? 'bg-accent text-accent-foreground'
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   }`}
@@ -254,9 +227,9 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleInputChange('tipoEntidad', 'proveedor')}
+                  onClick={() => setValue('tipoEntidad', 'proveedor')}
                   className={`px-4 py-2 rounded-md font-medium ${
-                    formData.tipoEntidad === 'proveedor'
+                    tipoEntidad === 'proveedor'
                       ? 'bg-accent text-accent-foreground'
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   }`}
@@ -265,9 +238,9 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                 </button>
                 <button
                   type="button"
-                  onClick={() => handleInputChange('tipoEntidad', 'vendedor')}
+                  onClick={() => setValue('tipoEntidad', 'vendedor')}
                   className={`px-4 py-2 rounded-md font-medium ${
-                    formData.tipoEntidad === 'vendedor'
+                    tipoEntidad === 'vendedor'
                       ? 'bg-accent text-accent-foreground'
                       : 'bg-secondary text-secondary-foreground hover:bg-secondary/80'
                   }`}
@@ -328,17 +301,23 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
             </div>
           </div> */}
 
-          {errors.length > 0 && (
+          {Object.keys(errors).length > 0 && (
             <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-900 rounded">
               <ul className="list-disc list-inside">
-                {errors.map((error, index) => (
-                  <li key={index} className="text-sm font-medium">{error}</li>
-                ))}
+                {errors.razonSocial && (
+                  <li className="text-sm font-medium">{errors.razonSocial.message}</li>
+                )}
+                {errors.NIF && (
+                  <li className="text-sm font-medium">{errors.NIF.message}</li>
+                )}
+                {errors.domicilio?.calle && (
+                  <li className="text-sm font-medium">{errors.domicilio.calle.message}</li>
+                )}
               </ul>
             </div>
           )}
 
-          <form id="entity-form" onSubmit={handleSubmit}>
+          <form id="entity-form" onSubmit={handleSubmit(onSubmit)}>
             {activeTab === 'basico' && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Left Column */}
@@ -348,8 +327,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                     <label className="block text-sm font-medium text-card-foreground mb-2">NIF</label>
                     <input
                       type="text"
-                      value={formData.NIF}
-                      onChange={(e) => handleInputChange('NIF', e.target.value)}
+                      {...register('NIF', { required: 'El NIF es obligatorio' })}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="NIF"
                     />
@@ -359,8 +337,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                     <label className="block text-sm font-medium text-card-foreground mb-2">Razón Social</label>
                     <input
                       type="text"
-                      value={formData.razonSocial}
-                      onChange={(e) => handleInputChange('razonSocial', e.target.value)}
+                      {...register('razonSocial', { required: 'La razón social es obligatoria' })}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Razón Social"
                     />
@@ -370,8 +347,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                     <label className="block text-sm font-medium text-card-foreground mb-2">N. Comercial</label>
                     <input
                       type="text"
-                      value={formData.nombreComercial}
-                      onChange={(e) => handleInputChange('nombreComercial', e.target.value)}
+                      {...register('nombreComercial')}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Nombre Comercial"
                     />
@@ -383,8 +359,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                       <label className="block text-sm font-medium text-card-foreground mb-2">Alta</label>
                       <input
                         type="date"
-                        value={formData.fechaAlta}
-                        onChange={(e) => handleInputChange('fechaAlta', e.target.value)}
+                        {...register('fechaAlta')}
                         className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       />
                     </div>
@@ -392,22 +367,27 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                       <label className="block text-sm font-medium text-card-foreground mb-2">Baja</label>
                       <input
                         type="date"
-                        value={formData.fechaBaja}
-                        onChange={(e) => handleInputChange('fechaBaja', e.target.value)}
+                        {...register('fechaBaja')}
                         className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       />
                     </div>
                   </div>
                   
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={formData.personaFisica}
-                      onChange={(e) => handleInputChange('personaFisica', e.target.checked)}
-                      className="mr-2"
-                    />
-                    <label className="text-sm text-card-foreground">Persona física</label>
-                  </div>
+                  <Controller
+                    name="personaFisica"
+                    control={control}
+                    render={({ field }) => (
+                      <div className="flex items-center">
+                        <input
+                          type="checkbox"
+                          checked={field.value}
+                          onChange={field.onChange}
+                          className="mr-2"
+                        />
+                        <label className="text-sm text-card-foreground">Persona física</label>
+                      </div>
+                    )}
+                  />
                   
                   <button
                     type="button"
@@ -420,8 +400,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                   <div>
                     <label className="block text-sm font-medium text-card-foreground mb-2">Tipo Identificador</label>
                     <select
-                      value={formData.tipoIdentificador}
-                      onChange={(e) => handleInputChange('tipoIdentificador', e.target.value)}
+                      {...register('tipoIdentificador')}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                     >
                       <option value="NIF/CIF-IVA">NIF/CIF-IVA</option>
@@ -434,8 +413,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                   <div>
                     <label className="block text-sm font-medium text-card-foreground mb-2">País de origen</label>
                     <select
-                      value={formData.paisOrigen}
-                      onChange={(e) => handleInputChange('paisOrigen', e.target.value)}
+                      {...register('paisOrigen')}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                     >
                       <option value="ESPAÑA">ESPAÑA</option>
@@ -446,50 +424,80 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                   </div>
                   
                   <div className="space-y-2">
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={formData.extranjero}
-                        onChange={(e) => handleInputChange('extranjero', e.target.checked)}
-                        className="mr-2"
-                      />
-                      <label className="text-sm text-card-foreground">Extranjero/a</label>
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={formData.operadorIntracomunitario}
-                        onChange={(e) => handleInputChange('operadorIntracomunitario', e.target.checked)}
-                        className="mr-2"
-                      />
-                      <label className="text-sm text-card-foreground">Operador intracomunitario</label>
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={formData.importacionExportacion}
-                        onChange={(e) => handleInputChange('importacionExportacion', e.target.checked)}
-                        className="mr-2"
-                      />
-                      <label className="text-sm text-card-foreground">Importación/Exportación</label>
-                    </div>
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
-                        checked={formData.regimenCanario}
-                        onChange={(e) => handleInputChange('regimenCanario', e.target.checked)}
-                        className="mr-2"
-                      />
-                      <label className="text-sm text-card-foreground">Régimen Canario</label>
-                    </div>
+                    <Controller
+                      name="extranjero"
+                      control={control}
+                      render={({ field }) => (
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="mr-2"
+                          />
+                          <label className="text-sm text-card-foreground">Extranjero/a</label>
+                        </div>
+                      )}
+                    />
+                    <Controller
+                      name="operadorIntracomunitario"
+                      control={control}
+                      render={({ field }) => (
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="mr-2"
+                          />
+                          <label className="text-sm text-card-foreground">Operador intracomunitario</label>
+                        </div>
+                      )}
+                    />
+                    <Controller
+                      name="importacionExportacion"
+                      control={control}
+                      render={({ field }) => (
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="mr-2"
+                          />
+                          <label className="text-sm text-card-foreground">Importación/Exportación</label>
+                        </div>
+                      )}
+                    />
+                    <Controller
+                      name="regimenCanario"
+                      control={control}
+                      render={({ field }) => (
+                        <div className="flex items-center">
+                          <input
+                            type="checkbox"
+                            checked={field.value}
+                            onChange={field.onChange}
+                            className="mr-2"
+                          />
+                          <label className="text-sm text-card-foreground">Régimen Canario</label>
+                        </div>
+                      )}
+                    />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-card-foreground mb-2">Dirección</label>
                     <input
                       type="text"
-                      value={formData.domicilio.calle}
-                      onChange={(e) => handleInputChange('domicilio.calle', e.target.value)}
+                      {...register('domicilio.calle', {
+                        validate: (value, formValues) => {
+                          if (!formValues.personaFisica && !value?.trim()) {
+                            return 'La dirección es obligatoria para empresas'
+                          }
+                          return true
+                        }
+                      })}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Dirección"
                     />
@@ -500,8 +508,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                       <label className="block text-sm font-medium text-card-foreground mb-2">Población</label>
                       <input
                         type="text"
-                        value={formData.domicilio.municipio}
-                        onChange={(e) => handleInputChange('domicilio.municipio', e.target.value)}
+                        {...register('domicilio.municipio')}
                         className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                         placeholder="Población"
                       />
@@ -510,8 +517,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                       <label className="block text-sm font-medium text-card-foreground mb-2">Código postal</label>
                       <input
                         type="text"
-                        value={formData.domicilio.codigoPostal}
-                        onChange={(e) => handleInputChange('domicilio.codigoPostal', e.target.value)}
+                        {...register('domicilio.codigoPostal')}
                         className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                         placeholder="Código postal"
                       />
@@ -522,8 +528,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                     <label className="block text-sm font-medium text-card-foreground mb-2">Provincia</label>
                     <input
                       type="text"
-                      value={formData.domicilio.provincia}
-                      onChange={(e) => handleInputChange('domicilio.provincia', e.target.value)}
+                      {...register('domicilio.provincia')}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Provincia"
                     />
@@ -532,8 +537,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                   <div>
                     <label className="block text-sm font-medium text-card-foreground mb-2">País</label>
                     <select
-                      value={formData.domicilio.pais}
-                      onChange={(e) => handleInputChange('domicilio.pais', e.target.value)}
+                      {...register('domicilio.pais')}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                     >
                       <option value="España">España</option>
@@ -547,8 +551,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                     <label className="block text-sm font-medium text-card-foreground mb-2">Nombre comercial</label>
                     <input
                       type="text"
-                      value={formData.nombreComercial}
-                      onChange={(e) => handleInputChange('nombreComercial', e.target.value)}
+                      {...register('nombreComercial')}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Nombre comercial"
                     />
@@ -558,8 +561,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                     <label className="block text-sm font-medium text-card-foreground mb-2">Identificación VAT</label>
                     <input
                       type="text"
-                      value={formData.identificacionVAT}
-                      onChange={(e) => handleInputChange('identificacionVAT', e.target.value)}
+                      {...register('identificacionVAT')}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Identificación VAT"
                     />
@@ -589,8 +591,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                   <div>
                     <label className="block text-sm font-medium text-card-foreground mb-2">Moneda de la entidad</label>
                     <select
-                      value={formData.monedaEntidad}
-                      onChange={(e) => handleInputChange('monedaEntidad', e.target.value)}
+                      {...register('monedaEntidad')}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                     >
                       <option value="Eur">Eur</option>
@@ -603,87 +604,141 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                   <div>
                     <label className="block text-sm font-medium text-card-foreground mb-2">Relaciones</label>
                     <div className="space-y-2">
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formData.proveedor}
-                          onChange={(e) => handleInputChange('proveedor', e.target.checked)}
-                          className="mr-2"
-                        />
-                        <label className="text-sm text-card-foreground">Proveedor</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formData.cliente}
-                          onChange={(e) => handleInputChange('cliente', e.target.checked)}
-                          className="mr-2"
-                        />
-                        <label className="text-sm text-card-foreground">Cliente</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formData.vendedor}
-                          onChange={(e) => handleInputChange('vendedor', e.target.checked)}
-                          className="mr-2"
-                        />
-                        <label className="text-sm text-card-foreground">Vendedor</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formData.operarioTaller}
-                          onChange={(e) => handleInputChange('operarioTaller', e.target.checked)}
-                          className="mr-2"
-                        />
-                        <label className="text-sm text-card-foreground">Operario de Taller</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formData.aseguradora}
-                          onChange={(e) => handleInputChange('aseguradora', e.target.checked)}
-                          className="mr-2"
-                        />
-                        <label className="text-sm text-card-foreground">Aseguradora</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formData.financiera}
-                          onChange={(e) => handleInputChange('financiera', e.target.checked)}
-                          className="mr-2"
-                        />
-                        <label className="text-sm text-card-foreground">Financiera</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formData.agenciaTransporte}
-                          onChange={(e) => handleInputChange('agenciaTransporte', e.target.checked)}
-                          className="mr-2"
-                        />
-                        <label className="text-sm text-card-foreground">Agencia de Transporte</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formData.banco}
-                          onChange={(e) => handleInputChange('banco', e.target.checked)}
-                          className="mr-2"
-                        />
-                        <label className="text-sm text-card-foreground">Banco</label>
-                      </div>
-                      <div className="flex items-center">
-                        <input
-                          type="checkbox"
-                          checked={formData.rentacar}
-                          onChange={(e) => handleInputChange('rentacar', e.target.checked)}
-                          className="mr-2"
-                        />
-                        <label className="text-sm text-card-foreground">Rentacar</label>
-                      </div>
+                      <Controller
+                        name="proveedor"
+                        control={control}
+                        render={({ field }) => (
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="mr-2"
+                            />
+                            <label className="text-sm text-card-foreground">Proveedor</label>
+                          </div>
+                        )}
+                      />
+                      <Controller
+                        name="cliente"
+                        control={control}
+                        render={({ field }) => (
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="mr-2"
+                            />
+                            <label className="text-sm text-card-foreground">Cliente</label>
+                          </div>
+                        )}
+                      />
+                      <Controller
+                        name="vendedor"
+                        control={control}
+                        render={({ field }) => (
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="mr-2"
+                            />
+                            <label className="text-sm text-card-foreground">Vendedor</label>
+                          </div>
+                        )}
+                      />
+                      <Controller
+                        name="operarioTaller"
+                        control={control}
+                        render={({ field }) => (
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="mr-2"
+                            />
+                            <label className="text-sm text-card-foreground">Operario de Taller</label>
+                          </div>
+                        )}
+                      />
+                      <Controller
+                        name="aseguradora"
+                        control={control}
+                        render={({ field }) => (
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="mr-2"
+                            />
+                            <label className="text-sm text-card-foreground">Aseguradora</label>
+                          </div>
+                        )}
+                      />
+                      <Controller
+                        name="financiera"
+                        control={control}
+                        render={({ field }) => (
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="mr-2"
+                            />
+                            <label className="text-sm text-card-foreground">Financiera</label>
+                          </div>
+                        )}
+                      />
+                      <Controller
+                        name="agenciaTransporte"
+                        control={control}
+                        render={({ field }) => (
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="mr-2"
+                            />
+                            <label className="text-sm text-card-foreground">Agencia de Transporte</label>
+                          </div>
+                        )}
+                      />
+                      <Controller
+                        name="banco"
+                        control={control}
+                        render={({ field }) => (
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="mr-2"
+                            />
+                            <label className="text-sm text-card-foreground">Banco</label>
+                          </div>
+                        )}
+                      />
+                      <Controller
+                        name="rentacar"
+                        control={control}
+                        render={({ field }) => (
+                          <div className="flex items-center">
+                            <input
+                              type="checkbox"
+                              checked={field.value}
+                              onChange={field.onChange}
+                              className="mr-2"
+                            />
+                            <label className="text-sm text-card-foreground">Rentacar</label>
+                          </div>
+                        )}
+                      />
                     </div>
                   </div>
 
@@ -691,8 +746,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                     <label className="block text-sm font-medium text-card-foreground mb-2">Email</label>
                     <input
                       type="email"
-                      value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      {...register('email')}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Email"
                     />
@@ -703,8 +757,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                       <label className="block text-sm font-medium text-card-foreground mb-2">Teléfono</label>
                       <input
                         type="tel"
-                        value={formData.telefono}
-                        onChange={(e) => handleInputChange('telefono', e.target.value)}
+                        {...register('telefono')}
                         className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                         placeholder="Teléfono"
                       />
@@ -713,8 +766,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                       <label className="block text-sm font-medium text-card-foreground mb-2">Móvil</label>
                       <input
                         type="tel"
-                        value={formData.movil}
-                        onChange={(e) => handleInputChange('movil', e.target.value)}
+                        {...register('movil')}
                         className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                         placeholder="Móvil"
                       />
@@ -725,8 +777,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                     <label className="block text-sm font-medium text-card-foreground mb-2">Website</label>
                     <input
                       type="url"
-                      value={formData.website}
-                      onChange={(e) => handleInputChange('website', e.target.value)}
+                      {...register('website')}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Website"
                     />
@@ -736,8 +787,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                     <label className="block text-sm font-medium text-card-foreground mb-2">Tags</label>
                     <input
                       type="text"
-                      value={formData.tags}
-                      onChange={(e) => handleInputChange('tags', e.target.value)}
+                      {...register('tags')}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                       placeholder="Tags"
                     />
@@ -746,8 +796,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                   <div>
                     <label className="block text-sm font-medium text-card-foreground mb-2">Tipo de contacto</label>
                     <select
-                      value={formData.tipoContacto}
-                      onChange={(e) => handleInputChange('tipoContacto', e.target.value)}
+                      {...register('tipoContacto')}
                       className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
                     >
                       <option value="Sin especificar">Sin especificar</option>
