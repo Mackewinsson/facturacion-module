@@ -1,6 +1,7 @@
 'use client'
 import React, { useState, useEffect, useRef } from 'react'
 import { useForm, Controller } from 'react-hook-form'
+import { useRouter } from 'next/navigation'
 import { Entidad, Domicilio } from '@/lib/mock-data'
 import BaseModal from './BaseModal'
 import ModalToolbarButton from './ModalToolbarButton'
@@ -25,6 +26,7 @@ export default function EntityModal({
   onDelete,
   onEntityUpdated
 }: EntityModalProps) {
+  const router = useRouter()
   const [isEditMode, setIsEditMode] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
   const [showClienteModal, setShowClienteModal] = useState(false)
@@ -49,13 +51,24 @@ export default function EntityModal({
   // Watch form values for display
   const formData = watch()
 
-  // Update form data when entity changes, but not if we just saved the same entity
+  // Update form data when entity changes
   useEffect(() => {
     if (entity) {
-      // Only update if it's a different entity or we haven't just saved this one
-      if (entity.id !== lastSavedEntityIdRef.current) {
-        reset(entity)
+      // Always update form when entity prop changes
+      // Ensure boolean values are explicitly set for checkboxes
+      const entityWithBooleans = {
+        ...entity,
+        cliente: Boolean(entity.cliente),
+        proveedor: Boolean(entity.proveedor),
+        vendedor: Boolean(entity.vendedor),
+        operarioTaller: Boolean(entity.operarioTaller),
+        aseguradora: Boolean(entity.aseguradora),
+        financiera: Boolean(entity.financiera),
+        agenciaTransporte: Boolean(entity.agenciaTransporte),
+        banco: Boolean(entity.banco),
+        rentacar: Boolean(entity.rentacar),
       }
+      reset(entityWithBooleans, { keepDefaultValues: false })
     }
   }, [entity, reset])
 
@@ -110,19 +123,35 @@ export default function EntityModal({
       }
       const updatedData = await response.json()
       if (updatedData.success && updatedData.data) {
-        reset(updatedData.data)
-        lastSavedEntityIdRef.current = updatedData.data.id
+        // Update the form with fresh data from server immediately
+        // This ensures all fields including relaciones are updated
+        // Force reset with all values including boolean relationships
+        const freshData = {
+          ...updatedData.data,
+          // Ensure boolean values are explicitly set
+          cliente: Boolean(updatedData.data.cliente),
+          proveedor: Boolean(updatedData.data.proveedor),
+          vendedor: Boolean(updatedData.data.vendedor),
+          operarioTaller: Boolean(updatedData.data.operarioTaller),
+          aseguradora: Boolean(updatedData.data.aseguradora),
+          financiera: Boolean(updatedData.data.financiera),
+          agenciaTransporte: Boolean(updatedData.data.agenciaTransporte),
+          banco: Boolean(updatedData.data.banco),
+          rentacar: Boolean(updatedData.data.rentacar),
+        }
+        reset(freshData, { keepDefaultValues: false })
+        
+        // Revalidate Next.js cache to ensure fresh data on next fetch
+        router.refresh()
+        
+        // Call onEntityUpdated callback if provided (for parent components to refresh)
+        // This will reload the entity from server and update the entity prop
+        if (onEntityUpdated) {
+          await onEntityUpdated()
+        }
       }
       setIsEditMode(false)
       setIsSaving(false)
-      // Call onEntityUpdated after a short delay to prevent flash
-      setTimeout(() => {
-        onEntityUpdated?.()
-        // Reset the ref after a delay to allow normal updates again
-        setTimeout(() => {
-          lastSavedEntityIdRef.current = null
-        }, 500)
-      }, 100)
     } catch (error) {
       setIsSaving(false)
       console.error('Error updating entity:', error)

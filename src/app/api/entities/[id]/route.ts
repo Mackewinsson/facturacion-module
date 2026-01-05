@@ -59,6 +59,15 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     const id = await getEntityId(params)
     const payload = await request.json()
     const updated = await EntitiesRepository.update(id, payload, user.userId)
+    
+    // Revalidate Next.js cache for entity-related routes
+    const { revalidatePath } = await import('next/cache')
+    revalidatePath('/entidades')
+    revalidatePath(`/api/entities/${id}`)
+    if (updated?.NIF) {
+      revalidatePath(`/api/entities/nif/${encodeURIComponent(updated.NIF)}`)
+    }
+    
     return NextResponse.json({
       success: true,
       data: updated

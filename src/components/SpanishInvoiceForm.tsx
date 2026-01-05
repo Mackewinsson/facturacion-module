@@ -1180,6 +1180,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
         }}
         onEntityUpdated={async () => {
           // Reload entity data if it was updated
+          // Use a timestamp to force re-fetch and bypass any cache
           if (selectedEntity?.NIF) {
             try {
               const headers: HeadersInit = {}
@@ -1187,7 +1188,9 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                 headers['Authorization'] = `Bearer ${token}`
               }
               const encodedNIF = encodeURIComponent(selectedEntity.NIF)
-              const response = await fetch(`/api/entities/nif/${encodedNIF}`, {
+              // Add timestamp to bypass cache and ensure fresh data
+              const timestamp = Date.now()
+              const response = await fetch(`/api/entities/nif/${encodedNIF}?t=${timestamp}`, {
                 cache: 'no-store',
                 headers
               })
@@ -1195,7 +1198,9 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
               if (response.ok) {
                 const data = await response.json()
                 if (data?.success && data?.data) {
-                  setSelectedEntity(data.data as Entidad)
+                  // Update selectedEntity with fresh data including relaciones
+                  // Use a new object reference to trigger React's change detection
+                  setSelectedEntity({ ...data.data } as Entidad)
                 }
               }
             } catch (err) {

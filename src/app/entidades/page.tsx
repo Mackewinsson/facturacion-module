@@ -428,7 +428,32 @@ function EntidadesPageContent() {
         onView={handleModalView}
         onEdit={handleModalEdit}
         onDelete={handleModalDelete}
-        onEntityUpdated={loadEntities}
+        onEntityUpdated={async () => {
+          // Reload the entities list
+          await loadEntities()
+          // Also reload the selected entity to show updated data in modal
+          if (selectedEntity?.id) {
+            try {
+              const headers: HeadersInit = {}
+              if (token) {
+                headers['Authorization'] = `Bearer ${token}`
+              }
+              const response = await fetch(`/api/entities/${selectedEntity.id}`, {
+                cache: 'no-store',
+                headers
+              })
+              if (response.ok) {
+                const data = await response.json()
+                if (data?.success && data?.data) {
+                  // Update selectedEntity with fresh data
+                  setSelectedEntity({ ...data.data } as Entidad)
+                }
+              }
+            } catch (err) {
+              console.error('Error reloading selected entity:', err)
+            }
+          }
+        }}
       />
 
       {/* Add Entity Modal */}
