@@ -87,7 +87,10 @@ const mapEntidad = (row: any): Entidad => {
     
     // Modification tracking
     modificadoPor: (row as any).modificadoPor ?? undefined,
-    fechaModificacion: row.FEMENT ? new Date(row.FEMENT).toISOString() : undefined
+    fechaModificacion: row.FEMENT ? new Date(row.FEMENT).toISOString() : undefined,
+    
+    // Payment information (for clients)
+    formaPago: row.FCL?.CFP?.NOMCFP ?? undefined
   }
 }
 
@@ -206,7 +209,11 @@ export class EntitiesRepository {
           take: 1
         },
         FPR: true,
-        FCL: true,
+        FCL: {
+          include: {
+            CFP: true
+          }
+        },
         FOT: true,
         FFI: true,
         FTR: true,
@@ -250,7 +257,11 @@ export class EntitiesRepository {
           take: 1
         },
         FPR: true,
-        FCL: true,
+        FCL: {
+          include: {
+            CFP: true
+          }
+        },
         FOT: true,
         FFI: true,
         FTR: true,

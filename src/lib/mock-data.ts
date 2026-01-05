@@ -93,6 +93,9 @@ export interface Entidad {
   // Modification tracking
   modificadoPor?: string // Nombre del usuario que modificó
   fechaModificacion?: string // Fecha y hora de modificación (FEMENT)
+  
+  // Payment information (for clients)
+  formaPago?: string // Forma de pago del cliente (desde FCL.FPAFCL -> CFP.NOMCFP)
 }
 
 export interface Cliente {

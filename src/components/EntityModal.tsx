@@ -320,11 +320,20 @@ export default function EntityModal({
               {formData.modificadoPor || 'N/A'}
             </div>
             <div className="text-xs text-gray-700 mb-1">El día:</div>
-            <div className="text-xs font-medium text-gray-900">
+            <div className="text-xs font-medium text-gray-900 mb-2">
               {formData.fechaModificacion 
                 ? formatDateTime(formData.fechaModificacion)
                 : formatDate(entity.updatedAt)}
             </div>
+            {/* Forma de Pago (solo para clientes) - Visible en header */}
+            {formData.cliente && (
+              <>
+                <div className="text-xs text-gray-700 mb-1">Forma de pago:</div>
+                <div className="text-xs font-semibold text-blue-700 bg-blue-50 px-2 py-1 rounded border border-blue-200">
+                  {entity.formaPago || formData.formaPago || 'No especificada'}
+                </div>
+              </>
+            )}
           </div>
         </div>
 
@@ -336,12 +345,12 @@ export default function EntityModal({
                 name="personaFisica"
                 control={control}
                 render={({ field }) => (
-                  <input
-                    type="checkbox"
+              <input
+                type="checkbox"
                     checked={field.value || false}
                     onChange={field.onChange}
-                    disabled={!isEditMode}
-                    className={`${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                disabled={!isEditMode}
+                className={`${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
                   />
                 )}
               />
@@ -446,64 +455,64 @@ export default function EntityModal({
               name="extranjero"
               control={control}
               render={({ field }) => (
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
+            <div className="flex items-center">
+              <input
+                type="checkbox"
                     checked={field.value || false}
                     onChange={field.onChange}
-                    disabled={!isEditMode}
-                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Extranjero/a</label>
-                </div>
+                disabled={!isEditMode}
+                className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+              />
+              <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Extranjero/a</label>
+            </div>
               )}
             />
             <Controller
               name="operadorIntracomunitario"
               control={control}
               render={({ field }) => (
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
+            <div className="flex items-center">
+              <input
+                type="checkbox"
                     checked={field.value || false}
                     onChange={field.onChange}
-                    disabled={!isEditMode}
-                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Operador intracomunitario</label>
-                </div>
+                disabled={!isEditMode}
+                className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+              />
+              <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Operador intracomunitario</label>
+            </div>
               )}
             />
             <Controller
               name="importacionExportacion"
               control={control}
               render={({ field }) => (
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
+            <div className="flex items-center">
+              <input
+                type="checkbox"
                     checked={field.value || false}
                     onChange={field.onChange}
-                    disabled={!isEditMode}
-                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Importación/Exportación</label>
-                </div>
+                disabled={!isEditMode}
+                className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+              />
+              <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Importación/Exportación</label>
+            </div>
               )}
             />
             <Controller
               name="regimenCanario"
               control={control}
               render={({ field }) => (
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
+            <div className="flex items-center">
+              <input
+                type="checkbox"
                     checked={field.value || false}
                     onChange={field.onChange}
-                    disabled={!isEditMode}
-                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  />
-                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Régimen Canario</label>
-                </div>
+                disabled={!isEditMode}
+                className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+              />
+              <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Régimen Canario</label>
+            </div>
               )}
             />
 
@@ -726,144 +735,144 @@ export default function EntityModal({
                   name="proveedor"
                   control={control}
                   render={({ field }) => (
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
                         checked={field.value || false}
                         onChange={field.onChange}
-                        disabled={!isEditMode}
-                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      />
-                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Proveedor</label>
-                    </div>
+                    disabled={!isEditMode}
+                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Proveedor</label>
+                </div>
                   )}
                 />
                 <Controller
                   name="cliente"
                   control={control}
                   render={({ field }) => (
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
                         checked={field.value || false}
                         onChange={field.onChange}
-                        disabled={!isEditMode}
-                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      />
-                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Cliente</label>
-                    </div>
+                    disabled={!isEditMode}
+                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Cliente</label>
+                </div>
                   )}
                 />
                 <Controller
                   name="vendedor"
                   control={control}
                   render={({ field }) => (
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
                         checked={field.value || false}
                         onChange={field.onChange}
-                        disabled={!isEditMode}
-                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      />
-                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Vendedor</label>
-                    </div>
+                    disabled={!isEditMode}
+                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Vendedor</label>
+                </div>
                   )}
                 />
                 <Controller
                   name="operarioTaller"
                   control={control}
                   render={({ field }) => (
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
                         checked={field.value || false}
                         onChange={field.onChange}
-                        disabled={!isEditMode}
-                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      />
-                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Operario de Taller</label>
-                    </div>
+                    disabled={!isEditMode}
+                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Operario de Taller</label>
+                </div>
                   )}
                 />
                 <Controller
                   name="aseguradora"
                   control={control}
                   render={({ field }) => (
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
                         checked={field.value || false}
                         onChange={field.onChange}
-                        disabled={!isEditMode}
-                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      />
-                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Aseguradora</label>
-                    </div>
+                    disabled={!isEditMode}
+                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Aseguradora</label>
+                </div>
                   )}
                 />
                 <Controller
                   name="financiera"
                   control={control}
                   render={({ field }) => (
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
                         checked={field.value || false}
                         onChange={field.onChange}
-                        disabled={!isEditMode}
-                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      />
-                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Financiera</label>
-                    </div>
+                    disabled={!isEditMode}
+                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Financiera</label>
+                </div>
                   )}
                 />
                 <Controller
                   name="agenciaTransporte"
                   control={control}
                   render={({ field }) => (
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
                         checked={field.value || false}
                         onChange={field.onChange}
-                        disabled={!isEditMode}
-                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      />
-                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Agencia de Transport</label>
-                    </div>
+                    disabled={!isEditMode}
+                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Agencia de Transport</label>
+                </div>
                   )}
                 />
                 <Controller
                   name="banco"
                   control={control}
                   render={({ field }) => (
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
                         checked={field.value || false}
                         onChange={field.onChange}
-                        disabled={!isEditMode}
-                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      />
-                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Banco</label>
-                    </div>
+                    disabled={!isEditMode}
+                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Banco</label>
+                </div>
                   )}
                 />
                 <Controller
                   name="rentacar"
                   control={control}
                   render={({ field }) => (
-                    <div className="flex items-center">
-                      <input
-                        type="checkbox"
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
                         checked={field.value || false}
                         onChange={field.onChange}
-                        disabled={!isEditMode}
-                        className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
-                      />
-                      <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Rentacar</label>
-                    </div>
+                    disabled={!isEditMode}
+                    className={`mr-2 ${!isEditMode ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  />
+                  <label className={`text-sm ${!isEditMode ? 'text-gray-500' : 'text-gray-700'}`}>Rentacar</label>
+                </div>
                   )}
                 />
               </div>

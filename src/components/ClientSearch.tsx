@@ -230,15 +230,38 @@ export default function ClientSearch({
       {isOpen && (
         <div className={dropdownBaseClasses}>
           <div className="border-b border-border bg-muted px-3 py-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={inputValue}
-              onChange={event => setInputValue(event.target.value)}
-              onKeyPress={handleKeyPress}
-              placeholder="Buscar por nombre, NIF o ciudad..."
-              className="w-full rounded-lg border border-input-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputValue}
+                onChange={event => setInputValue(event.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Buscar por nombre, NIF o ciudad..."
+                className="flex-1 rounded-lg border border-input-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+              <button
+                type="button"
+                onClick={handleSearch}
+                className="flex items-center justify-center rounded-lg border border-input-border bg-input px-3 py-2 text-foreground transition hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-accent"
+                title="Buscar"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
           <div className="max-h-64 overflow-y-auto">
             {selectedClient && (
