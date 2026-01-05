@@ -100,7 +100,8 @@ export default function ClientSearch({
   placeholder = 'Seleccionar contacto',
   onAddNewClient
 }: ClientSearchProps) {
-  const [searchTerm, setSearchTerm] = useState('')
+  const [inputValue, setInputValue] = useState('') // Valor del input (no se usa para filtrar automáticamente)
+  const [searchTerm, setSearchTerm] = useState('') // Término de búsqueda real (se usa para filtrar)
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -123,8 +124,19 @@ export default function ClientSearch({
     return () => document.removeEventListener('mousedown', closeOnClickOutside)
   }, [])
 
+  const handleSearch = () => {
+    setSearchTerm(inputValue.trim())
+  }
+
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      e.preventDefault()
+      handleSearch()
+    }
+  }
+
   const filteredClients = useMemo(() => {
-    // No mostrar clientes hasta que el usuario empiece a escribir
+    // No mostrar clientes hasta que se haya realizado una búsqueda
     if (!searchTerm.trim()) {
       return []
     }
@@ -144,6 +156,7 @@ export default function ClientSearch({
     setIsOpen(prev => {
       const next = !prev
       if (next) {
+        setInputValue('')
         setSearchTerm('')
       }
       return next
@@ -177,14 +190,38 @@ export default function ClientSearch({
       {isOpen && (
         <div className={dropdownBaseClasses}>
           <div className="border-b border-border bg-muted px-3 py-2">
-            <input
-              ref={inputRef}
-              type="text"
-              value={searchTerm}
-              onChange={event => setSearchTerm(event.target.value)}
-              placeholder="Buscar por nombre, NIF o ciudad..."
-              className="w-full rounded-lg border border-input-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-            />
+            <div className="flex items-center gap-2">
+              <input
+                ref={inputRef}
+                type="text"
+                value={inputValue}
+                onChange={event => setInputValue(event.target.value)}
+                onKeyPress={handleKeyPress}
+                placeholder="Buscar por nombre, NIF o ciudad..."
+                className="flex-1 rounded-lg border border-input-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+              />
+              <button
+                type="button"
+                onClick={handleSearch}
+                className="flex items-center justify-center rounded-lg border border-input-border bg-input px-3 py-2 text-foreground transition hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-accent"
+                title="Buscar"
+              >
+                <svg
+                  className="h-5 w-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                  />
+                </svg>
+              </button>
+            </div>
           </div>
           <div className="max-h-64 overflow-y-auto">
             {selectedClient && (
@@ -215,7 +252,7 @@ export default function ClientSearch({
               <p className="px-4 py-3 text-sm text-muted-foreground">
                 {searchTerm.trim()
                   ? 'No se encontraron coincidencias'
-                  : 'Empieza a escribir para buscar un contacto'}
+                  : 'Escribe un término de búsqueda y presiona el botón de búsqueda o Enter'}
               </p>
             ) : (
               filteredClients.map(client => (
