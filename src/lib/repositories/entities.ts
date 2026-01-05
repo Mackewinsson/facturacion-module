@@ -235,6 +235,50 @@ export class EntitiesRepository {
     return mapEntidad({ ...record, _roles: roles, modificadoPor: usuario?.NCOENT })
   }
 
+  static async findByNIF(nif: string) {
+    const record = await prisma.eNT.findFirst({
+      where: { NIFENT: nif },
+      include: {
+        DIR_DIR_ENTDIRToENT: {
+          include: {
+            PRO: true,
+            PAI: true
+          }
+        },
+        CON: {
+          include: { DIR: true },
+          take: 1
+        },
+        FPR: true,
+        FCL: true,
+        FOT: true,
+        FFI: true,
+        FTR: true,
+        FBA: true
+      }
+    })
+
+    if (!record) return null
+    
+    // Check FVE, FCS, FRC relationships separately and get user info
+    const [fve, fcs, frc, usuario] = await Promise.all([
+      prisma.fVE.findUnique({ where: { ENTFVE: record.IDEENT }, select: { ENTFVE: true } }),
+      prisma.fCS.findUnique({ where: { ENTFCS: record.IDEENT }, select: { ENTFCS: true } }),
+      prisma.fRC.findUnique({ where: { ENTFRC: record.IDEENT }, select: { ENTFRC: true } }),
+      record.USUENT ? prisma.eNT.findUnique({ 
+        where: { IDEENT: record.USUENT }, 
+        select: { NCOENT: true } 
+      }) : Promise.resolve(null)
+    ])
+    
+    const roles = mapRoles(record)
+    roles.vendedor = Boolean(fve)
+    roles.aseguradora = Boolean(fcs)
+    roles.rentacar = Boolean(frc)
+    
+    return mapEntidad({ ...record, _roles: roles, modificadoPor: usuario?.NCOENT })
+  }
+
   static async create(payload: Omit<Entidad, 'id' | 'createdAt' | 'updatedAt'>) {
     const {
       NIF,

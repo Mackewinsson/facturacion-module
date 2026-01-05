@@ -8,6 +8,7 @@ interface ClientSearchProps {
   selectedClient?: Cliente | null
   placeholder?: string
   onAddNewClient?: (suggestedName?: string) => void
+  onViewEntity?: (nif: string) => void
 }
 
 const dropdownBaseClasses =
@@ -98,7 +99,8 @@ export default function ClientSearch({
   onClientSelect,
   selectedClient,
   placeholder = 'Seleccionar contacto',
-  onAddNewClient
+  onAddNewClient,
+  onViewEntity
 }: ClientSearchProps) {
   const [inputValue, setInputValue] = useState('') // Valor del input (no se usa para filtrar automáticamente)
   const [searchTerm, setSearchTerm] = useState('') // Término de búsqueda real (se usa para filtrar)
@@ -174,54 +176,69 @@ export default function ClientSearch({
     setIsOpen(false)
   }
 
+  const handleViewEntity = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    if (selectedClient?.NIF && onViewEntity) {
+      onViewEntity(selectedClient.NIF)
+    }
+  }
+
   return (
     <div className="relative" ref={containerRef}>
-      <button
-        type="button"
-        onClick={toggleDropdown}
-        className="flex w-full items-center justify-between rounded-lg border border-input-border bg-input px-3 py-2 text-left text-sm text-foreground shadow-sm transition hover:border-border focus:outline-none focus:ring-2 focus:ring-accent"
-      >
-        <span className={selectedClient ? 'text-foreground' : 'text-muted-foreground'}>
-          {selectedClient ? selectedClient.nombreORazonSocial : placeholder}
-        </span>
-        <span className="ml-2 text-muted-foreground">▾</span>
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          onClick={toggleDropdown}
+          className="flex flex-1 items-center justify-between rounded-lg border border-input-border bg-input px-3 py-2 text-left text-sm text-foreground shadow-sm transition hover:border-border focus:outline-none focus:ring-2 focus:ring-accent"
+        >
+          <span className={selectedClient ? 'text-foreground' : 'text-muted-foreground'}>
+            {selectedClient ? selectedClient.nombreORazonSocial : placeholder}
+          </span>
+          <span className="ml-2 text-muted-foreground">▾</span>
+        </button>
+        {selectedClient && selectedClient.NIF && onViewEntity && (
+          <button
+            type="button"
+            onClick={handleViewEntity}
+            className="flex items-center justify-center rounded-lg border border-input-border bg-input px-3 py-2 text-foreground shadow-sm transition hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-accent"
+            title="Ver datos de la entidad"
+          >
+            <svg
+              className="h-5 w-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+              />
+            </svg>
+          </button>
+        )}
+      </div>
 
       {isOpen && (
         <div className={dropdownBaseClasses}>
           <div className="border-b border-border bg-muted px-3 py-2">
-            <div className="flex items-center gap-2">
-              <input
-                ref={inputRef}
-                type="text"
-                value={inputValue}
-                onChange={event => setInputValue(event.target.value)}
-                onKeyPress={handleKeyPress}
-                placeholder="Buscar por nombre, NIF o ciudad..."
-                className="flex-1 rounded-lg border border-input-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
-              />
-              <button
-                type="button"
-                onClick={handleSearch}
-                className="flex items-center justify-center rounded-lg border border-input-border bg-input px-3 py-2 text-foreground transition hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-accent"
-                title="Buscar"
-              >
-                <svg
-                  className="h-5 w-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </button>
-            </div>
+            <input
+              ref={inputRef}
+              type="text"
+              value={inputValue}
+              onChange={event => setInputValue(event.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Buscar por nombre, NIF o ciudad..."
+              className="w-full rounded-lg border border-input-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
+            />
           </div>
           <div className="max-h-64 overflow-y-auto">
             {selectedClient && (

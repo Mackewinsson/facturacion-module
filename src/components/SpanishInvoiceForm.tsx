@@ -29,6 +29,8 @@ import {
 import ClientSearch from './ClientSearch'
 import AddClientModal from './AddClientModal'
 import InvoicePreviewModal from './InvoicePreviewModal'
+import EntityModal from './EntityModal'
+import { Entidad } from '@/lib/mock-data'
 
 interface SpanishInvoiceFormProps {
   initialData?: Partial<Invoice>
@@ -171,6 +173,8 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
   const [showAddClientModal, setShowAddClientModal] = useState(false)
   const [suggestedClientName, setSuggestedClientName] = useState('')
   const [showPreviewModal, setShowPreviewModal] = useState(false)
+  const [showEntityModal, setShowEntityModal] = useState(false)
+  const [selectedEntity, setSelectedEntity] = useState<Entidad | null>(null)
   const [documentOptions, setDocumentOptions] = useState<Record<DocumentOptionKey, boolean>>({
     customFields: false,
     documentText: false,
@@ -270,10 +274,38 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
   }, [watchedLineas, getValues, setValue])
 
   // Client selection handler
-  const handleClientSelect = useCallback((client: Cliente | null) => {
+  const handleClientSelect = useCallback(async (client: Cliente | null) => {
     setSelectedClient(client)
     if (client) {
       setValue('cliente', client)
+      // Abrir modal de entidad automáticamente cuando se selecciona un cliente
+      if (client.NIF) {
+        try {
+          setLoading(true)
+          const headers: HeadersInit = {}
+          if (token) {
+            headers['Authorization'] = `Bearer ${token}`
+          }
+          const encodedNIF = encodeURIComponent(client.NIF)
+          const response = await fetch(`/api/entities/nif/${encodedNIF}`, {
+            cache: 'no-store',
+            headers
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            if (data?.success && data?.data) {
+              setSelectedEntity(data.data as Entidad)
+              setShowEntityModal(true)
+            }
+          }
+        } catch (err) {
+          console.error('Error loading entity:', err)
+          // No mostrar error al usuario, solo loguear
+        } finally {
+          setLoading(false)
+        }
+      }
     } else {
       setValue('cliente', {
         tipo: 'particular',
@@ -289,11 +321,45 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
         pais: 'España'
       })
     }
-  }, [setValue])
+  }, [setValue, token])
 
   const handleAddNewClient = (suggestedName?: string) => {
     setSuggestedClientName(suggestedName || '')
     setShowAddClientModal(true)
+  }
+
+  const handleViewEntity = async (nif: string) => {
+    try {
+      setLoading(true)
+      const headers: HeadersInit = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+      const encodedNIF = encodeURIComponent(nif)
+      const response = await fetch(`/api/entities/nif/${encodedNIF}`, {
+        cache: 'no-store',
+        headers
+      })
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`)
+      }
+      
+      const data = await response.json()
+      if (data?.success && data?.data) {
+        setSelectedEntity(data.data as Entidad)
+        setShowEntityModal(true)
+      } else {
+        setError('No se encontró la entidad con el NIF proporcionado')
+      }
+    } catch (err) {
+      console.error('Error loading entity:', err)
+      const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
+      setError(`Error al cargar los datos de la entidad: ${errorMessage}`)
+    } finally {
+      setLoading(false)
+    }
   }
 
   const handleClientAdded = (newClient: Cliente) => {
@@ -626,34 +692,17 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
               </div>
             </div>
 
-            {/* Row 2: Cliente + Exportación/Importación */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-              <div className="md:col-span-2">
+            {/* Row 2: Cliente */}
+            <div className="grid grid-cols-1 gap-4 items-end">
+              <div>
                 <label className="block text-sm font-medium text-card-foreground mb-1">Cliente</label>
                 <ClientSearch
                   onClientSelect={handleClientSelect}
                   selectedClient={selectedClient}
                   placeholder="Seleccionar cliente"
                   onAddNewClient={handleAddNewClient}
+                  onViewEntity={handleViewEntity}
                 />
-              </div>
-              <div className="flex items-center gap-2">
-                <Controller
-                  name="exportacionImportacion"
-                  control={control}
-                  render={({ field }) => (
-                    <input
-                      type="checkbox"
-                      id="exportacionImportacion"
-                      checked={field.value || false}
-                      onChange={e => field.onChange(e.target.checked)}
-                      className="rounded border-input-border text-accent focus:ring-accent"
-                    />
-                  )}
-                />
-                <label htmlFor="exportacionImportacion" className="text-sm font-medium text-card-foreground">
-                  Exportación/Importación
-                </label>
               </div>
             </div>
 
@@ -775,8 +824,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                   {/* Table Header */}
                   <div className="grid grid-cols-13 gap-4 mb-4 pb-2 border-b border-border">
                     <div className="col-span-1 text-sm font-medium text-muted-foreground"></div>
-                    <div className="col-span-3 text-sm font-medium text-muted-foreground">Concepto</div>
-                    <div className="col-span-3 text-sm font-medium text-muted-foreground">Descripción</div>
+                    <div className="col-span-6 text-sm font-medium text-muted-foreground">Concepto</div>
                     <div className="col-span-1 text-sm font-medium text-muted-foreground text-center">Cantidad</div>
                     <div className="col-span-1 text-sm font-medium text-muted-foreground text-center">Precio</div>
                     <div className="col-span-2 text-sm font-medium text-muted-foreground text-center">Impuestos</div>
@@ -811,28 +859,13 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                         </div>
                         
                         {/* Concepto */}
-                        <div className="col-span-3">
+                        <div className="col-span-6">
                           <input
                             type="text"
                             {...register(`lineas.${index}.descripcion`)}
-                            placeholder="Escribe el concepto o usa @ para buscar"
+                            placeholder="Escribe el concepto"
                             className={`${baseInputClasses} text-sm`}
                           />
-                        </div>
-                        
-                        {/* Descripción */}
-                        <div className="col-span-3">
-                          <div className="relative">
-                            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
-                            <input
-                              type="text"
-                              {...register(`lineas.${index}.descripcionDetallada`)}
-                              placeholder="Desc"
-                              className={`${baseInputClasses} text-sm pl-10`}
-                            />
-                          </div>
                         </div>
                         
                         {/* Cantidad */}
@@ -847,7 +880,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                                 step="0.01"
                                 value={field.value || 1}
                                 onChange={e => field.onChange(Number(e.target.value))}
-                                className={`${baseInputClasses} text-sm text-center`}
+                                className={`${baseInputClasses} text-sm text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                               />
                             )}
                           />
@@ -865,7 +898,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                                 step="0.01"
                                 value={field.value || 0}
                                 onChange={e => field.onChange(Number(e.target.value))}
-                                className={`${baseInputClasses} text-sm text-center`}
+                                className={`${baseInputClasses} text-sm text-center [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none`}
                               />
                             )}
                           />
@@ -1113,6 +1146,40 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
         onApprove={handleApproveInvoice}
         formData={formData}
         isSubmitting={loading}
+      />
+
+      <EntityModal
+        entity={selectedEntity}
+        isOpen={showEntityModal}
+        onClose={() => {
+          setShowEntityModal(false)
+          setSelectedEntity(null)
+        }}
+        onEntityUpdated={async () => {
+          // Reload entity data if it was updated
+          if (selectedEntity?.NIF) {
+            try {
+              const headers: HeadersInit = {}
+              if (token) {
+                headers['Authorization'] = `Bearer ${token}`
+              }
+              const encodedNIF = encodeURIComponent(selectedEntity.NIF)
+              const response = await fetch(`/api/entities/nif/${encodedNIF}`, {
+                cache: 'no-store',
+                headers
+              })
+              
+              if (response.ok) {
+                const data = await response.json()
+                if (data?.success && data?.data) {
+                  setSelectedEntity(data.data as Entidad)
+                }
+              }
+            } catch (err) {
+              console.error('Error reloading entity:', err)
+            }
+          }
+        }}
       />
     </div>
   )
