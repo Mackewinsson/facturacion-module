@@ -121,7 +121,7 @@ const getDefaultValues = (isReceivedInvoice: boolean, allowedVATRates?: number[]
   ctaIngreso: '',
   aplicarRetencion: false,
   ctaRetencion: '',
-  baseRetencion: 0,
+  baseRetencion: 1.15,
   porcentajeRetencion: 0,
   importeRetencion: 0,
   ctaGastosAsoc1: '',
@@ -163,6 +163,8 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
   const watchedLineas = useWatch({ control, name: 'lineas' })
   const watchedTipoFactura = useWatch({ control, name: 'tipoFactura' })
   const watchedAplicarRetencion = useWatch({ control, name: 'aplicarRetencion' })
+  const watchedBaseRetencion = useWatch({ control, name: 'baseRetencion' })
+  const watchedPorcentajeRetencion = useWatch({ control, name: 'porcentajeRetencion' })
   const formData = watch() // Watch all form data for compatibility
 
   // UI state (not form data)
@@ -272,6 +274,16 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
       setValue('totales', totales, { shouldDirty: false })
     }
   }, [watchedLineas, getValues, setValue])
+
+  // Calculate retención importe when base or percentage changes
+  useEffect(() => {
+    if (watchedAplicarRetencion && watchedBaseRetencion && watchedPorcentajeRetencion) {
+      const importe = (watchedBaseRetencion * watchedPorcentajeRetencion) / 100
+      setValue('importeRetencion', importe, { shouldDirty: false })
+    } else {
+      setValue('importeRetencion', 0, { shouldDirty: false })
+    }
+  }, [watchedAplicarRetencion, watchedBaseRetencion, watchedPorcentajeRetencion, setValue])
 
   // Client selection handler
   const handleClientSelect = useCallback(async (client: Cliente | null) => {
@@ -1014,7 +1026,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
                         </div>
                       </div>
                       
-                      {/* Rec. */}
+                      {/* Rec. (Recargo de Equivalencia) - Calculado automáticamente según tipo IVA: 0% (IVA 0), 0.5% (IVA 4), 1.4% (IVA 10), 5.2% (IVA 21) */}
                       <div className="text-center">
                         <label className="block text-sm font-medium text-muted-foreground mb-2">Rec.</label>
                         <div className="text-base font-medium text-card-foreground">
@@ -1053,26 +1065,37 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
 
                     {/* Retention fields - only shown when checkbox is checked */}
                     {watchedAplicarRetencion && (
-                      <div className="grid grid-cols-4 gap-4 pl-6 pt-2">
-                        <div>
-                          <label className="block text-sm font-medium text-card-foreground mb-2">Cta. Ret.</label>
-                          <input
-                            type="text"
-                            {...register('ctaRetencion')}
-                            className={`${baseInputClasses} text-sm`}
-                          />
-                        </div>
+                      <div className="grid grid-cols-3 gap-4 pl-6 pt-2">
                         <div>
                           <label className="block text-sm font-medium text-card-foreground mb-2">Base</label>
                           <div className="text-sm font-medium text-card-foreground bg-muted px-3 py-2 rounded-md">
-                            {formatCurrency(formData.baseRetencion || 0)}
+                            {formatCurrency(formData.baseRetencion || 1.15)}
                           </div>
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-card-foreground mb-2">%</label>
-                          <div className="text-sm font-medium text-card-foreground bg-muted px-3 py-2 rounded-md">
-                            {formData.porcentajeRetencion || 0}%
-                          </div>
+                          <Controller
+                            name="porcentajeRetencion"
+                            control={control}
+                            render={({ field }) => (
+                              <select
+                                value={field.value || 0}
+                                onChange={e => field.onChange(Number(e.target.value))}
+                                className={`${baseInputClasses} text-sm`}
+                              >
+                                <option value={0}>0%</option>
+                                <option value={1}>1%</option>
+                                <option value={2}>2%</option>
+                                <option value={3}>3%</option>
+                                <option value={4}>4%</option>
+                                <option value={5}>5%</option>
+                                <option value={7}>7%</option>
+                                <option value={9}>9%</option>
+                                <option value={15}>15%</option>
+                                <option value={19}>19%</option>
+                              </select>
+                            )}
+                          />
                         </div>
                         <div>
                           <label className="block text-sm font-medium text-card-foreground mb-2">Importe</label>
