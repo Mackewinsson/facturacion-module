@@ -2,6 +2,7 @@
 import { useState, useEffect, Suspense, useRef, useCallback } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
+import { useAuth } from '@/hooks/useAuth'
 import { Entidad } from '@/lib/mock-data'
 import LayoutWithSidebar from '@/components/LayoutWithSidebar'
 import EntityModal from '@/components/EntityModal'
@@ -13,7 +14,8 @@ function EntidadesPageContent() {
   const router = useRouter()
   const pathname = usePathname()
   const searchParams = useSearchParams()
-  const { isAuthenticated, token, logout } = useAuthStore()
+  const { token, logout } = useAuthStore()
+  const { isAuthenticated, isChecking } = useAuth(false) // Don't auto-redirect, handle it manually
   const [entities, setEntities] = useState<Entidad[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -131,8 +133,11 @@ function EntidadesPageContent() {
       })
       if (response.status === 401) {
         // Token expired or invalid, redirect to login
-        logout()
-        router.push('/login')
+        // Only redirect if we're sure we're not just waiting for hydration
+        if (!isChecking) {
+          logout()
+          router.push('/login')
+        }
         return
       }
       if (!response.ok) {
@@ -153,16 +158,22 @@ function EntidadesPageContent() {
     } finally {
       setLoading(false)
     }
-  }, [currentPage, tipoEntidadFilter, debouncedColumnFilters, token, logout, router])
+  }, [currentPage, tipoEntidadFilter, debouncedColumnFilters, token, logout, router, isChecking])
 
   useEffect(() => {
-    // Authentication disabled for development
-    // if (!isAuthenticated) {
-    //   router.push('/login')
-    //   return
-    // }
+    // Wait for auth check to complete before loading entities
+    if (isChecking) {
+      return
+    }
+    
+    // Only redirect to login if we're sure user is not authenticated
+    if (!isAuthenticated && !token) {
+      router.push('/login')
+      return
+    }
+    
     loadEntities()
-  }, [loadEntities, isAuthenticated])
+  }, [loadEntities, isAuthenticated, isChecking, token, router])
 
   const handleCreateEntity = () => {
     setIsAddModalOpen(true)
@@ -258,10 +269,27 @@ function EntidadesPageContent() {
     return new Date(dateString).toLocaleDateString('es-ES')
   }
 
-  // Authentication disabled for development
-  // if (!isAuthenticated) {
-  //   return null
-  // }
+  // Show loading spinner while checking authentication
+  if (isChecking) {
+    return (
+      <LayoutWithSidebar>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+        </div>
+      </LayoutWithSidebar>
+    )
+  }
+
+  // Redirect to login if not authenticated (only after hydration is complete)
+  if (!isAuthenticated && !token) {
+    return (
+      <LayoutWithSidebar>
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+        </div>
+      </LayoutWithSidebar>
+    )
+  }
 
   if (loading) {
     return (

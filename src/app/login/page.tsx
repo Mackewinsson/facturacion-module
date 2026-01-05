@@ -24,6 +24,16 @@ export default function Login() {
   
   const router = useRouter()
   const login = useAuthStore((state) => state.login)
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const hasHydrated = useAuthStore((state) => state._hasHydrated)
+  const token = useAuthStore((state) => state.token)
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (hasHydrated && (isAuthenticated || token)) {
+      router.push('/')
+    }
+  }, [hasHydrated, isAuthenticated, token, router])
 
   // Fetch users from the database
   useEffect(() => {

@@ -1,20 +1,18 @@
 'use client'
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuthStore } from '@/store/auth'
+import { useAuth } from '@/hooks/useAuth'
 import LayoutWithSidebar from '@/components/LayoutWithSidebar'
 
 export default function Home() {
-  const router = useRouter()
-  const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
+  const { isAuthenticated, isChecking } = useAuth()
 
-  useEffect(() => {
-    // Only redirect to login if not authenticated
-    if (!isAuthenticated) {
-      router.push('/login')
-    }
-    // If authenticated, stay on home page and show welcome screen
-  }, [isAuthenticated, router])
+  // Show loading spinner while checking authentication
+  if (isChecking) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
+      </div>
+    )
+  }
 
   if (!isAuthenticated) {
     return (
