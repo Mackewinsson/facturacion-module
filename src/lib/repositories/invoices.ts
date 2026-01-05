@@ -281,6 +281,57 @@ export class InvoicesRepository {
     }
   }
 
+  static async findByIdAsDbFormat(id: number): Promise<InvoiceFromDb | null> {
+    const record = await prisma.cFA.findUnique({
+      where: { IDECFA: id },
+      include: {
+        ENT: true,
+        DIR: { include: { PRO: true, PAI: true } }
+      }
+    })
+    if (!record) return null
+
+    const bi1 = safeNumber(record.BI1CFA)
+    const bi2 = safeNumber(record.BI2CFA)
+    const bi3 = safeNumber(record.BI3CFA)
+    const ci1 = safeNumber(record.CI1CFA)
+    const ci2 = safeNumber(record.CI2CFA)
+    const ci3 = safeNumber(record.CI3CFA)
+
+    // Ensure numero is never empty - use ID as fallback
+    const numero = record.NUMCFA?.trim() || `FAC-${record.IDECFA}`
+    // Ensure fecha is always valid
+    const fecha = record.FECCFA ? record.FECCFA.toISOString() : (record.FEMCFA ? record.FEMCFA.toISOString() : new Date().toISOString())
+    // Ensure clienteNombre is never empty
+    const clienteNombre = record.ENT?.NCOENT?.trim() || record.ENT?.NOMENT?.trim() || 'Cliente sin nombre'
+
+    return {
+      id: record.IDECFA,
+      numero,
+      fecha,
+      clienteId: record.ENTCFA,
+      clienteNombre,
+      clienteNif: record.ENT?.NIFENT || '',
+      direccionId: record.DIRCFA ?? undefined,
+      direccion: record.DIR
+        ? {
+            etiqueta: record.DIR.NOMDIR,
+            direccion: record.DIR.DIRDIR || '',
+            poblacion: record.DIR.POBDIR,
+            provincia: record.DIR.PRO?.NOMPRO ?? null,
+            codigoPostal: record.DIR.CPODIR
+          }
+        : undefined,
+      bases: { bi1, bi2, bi3 },
+      cuotasIva: { ci1, ci2, ci3 },
+      totales: {
+        baseImponible: bi1 + bi2 + bi3,
+        iva: ci1 + ci2 + ci3,
+        total: safeNumber(record.TOTCFA)
+      }
+    }
+  }
+
   static async findById(id: number): Promise<Invoice | null> {
     const record = await prisma.cFA.findUnique({
       where: { IDECFA: id },

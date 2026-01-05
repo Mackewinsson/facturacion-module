@@ -30,7 +30,7 @@ export default function VerFacturaPage() {
       if (token) {
         headers['Authorization'] = `Bearer ${token}`
       }
-      const response = await fetch(`/api/invoices/${invoiceId}`, {
+      const response = await fetch(`/api/invoices/${invoiceId}?format=db`, {
         cache: 'no-store',
         headers
       })
@@ -95,9 +95,9 @@ export default function VerFacturaPage() {
 
   return (
     <LayoutWithSidebar>
-      <div className="bg-background p-4 h-full flex flex-col">
-        <div className="max-w-7xl mx-auto w-full flex flex-col flex-1">
-          <div className="mb-4">
+      <div className="bg-background p-4 h-screen flex flex-col overflow-hidden">
+        <div className="max-w-7xl mx-auto w-full flex flex-col flex-1 min-h-0">
+          <div className="mb-4 flex-shrink-0">
             <button
               onClick={() => router.push('/facturacion')}
               className="text-blue-600 hover:text-blue-800 flex items-center gap-2"
@@ -109,7 +109,7 @@ export default function VerFacturaPage() {
             </button>
           </div>
 
-          <div className="flex-1 min-h-0">
+          <div className="flex-1 min-h-0 overflow-hidden">
             <InvoicePDFView invoice={invoice} />
           </div>
         </div>

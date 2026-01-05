@@ -27,8 +27,19 @@ export default function InvoicePDFView({ invoice }: InvoicePDFViewProps) {
 
     try {
       // Validate invoice data structure
-      if (!invoice.numero || !invoice.fecha || !invoice.clienteNombre) {
-        throw new Error('Datos de factura incompletos')
+      const missingFields: string[] = []
+      if (!invoice.numero || invoice.numero.trim() === '') {
+        missingFields.push('número')
+      }
+      if (!invoice.fecha || invoice.fecha.trim() === '') {
+        missingFields.push('fecha')
+      }
+      if (!invoice.clienteNombre || invoice.clienteNombre.trim() === '') {
+        missingFields.push('cliente')
+      }
+      
+      if (missingFields.length > 0) {
+        throw new Error(`Datos de factura incompletos: faltan ${missingFields.join(', ')}`)
       }
 
       // Generate PDF blob
@@ -159,38 +170,21 @@ export default function InvoicePDFView({ invoice }: InvoicePDFViewProps) {
       </div>
 
       {/* PDF viewer */}
-      <div className="flex-1 border border-gray-300 rounded-lg overflow-auto bg-gray-100 flex items-center justify-center p-4">
+      <div className="flex-1 border border-gray-300 rounded-lg overflow-hidden bg-gray-100 flex flex-col min-h-0">
         {pdfUrl ? (
-          <div 
-            className="flex items-center justify-center"
-            style={{ 
-              transform: 'scale(0.75)',
-              transformOrigin: 'center center',
-              width: '133.33%',
-              height: '133.33%',
-              minWidth: '100%',
-              minHeight: '100%'
+          <iframe
+            ref={iframeRef}
+            src={pdfUrl}
+            className="w-full h-full border-0"
+            title="Vista previa de factura PDF"
+            onError={(e) => {
+              console.error('Error loading PDF in iframe:', e)
+              setError('Error al cargar el PDF en el visor')
             }}
-          >
-            <iframe
-              ref={iframeRef}
-              src={pdfUrl}
-              className="border border-gray-300 shadow-lg"
-              title="Vista previa de factura PDF"
-              style={{ 
-                width: '100%',
-                height: '800px',
-                minHeight: '600px'
-              }}
-              onError={(e) => {
-                console.error('Error loading PDF in iframe:', e)
-                setError('Error al cargar el PDF en el visor')
-              }}
-              onLoad={() => {
-                console.log('PDF loaded successfully in iframe')
-              }}
-            />
-          </div>
+            onLoad={() => {
+              console.log('PDF loaded successfully in iframe')
+            }}
+          />
         ) : (
           <div className="flex items-center justify-center h-full">
             <p className="text-gray-500">No se pudo cargar el PDF</p>

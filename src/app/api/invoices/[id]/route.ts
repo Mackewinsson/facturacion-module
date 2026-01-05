@@ -34,9 +34,33 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
       console.warn('Authentication skipped in development mode')
     }
     const id = await getInvoiceId(params)
-    // Use InvoicesRepository.findById to get full Invoice structure with lines
+    
+    // Check if request wants InvoiceFromDb format (for PDF viewing)
+    // by checking if there's a format query parameter or Accept header
+    const url = new URL(request.url)
+    const format = url.searchParams.get('format')
+    const wantsDbFormat = format === 'db' || request.headers.get('accept')?.includes('application/pdf')
+    
+    if (wantsDbFormat) {
+      // Return InvoiceFromDb format for PDF viewing
+      const invoice = await InvoicesRepository.findByIdAsDbFormat(id)
+      if (!invoice) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'Factura no encontrada'
+          },
+          { status: 404 }
+        )
+      }
+      return NextResponse.json({
+        success: true,
+        data: invoice
+      })
+    }
+    
+    // Default: return Invoice format (for editing)
     const invoice = await InvoicesRepository.findById(id)
-
     if (!invoice) {
       return NextResponse.json(
         {
