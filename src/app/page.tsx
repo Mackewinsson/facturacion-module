@@ -1,9 +1,11 @@
 'use client'
 import { useAuth } from '@/hooks/useAuth'
 import LayoutWithSidebar from '@/components/LayoutWithSidebar'
+import { useRouter } from 'next/navigation'
 
 export default function Home() {
   const { isAuthenticated, isChecking } = useAuth()
+  const router = useRouter()
 
   // Show loading spinner while checking authentication
   if (isChecking) {
