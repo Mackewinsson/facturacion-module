@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useForm, useFieldArray, Controller, useWatch } from 'react-hook-form'
 import {
@@ -137,6 +137,7 @@ const getDefaultValues = (isReceivedInvoice: boolean, allowedVATRates?: number[]
 export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = false, hideRecargoEquivalencia = false, allowedVATRates, isReceivedInvoice = false }: SpanishInvoiceFormProps) {
   const router = useRouter()
   const token = useAuthStore((state) => state.token)
+  const latestEntityLookupRef = useRef<string | null>(null)
 
   // React Hook Form setup
   const {
@@ -184,6 +185,57 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
     portalQR: false
   })
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null)
+
+  const parseEntityFromNifLookup = (payload: any): Entidad => {
+    const entity = payload?.data as Entidad | undefined
+    if (!payload?.success || !entity) {
+      throw new Error(payload?.error || 'Entidad no encontrada')
+    }
+    // Guard against broken payloads that would crash downstream flows.
+    if (typeof (entity as any).id !== 'number' || Number.isNaN((entity as any).id)) {
+      throw new Error('La entidad devuelta no contiene un ID válido')
+    }
+    if (!entity.NIF) {
+      throw new Error('La entidad devuelta no contiene NIF')
+    }
+    return entity
+  }
+
+  const fetchEntityByNIF = useCallback(
+    async (nif: string) => {
+      const normalizedNif = (nif || '').trim()
+      if (!normalizedNif) throw new Error('NIF vacío')
+
+      latestEntityLookupRef.current = normalizedNif
+
+      const headers: HeadersInit = {}
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`
+      }
+
+      const encodedNIF = encodeURIComponent(normalizedNif)
+      const response = await fetch(`/api/entities/nif/${encodedNIF}`, {
+        cache: 'no-store',
+        headers
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}))
+        throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`)
+      }
+
+      const data = await response.json()
+      const entity = parseEntityFromNifLookup(data)
+
+      // Ignore stale responses if user changed selection quickly.
+      if (latestEntityLookupRef.current !== normalizedNif) {
+        throw new Error('Respuesta obsoleta (selección cambió)')
+      }
+
+      return entity
+    },
+    [token]
+  )
 
   // Load initial data
   useEffect(() => {
@@ -294,26 +346,14 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
       if (client.NIF) {
         try {
           setLoading(true)
-          const headers: HeadersInit = {}
-          if (token) {
-            headers['Authorization'] = `Bearer ${token}`
-          }
-          const encodedNIF = encodeURIComponent(client.NIF)
-          const response = await fetch(`/api/entities/nif/${encodedNIF}`, {
-            cache: 'no-store',
-            headers
-          })
-          
-          if (response.ok) {
-            const data = await response.json()
-            if (data?.success && data?.data) {
-              setSelectedEntity(data.data as Entidad)
-              setShowEntityModal(true)
-            }
-          }
+          const entity = await fetchEntityByNIF(client.NIF)
+          setSelectedEntity(entity)
+          setShowEntityModal(true)
         } catch (err) {
           console.error('Error loading entity:', err)
-          // No mostrar error al usuario, solo loguear
+          // No hard-crash: show a visible error so navigation isn't "rota".
+          const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
+          setError(`Error al cargar los datos de la entidad: ${errorMessage}`)
         } finally {
           setLoading(false)
         }
@@ -333,7 +373,7 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
         pais: 'España'
       })
     }
-  }, [setValue, token])
+  }, [setValue, fetchEntityByNIF])
 
   const handleAddNewClient = (suggestedName?: string) => {
     setSuggestedClientName(suggestedName || '')
@@ -343,28 +383,9 @@ export default function SpanishInvoiceForm({ initialData, invoiceId, hideISP = f
   const handleViewEntity = async (nif: string) => {
     try {
       setLoading(true)
-      const headers: HeadersInit = {}
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`
-      }
-      const encodedNIF = encodeURIComponent(nif)
-      const response = await fetch(`/api/entities/nif/${encodedNIF}`, {
-        cache: 'no-store',
-        headers
-      })
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || `Error ${response.status}: ${response.statusText}`)
-      }
-      
-      const data = await response.json()
-      if (data?.success && data?.data) {
-        setSelectedEntity(data.data as Entidad)
-        setShowEntityModal(true)
-      } else {
-        setError('No se encontró la entidad con el NIF proporcionado')
-      }
+      const entity = await fetchEntityByNIF(nif)
+      setSelectedEntity(entity)
+      setShowEntityModal(true)
     } catch (err) {
       console.error('Error loading entity:', err)
       const errorMessage = err instanceof Error ? err.message : 'Error desconocido'
