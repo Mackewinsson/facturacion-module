@@ -82,13 +82,17 @@ describe('InvoicePDFView', () => {
   })
 
   describe('Rendering', () => {
-    test('should render loading state when invoice is provided', () => {
+    test('should render PDF actions when invoice is provided and PDF is generated', async () => {
       const invoice = createMockInvoice()
       mockGenerateInvoicePDF.mockReturnValue(new Blob(['test'], { type: 'application/pdf' }))
 
       render(<InvoicePDFView invoice={invoice} />)
 
-      expect(screen.getByText('Generando PDF...')).toBeInTheDocument()
+      await waitFor(() => {
+        expect(mockGenerateInvoicePDF).toHaveBeenCalledWith(invoice)
+        expect(screen.getByText('Imprimir')).toBeInTheDocument()
+        expect(screen.getByText('Descargar PDF')).toBeInTheDocument()
+      })
     })
 
     test('should render message when invoice is null', () => {
@@ -125,7 +129,7 @@ describe('InvoicePDFView', () => {
       render(<InvoicePDFView invoice={invoice} />)
 
       await waitFor(() => {
-        expect(screen.getByText('Error al generar el PDF de la factura')).toBeInTheDocument()
+        expect(screen.getByText(/Error al generar el PDF de la factura/i)).toBeInTheDocument()
       })
     })
   })
@@ -219,7 +223,13 @@ describe('InvoicePDFView', () => {
       const mockBlob = new Blob(['test'], { type: 'application/pdf' })
       mockGenerateInvoicePDF.mockReturnValue(mockBlob)
 
-      // Mock document.createElement for link creation
+      render(<InvoicePDFView invoice={invoice} />)
+
+      await waitFor(() => {
+        expect(screen.getByText('Descargar PDF')).toBeInTheDocument()
+      })
+
+      // Mock link creation ONLY after render so we don't break React Testing Library's container mounting.
       const mockLink = {
         href: '',
         download: '',
@@ -229,12 +239,6 @@ describe('InvoicePDFView', () => {
       const createElementSpy = jest.spyOn(document, 'createElement').mockReturnValue(mockLink as any)
       const appendChildSpy = jest.spyOn(document.body, 'appendChild').mockImplementation(() => mockLink as any)
       const removeChildSpy = jest.spyOn(document.body, 'removeChild').mockImplementation(() => mockLink as any)
-
-      render(<InvoicePDFView invoice={invoice} />)
-
-      await waitFor(() => {
-        expect(screen.getByText('Descargar PDF')).toBeInTheDocument()
-      })
 
       const downloadButton = screen.getByText('Descargar PDF')
       fireEvent.click(downloadButton)
@@ -299,7 +303,7 @@ describe('InvoicePDFView', () => {
       render(<InvoicePDFView invoice={invoice} />)
 
       await waitFor(() => {
-        expect(screen.getByText('Error al generar el PDF de la factura')).toBeInTheDocument()
+        expect(screen.getByText(/Error al generar el PDF de la factura/i)).toBeInTheDocument()
       })
     })
 

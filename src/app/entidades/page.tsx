@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, Suspense, useRef, useCallback } from 'react'
+import { useState, useEffect, Suspense, useCallback } from 'react'
 import { useRouter, usePathname, useSearchParams } from 'next/navigation'
 import { useAuthStore } from '@/store/auth'
 import { useAuth } from '@/hooks/useAuth'
@@ -28,34 +28,29 @@ function EntidadesPageContent() {
     nombre: '',
     telefono: ''
   })
-  // Debounced version of columnFilters for API calls
-  const [debouncedColumnFilters, setDebouncedColumnFilters] = useState(columnFilters)
-  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null)
+  // Applied filters are the ones that actually trigger API calls (Enter / Buscar)
+  const [appliedColumnFilters, setAppliedColumnFilters] = useState(columnFilters)
   const [selectedEntity, setSelectedEntity] = useState<Entidad | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isAddModalOpen, setIsAddModalOpen] = useState(false)
 
-  // Debounce columnFilters changes - wait 500ms after user stops typing
-  useEffect(() => {
-    if (debounceTimerRef.current) {
-      clearTimeout(debounceTimerRef.current)
-    }
-    
-    debounceTimerRef.current = setTimeout(() => {
-      setDebouncedColumnFilters(columnFilters)
-    }, 500)
-
-    return () => {
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current)
-      }
-    }
+  const applyFilters = useCallback(() => {
+    setCurrentPage(1)
+    setAppliedColumnFilters({
+      nif: columnFilters.nif.trim(),
+      nombre: columnFilters.nombre.trim(),
+      telefono: columnFilters.telefono.trim()
+    })
   }, [columnFilters])
 
-  // Reset to page 1 when filters change
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [debouncedColumnFilters, tipoEntidadFilter])
+  const handleFilterKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLInputElement>) => {
+      if (e.key !== 'Enter') return
+      e.preventDefault()
+      applyFilters()
+    },
+    [applyFilters]
+  )
 
   // Initialize tipoEntidadFilter from URL or localStorage
   useEffect(() => {
@@ -113,14 +108,14 @@ function EntidadesPageContent() {
       if (tipoEntidadFilter !== 'ALL') {
         params.set('tipo', tipoEntidadFilter)
       }
-      if (debouncedColumnFilters.nif) {
-        params.set('nif', debouncedColumnFilters.nif)
+      if (appliedColumnFilters.nif) {
+        params.set('nif', appliedColumnFilters.nif)
       }
-      if (debouncedColumnFilters.nombre) {
-        params.set('nombre', debouncedColumnFilters.nombre)
+      if (appliedColumnFilters.nombre) {
+        params.set('nombre', appliedColumnFilters.nombre)
       }
-      if (debouncedColumnFilters.telefono) {
-        params.set('telefono', debouncedColumnFilters.telefono)
+      if (appliedColumnFilters.telefono) {
+        params.set('telefono', appliedColumnFilters.telefono)
       }
 
       const headers: HeadersInit = {}
@@ -158,7 +153,7 @@ function EntidadesPageContent() {
     } finally {
       setLoading(false)
     }
-  }, [currentPage, tipoEntidadFilter, debouncedColumnFilters, token, logout, router, isChecking])
+  }, [currentPage, tipoEntidadFilter, appliedColumnFilters, token, logout, router, isChecking])
 
   useEffect(() => {
     // Wait for auth check to complete before loading entities
@@ -259,10 +254,14 @@ function EntidadesPageContent() {
   }
 
   const handleColumnFilterChange = (columnName: string, value: string) => {
-    setColumnFilters(prev => ({
-      ...prev,
-      [columnName]: value
-    }))
+    const next = { ...columnFilters, [columnName]: value }
+    setColumnFilters(next)
+
+    // If user clears a filter field, clear the applied filter immediately (no Enter needed).
+    if (!value.trim() && (appliedColumnFilters as any)[columnName]) {
+      setCurrentPage(1)
+      setAppliedColumnFilters(prev => ({ ...prev, [columnName]: '' }) as any)
+    }
   }
 
   const formatDate = (dateString: string) => {
@@ -332,6 +331,18 @@ function EntidadesPageContent() {
                   <option value="vendedor">Vendedores</option>
                 </select>
               </div>
+
+              <button
+                type="button"
+                onClick={applyFilters}
+                className="flex items-center gap-2 px-3 py-2 bg-secondary hover:bg-secondary/80 text-secondary-foreground rounded-md text-sm font-medium"
+                title="Buscar (aplicar filtros)"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                Buscar
+              </button>
             </div>
 
             {/* Right Side - Results Count */}
@@ -358,6 +369,7 @@ function EntidadesPageContent() {
                       placeholder="Filtrar NIF..."
                       value={columnFilters.nif}
                       onChange={e => handleColumnFilterChange('nif', e.target.value)}
+                      onKeyDown={handleFilterKeyDown}
                       className="w-full bg-transparent border-none outline-none text-xs"
                     />
                     <div className="mt-1">NIF</div>
@@ -368,6 +380,7 @@ function EntidadesPageContent() {
                       placeholder="Filtrar Razón Social..."
                       value={columnFilters.nombre}
                       onChange={e => handleColumnFilterChange('nombre', e.target.value)}
+                      onKeyDown={handleFilterKeyDown}
                       className="w-full bg-transparent border-none outline-none text-xs"
                     />
                     <div className="mt-1">Razón Social</div>
@@ -378,6 +391,7 @@ function EntidadesPageContent() {
                       placeholder="Filtrar Teléfono..."
                       value={columnFilters.telefono}
                       onChange={e => handleColumnFilterChange('telefono', e.target.value)}
+                      onKeyDown={handleFilterKeyDown}
                       className="w-full bg-transparent border-none outline-none text-xs"
                     />
                     <div className="mt-1">Teléfono</div>

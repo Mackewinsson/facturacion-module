@@ -17,6 +17,8 @@ const parseNumber = (value: string | null, fallback: number) => {
   return Number.isNaN(parsed) ? fallback : parsed
 }
 
+const normalizeFilterValue = (value: string | null) => (value ?? '').trim()
+
 export async function GET(request: NextRequest) {
   try {
     await requireAuth(request)
@@ -26,8 +28,16 @@ export async function GET(request: NextRequest) {
     const tipoEntidadFilter = (searchParams.get('tipo') || 'ALL') as 'ALL' | TipoEntidad
 
     const columnFilters = columnFilterKeys.reduce<ColumnFilters>((acc, key) => {
-      const value = searchParams.get(key)
-      if (value) acc[key] = value
+      const raw = normalizeFilterValue(searchParams.get(key))
+      if (!raw) return acc
+
+      // Ensure we always pass the FULL string and make matching effectively case-insensitive
+      // across typical ERP-style data (often stored in uppercase in SQL Server).
+      if (key === 'nombre' || key === 'nif') {
+        acc[key] = raw.toUpperCase()
+      } else {
+        acc[key] = raw
+      }
       return acc
     }, {})
 

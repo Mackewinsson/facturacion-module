@@ -102,8 +102,8 @@ export default function ClientSearch({
   onAddNewClient,
   onViewEntity
 }: ClientSearchProps) {
-  const [inputValue, setInputValue] = useState('') // Valor del input (no se usa para filtrar automáticamente)
-  const [searchTerm, setSearchTerm] = useState('') // Término de búsqueda real (se usa para filtrar)
+  const [inputValue, setInputValue] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -126,15 +126,17 @@ export default function ClientSearch({
     return () => document.removeEventListener('mousedown', closeOnClickOutside)
   }, [])
 
-  const handleSearch = () => {
-    setSearchTerm(inputValue.trim())
+  const commitSearch = (raw: string) => setSearchTerm(raw.trim())
+
+  const handleSearchClick = () => {
+    const raw = inputRef.current?.value ?? inputValue
+    commitSearch(raw)
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleSearch()
-    }
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key !== 'Enter') return
+    e.preventDefault()
+    commitSearch(e.currentTarget.value)
   }
 
   const filteredClients = useMemo(() => {
@@ -235,14 +237,21 @@ export default function ClientSearch({
                 ref={inputRef}
                 type="text"
                 value={inputValue}
-                onChange={event => setInputValue(event.target.value)}
-                onKeyPress={handleKeyPress}
+                onChange={event => {
+                  const next = event.target.value
+                  setInputValue(next)
+                  // If user clears the input, clear the committed search immediately.
+                  if (!next.trim()) {
+                    setSearchTerm('')
+                  }
+                }}
+                onKeyDown={handleKeyDown}
                 placeholder="Buscar por nombre, NIF o ciudad..."
                 className="flex-1 rounded-lg border border-input-border bg-input px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-accent"
               />
               <button
                 type="button"
-                onClick={handleSearch}
+                onClick={handleSearchClick}
                 className="flex items-center justify-center rounded-lg border border-input-border bg-input px-3 py-2 text-foreground transition hover:bg-secondary focus:outline-none focus:ring-2 focus:ring-accent"
                 title="Buscar"
               >
@@ -292,7 +301,7 @@ export default function ClientSearch({
               <p className="px-4 py-3 text-sm text-muted-foreground">
                 {searchTerm.trim()
                   ? 'No se encontraron coincidencias'
-                  : 'Escribe un término de búsqueda y presiona el botón de búsqueda o Enter'}
+                  : 'Escribe un término de búsqueda y presiona Enter o la lupa'}
               </p>
             ) : (
               filteredClients.map(client => (

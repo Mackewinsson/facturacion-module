@@ -71,18 +71,34 @@ export default function InvoicePDFView({ invoice }: InvoicePDFViewProps) {
   }, [invoice])
 
   const handlePrint = () => {
-    if (iframeRef.current?.contentWindow) {
-      iframeRef.current.contentWindow.print()
-    } else {
-      // Fallback: open PDF in new window and print
-      if (pdfUrl) {
-        const printWindow = window.open(pdfUrl, '_blank')
-        if (printWindow) {
-          printWindow.onload = () => {
+    try {
+      const iframeWindow = iframeRef.current?.contentWindow
+      if (iframeWindow?.print) {
+        iframeWindow.print()
+        return
+      }
+    } catch (err) {
+      // In some environments (tests / strict browser settings), print can throw.
+      console.error('Error printing PDF from iframe:', err)
+    }
+
+    // Fallback: open PDF in new window and print
+    if (pdfUrl) {
+      const printWindow = window.open(pdfUrl, '_blank')
+      if (printWindow) {
+        printWindow.onload = () => {
+          try {
             printWindow.print()
+          } catch (err) {
+            console.error('Error printing PDF from new window:', err)
           }
         }
+      } else if (window.print) {
+        // Last resort: print current window
+        window.print()
       }
+    } else if (window.print) {
+      window.print()
     }
   }
 
