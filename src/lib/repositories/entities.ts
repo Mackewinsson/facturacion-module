@@ -9,6 +9,24 @@ type ColumnFilters = {
 
 const normalizeString = (value?: string | null) => value?.trim() || ''
 
+const buildFullName = (nombre?: string, apellido1?: string, apellido2?: string) => {
+  const n = (nombre || '').trim()
+  const a1 = (apellido1 || '').trim()
+  const a2 = (apellido2 || '').trim()
+  if (!n || !a1) return ''
+  return `${n} ${a1}${a2 ? ' ' + a2 : ''}`.trim()
+}
+
+const parseFullName = (value?: string | null) => {
+  const raw = normalizeString(value)
+  if (!raw) return {}
+  const parts = raw.split(/\s+/).filter(Boolean)
+  if (parts.length < 2) return {}
+  const [nombre, apellido1, ...rest] = parts
+  const apellido2 = rest.length ? rest.join(' ') : undefined
+  return { nombre, apellido1, apellido2 }
+}
+
 const mapRoles = (row: any) => {
   return {
     proveedor: Boolean(row.FPR),
@@ -35,6 +53,9 @@ const mapEntidad = (row: any): Entidad => {
     email: dir.EMADIR ?? ''
   }))
 
+  const personaFisica = Boolean(row.PERENT)
+  const parsedName = personaFisica ? parseFullName(row.NCOENT) : {}
+
   return {
     id: row.IDEENT,
     NIF: row.NIFENT,
@@ -44,7 +65,11 @@ const mapEntidad = (row: any): Entidad => {
     fechaAlta: row.FEAENT?.toISOString() ?? '',
     fechaBaja: row.FEBENT?.toISOString(),
 
-    personaFisica: Boolean(row.PERENT),
+    // Persona física fields (best-effort from NCOENT to keep compatibility)
+    nombre: (parsedName as any).nombre,
+    apellido1: (parsedName as any).apellido1,
+    apellido2: (parsedName as any).apellido2,
+    personaFisica,
     tipoIdentificador: row.TNIENT ?? 'NIF/CIF-IVA',
     paisOrigen: row.PAOENT ? String(row.PAOENT) : '1',
     extranjero: Boolean(row.EXTENT),
@@ -296,6 +321,9 @@ export class EntitiesRepository {
       razonSocial,
       nombreComercial,
       personaFisica,
+      nombre,
+      apellido1,
+      apellido2,
       tipoIdentificador,
       paisOrigen,
       extranjero,
@@ -315,6 +343,9 @@ export class EntitiesRepository {
       rentacar
     } = payload
 
+    const personaFullName = buildFullName(nombre, apellido1, apellido2)
+    const ncoEntValue = (personaFisica ? personaFullName : '') || (razonSocial || '')
+
     // Defaults from DB inspection
     const divId = 1 // Euro
     const defaultPais = 1 // ESPAÑA
@@ -323,8 +354,8 @@ export class EntitiesRepository {
     const ent = await prisma.eNT.create({
       data: {
         NIFENT: (NIF || '').substring(0, 50),
-        NCOENT: (razonSocial || '').substring(0, 255),
-        NOMENT: ((nombreComercial ?? razonSocial) || '').substring(0, 255),
+        NCOENT: (ncoEntValue || '').substring(0, 255),
+        NOMENT: ((nombreComercial ?? ncoEntValue) || '').substring(0, 255),
         PERENT: Boolean(personaFisica),
         TNIENT: (tipoIdentificador || '02').substring(0, 2),
         PAOENT: paisOrigen ? Number(paisOrigen) || defaultPais : defaultPais,
@@ -442,7 +473,7 @@ export class EntitiesRepository {
           data: {
             ENTCON: ent.IDEENT,
             DIRCON: dir?.IDEDIR ?? ent.DFAENT ?? ent.IDEENT,
-            NOMCON: razonSocial,
+            NOMCON: (ncoEntValue || '').substring(0, 255),
             TLFCON: (payload as any).telefono || '',
             TL1CON: (payload as any).telefono,
             EMACON: (payload as any).email || ''
@@ -461,10 +492,22 @@ export class EntitiesRepository {
       FEMENT: new Date() // Fecha de modificación
     }
 
+    const hasPersonaNameParts =
+      payload.nombre !== undefined ||
+      payload.apellido1 !== undefined ||
+      payload.apellido2 !== undefined
+    const wantsPersonaName = payload.personaFisica === true || hasPersonaNameParts
+    const computedFullName = wantsPersonaName
+      ? buildFullName(payload.nombre, payload.apellido1, payload.apellido2)
+      : ''
+    const nextNcoEnt =
+      (wantsPersonaName ? computedFullName : '') ||
+      (payload.razonSocial !== undefined ? payload.razonSocial : undefined)
+
     // Basic fields
     if (payload.NIF !== undefined) updateData.NIFENT = payload.NIF
-    if (payload.razonSocial !== undefined) updateData.NCOENT = payload.razonSocial
-    if (payload.nombreComercial !== undefined) updateData.NOMENT = payload.nombreComercial ?? payload.razonSocial
+    if (nextNcoEnt !== undefined) updateData.NCOENT = nextNcoEnt
+    if (payload.nombreComercial !== undefined) updateData.NOMENT = payload.nombreComercial ?? nextNcoEnt ?? payload.razonSocial
     if (payload.personaFisica !== undefined) updateData.PERENT = payload.personaFisica
     if (payload.tipoIdentificador !== undefined) updateData.TNIENT = payload.tipoIdentificador
     if (payload.paisOrigen !== undefined) updateData.PAOENT = payload.paisOrigen ? Number(payload.paisOrigen) : undefined

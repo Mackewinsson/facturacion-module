@@ -21,6 +21,12 @@ interface FormData {
   razonSocial: string
   nombreComercial: string
   
+  // Persona Física fields
+  nombre?: string
+  apellido1?: string
+  apellido2?: string
+  sexo?: 'hombre' | 'mujer'
+  
   // Dates
   fechaAlta: string
   fechaBaja: string
@@ -76,6 +82,12 @@ const getDefaultValues = (suggestedName: string): FormData => ({
   NIF: '',
   razonSocial: suggestedName,
   nombreComercial: '',
+  
+  // Persona Física fields
+  nombre: '',
+  apellido1: '',
+  apellido2: '',
+  sexo: undefined,
   
   // Dates
   fechaAlta: new Date().toISOString().split('T')[0],
@@ -154,14 +166,43 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
 
   // Watch form values for display
   const tipoEntidad = watch('tipoEntidad')
+  const personaFisica = watch('personaFisica')
 
-  const handleContactTypeChange = (type: ContactType) => {
+  const applyContactType = (type: ContactType) => {
+    const isPersona = type === 'persona'
     setContactType(type)
-    setValue('tipo', type === 'empresa' ? 'empresario/profesional' : 'particular')
+    setValue('personaFisica', isPersona)
+    setValue('tipo', isPersona ? 'particular' : 'empresario/profesional')
+
+    // Clear opposite fields to avoid accidental payload mixups
+    if (isPersona) {
+      setValue('razonSocial', '')
+      setValue('nombreComercial', '')
+    } else {
+      setValue('nombre', '')
+      setValue('apellido1', '')
+      setValue('apellido2', '')
+      setValue('sexo', undefined)
+    }
+  }
+
+  const computeNombreORazonSocial = (data: FormData) => {
+    if (data.personaFisica && data.nombre && data.apellido1) {
+      return `${data.nombre} ${data.apellido1}${data.apellido2 ? ' ' + data.apellido2 : ''}`.trim()
+    }
+    return (data.razonSocial || '').trim()
   }
 
   const onSubmit = (data: FormData) => {
-    onClientAdded(data as unknown as Cliente | Entidad)
+    // Ensure legacy compatibility fields are consistent
+    const displayName = computeNombreORazonSocial(data)
+    const payload: FormData = {
+      ...data,
+      nombreORazonSocial: displayName,
+      // If persona física, razonSocial is not required but backend may still use it as fallback.
+      razonSocial: data.personaFisica ? displayName : data.razonSocial
+    }
+    onClientAdded(payload as unknown as Cliente | Entidad)
     onClose()
     // Reset form
     reset(getDefaultValues(''))
@@ -257,7 +298,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
             <div className="flex space-x-2">
               <button
                 type="button"
-                onClick={() => handleContactTypeChange('empresa')}
+                onClick={() => applyContactType('empresa')}
                 className={`px-4 py-2 rounded-md font-medium ${
                   contactType === 'empresa'
                     ? 'bg-accent text-accent-foreground'
@@ -268,7 +309,7 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
               </button>
               <button
                 type="button"
-                onClick={() => handleContactTypeChange('persona')}
+                onClick={() => applyContactType('persona')}
                 className={`px-4 py-2 rounded-md font-medium ${
                   contactType === 'persona'
                     ? 'bg-accent text-accent-foreground'
@@ -307,6 +348,12 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                 {errors.razonSocial && (
                   <li className="text-sm font-medium">{errors.razonSocial.message}</li>
                 )}
+                {errors.nombre && (
+                  <li className="text-sm font-medium">{errors.nombre.message}</li>
+                )}
+                {errors.apellido1 && (
+                  <li className="text-sm font-medium">{errors.apellido1.message}</li>
+                )}
                 {errors.NIF && (
                   <li className="text-sm font-medium">{errors.NIF.message}</li>
                 )}
@@ -333,25 +380,104 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                     />
                   </div>
                   
-                  <div>
-                    <label className="block text-sm font-medium text-card-foreground mb-2">Razón Social</label>
-                    <input
-                      type="text"
-                      {...register('razonSocial', { required: 'La razón social es obligatoria' })}
-                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
-                      placeholder="Razón Social"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-card-foreground mb-2">N. Comercial</label>
-                    <input
-                      type="text"
-                      {...register('nombreComercial')}
-                      className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
-                      placeholder="Nombre Comercial"
-                    />
-                  </div>
+                  {!personaFisica ? (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-card-foreground mb-2">Razón Social</label>
+                        <input
+                          type="text"
+                          {...register('razonSocial', {
+                            validate: (value, formValues) => {
+                              if (!formValues.personaFisica && !value?.trim()) {
+                                return 'La razón social es obligatoria'
+                              }
+                              return true
+                            }
+                          })}
+                          className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
+                          placeholder="Razón Social"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-card-foreground mb-2">N. Comercial</label>
+                        <input
+                          type="text"
+                          {...register('nombreComercial')}
+                          className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
+                          placeholder="Nombre Comercial"
+                        />
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <label className="block text-sm font-medium text-card-foreground mb-2">Nombre</label>
+                        <input
+                          type="text"
+                          {...register('nombre', {
+                            validate: (value, formValues) => {
+                              if (formValues.personaFisica && !value?.trim()) {
+                                return 'El nombre es obligatorio'
+                              }
+                              return true
+                            }
+                          })}
+                          className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
+                          placeholder="Nombre"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-card-foreground mb-2">Apellido 1</label>
+                        <input
+                          type="text"
+                          {...register('apellido1', {
+                            validate: (value, formValues) => {
+                              if (formValues.personaFisica && !value?.trim()) {
+                                return 'El primer apellido es obligatorio'
+                              }
+                              return true
+                            }
+                          })}
+                          className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
+                          placeholder="Primer apellido"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-card-foreground mb-2">Apellido 2</label>
+                        <input
+                          type="text"
+                          {...register('apellido2')}
+                          className="w-full px-3 py-2 border border-input-border rounded-md focus:outline-none focus:ring-2 focus:ring-accent bg-input text-foreground"
+                          placeholder="Segundo apellido"
+                        />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-medium text-card-foreground mb-2">Sexo</label>
+                        <div className="flex items-center gap-4">
+                          <label className="flex items-center gap-2 text-sm text-foreground">
+                            <input
+                              type="radio"
+                              value="hombre"
+                              {...register('sexo')}
+                            />
+                            Hombre
+                          </label>
+                          <label className="flex items-center gap-2 text-sm text-foreground">
+                            <input
+                              type="radio"
+                              value="mujer"
+                              {...register('sexo')}
+                            />
+                            Mujer
+                          </label>
+                        </div>
+                      </div>
+                    </>
+                  )}
                   
                   {/* Dates */}
                   <div className="grid grid-cols-2 gap-4">
@@ -380,8 +506,12 @@ export default function AddClientModal({ isOpen, onClose, onClientAdded, suggest
                       <div className="flex items-center">
                         <input
                           type="checkbox"
-                          checked={field.value}
-                          onChange={field.onChange}
+                          checked={Boolean(field.value)}
+                          onChange={(e) => {
+                            const checked = e.target.checked
+                            field.onChange(checked)
+                            applyContactType(checked ? 'persona' : 'empresa')
+                          }}
                           className="mr-2"
                         />
                         <label className="text-sm text-card-foreground">Persona física</label>
